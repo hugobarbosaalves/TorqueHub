@@ -6,6 +6,7 @@ import { serviceOrderRoutes } from './modules/service-order/interfaces/http/serv
 import { lookupRoutes } from './modules/lookup/interfaces/http/lookup.controller.js';
 import { customerRoutes } from './modules/customer/interfaces/http/customer.controller.js';
 import { vehicleRoutes } from './modules/vehicle/interfaces/http/vehicle.controller.js';
+import { publicOrderRoutes } from './modules/service-order/interfaces/http/public-order.controller.js';
 
 /** Builds and configures the Fastify application instance. */
 export async function buildApp() {
@@ -37,6 +38,7 @@ export async function buildApp() {
         { name: 'Customers', description: 'Customer management CRUD' },
         { name: 'Vehicles', description: 'Vehicle management CRUD' },
         { name: 'Service Orders', description: 'Service order management CRUD' },
+        { name: 'Public', description: 'Endpoints públicos de acesso do cliente (sem autenticação)' },
       ],
     },
   });
@@ -73,6 +75,7 @@ export async function buildApp() {
   await app.register(serviceOrderRoutes, { prefix: '/service-orders' });
   await app.register(customerRoutes, { prefix: '/customers' });
   await app.register(vehicleRoutes, { prefix: '/vehicles' });
+  await app.register(publicOrderRoutes, { prefix: '/public/orders' });
 
   return app;
 }

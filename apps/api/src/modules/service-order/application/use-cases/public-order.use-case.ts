@@ -26,26 +26,26 @@ function toDTO(so: ServiceOrderWithItems): ServiceOrderDTO {
   };
 }
 
-/** Use case: list service orders, optionally filtered by workshop. */
-export class ListServiceOrdersUseCase {
+/** Use case: busca uma ordem de serviço pelo token público do cliente. */
+export class GetOrderByTokenUseCase {
   constructor(private readonly repo: ServiceOrderRepository) {}
 
-  async execute(workshopId?: string): Promise<ServiceOrderDTO[]> {
-    const orders = workshopId
-      ? await this.repo.findByWorkshopId(workshopId)
-      : await this.repo.findAll();
-
-    return orders.map(toDTO);
+  async execute(token: string): Promise<ServiceOrderDTO | null> {
+    const order = await this.repo.findByPublicToken(token);
+    if (!order) return null;
+    return toDTO(order);
   }
 }
 
-/** Use case: get a single service order by ID. */
-export class GetServiceOrderUseCase {
+/** Use case: busca o histórico de ordens do veículo vinculado a uma ordem. */
+export class GetVehicleHistoryUseCase {
   constructor(private readonly repo: ServiceOrderRepository) {}
 
-  async execute(id: string): Promise<ServiceOrderDTO | null> {
-    const order = await this.repo.findById(id);
-    if (!order) return null;
-    return toDTO(order);
+  async execute(token: string): Promise<ServiceOrderDTO[]> {
+    const order = await this.repo.findByPublicToken(token);
+    if (!order) return [];
+
+    const orders = await this.repo.findByVehicleId(order.vehicleId);
+    return orders.map(toDTO);
   }
 }

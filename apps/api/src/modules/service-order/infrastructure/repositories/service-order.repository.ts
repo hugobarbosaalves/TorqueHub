@@ -1,6 +1,16 @@
 import type { PrismaClient } from '@prisma/client';
 import type { CreateServiceOrderRequest } from '@torquehub/contracts';
 
+/** Gera um token público alfanumérico de 12 caracteres. */
+function generatePublicToken(): string {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+  let token = '';
+  for (let i = 0; i < 12; i++) {
+    token += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return token;
+}
+
 /** Raw database record shape for a service order with items. */
 export interface ServiceOrderWithItems {
   id: string;
@@ -36,6 +46,7 @@ export class ServiceOrderRepository {
         vehicleId: input.vehicleId,
         description: input.description,
         totalAmount,
+        publicToken: generatePublicToken(),
         items: {
           create: input.items.map((item) => ({
             description: item.description,
@@ -80,5 +91,22 @@ export class ServiceOrderRepository {
 
   async delete(id: string): Promise<void> {
     await this.db.serviceOrder.delete({ where: { id } });
+  }
+
+  /** Busca uma ordem pelo token público (link do cliente). */
+  async findByPublicToken(token: string): Promise<ServiceOrderWithItems | null> {
+    return this.db.serviceOrder.findUnique({
+      where: { publicToken: token },
+      include: { items: true },
+    });
+  }
+
+  /** Lista todas as ordens de um veículo (histórico). */
+  async findByVehicleId(vehicleId: string): Promise<ServiceOrderWithItems[]> {
+    return this.db.serviceOrder.findMany({
+      where: { vehicleId },
+      include: { items: true },
+      orderBy: { createdAt: 'desc' },
+    });
   }
 }

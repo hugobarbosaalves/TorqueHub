@@ -27,8 +27,10 @@ const orderSchema = {
       type: 'string',
       enum: ['DRAFT', 'PENDING_APPROVAL', 'APPROVED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'],
     },
+    observations: { type: 'string', nullable: true },
     items: { type: 'array', items: orderItemSchema },
     totalAmount: { type: 'integer', description: 'Total in cents' },
+    publicToken: { type: 'string', nullable: true },
     createdAt: { type: 'string', format: 'date-time' },
     updatedAt: { type: 'string', format: 'date-time' },
   },
@@ -61,7 +63,15 @@ export const createOrderSchema = {
     },
   },
   response: {
-    201: successResponse(orderSchema),
+    201: successResponse({
+      type: 'object' as const,
+      properties: {
+        id: { type: 'string', format: 'uuid' },
+        status: { type: 'string' },
+        publicToken: { type: 'string', nullable: true },
+        createdAt: { type: 'string', format: 'date-time' },
+      },
+    }),
     400: errorResponse,
   },
 };

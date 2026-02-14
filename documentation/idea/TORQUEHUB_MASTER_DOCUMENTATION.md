@@ -196,6 +196,13 @@ Swagger UI: `http://localhost:3333/docs`
 | PATCH  | `/service-orders/:id/status`  | Update status           |
 | DELETE | `/service-orders/:id`         | Delete order            |
 
+### 7.6 Public (Acesso do Cliente)
+
+| Method | Path                                        | Description                        |
+| ------ | ------------------------------------------- | ---------------------------------- |
+| GET    | `/public/orders/:token`                     | Get order by public token          |
+| GET    | `/public/orders/:token/vehicle-history`     | Get vehicle service history        |
+
 ---
 
 ## 8. Development Checklist
@@ -207,7 +214,7 @@ Swagger UI: `http://localhost:3333/docs`
 | 3   | ServiceOrder CRUD persistence        | ✅ Done    |
 | 4   | Customer + Vehicle modules           | ✅ Done    |
 | 5   | Media upload flow                    | ⏳ Pending |
-| 6   | Customer public access link (web)    | ⏳ Pending |
+| 6   | Customer public access link (web)    | ✅ Done    |
 | 7   | Basic authentication                 | ⏳ Pending |
 | 8   | Swagger + TypeDoc + Conventions      | ✅ Done    |
 

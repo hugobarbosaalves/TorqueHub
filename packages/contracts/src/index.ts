@@ -29,8 +29,10 @@ export interface ServiceOrderDTO {
   vehicleId: string;
   description: string;
   status: ServiceOrderStatus;
+  observations: string | null;
   items: ServiceOrderItemDTO[];
   totalAmount: number;
+  publicToken: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -66,6 +68,7 @@ export interface CreateServiceOrderRequest {
 export interface CreateServiceOrderResponse {
   id: string;
   status: ServiceOrderStatus;
+  publicToken: string | null;
   createdAt: string;
 }
 

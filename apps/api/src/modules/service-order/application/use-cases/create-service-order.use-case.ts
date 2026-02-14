@@ -11,6 +11,7 @@ export class CreateServiceOrderUseCase {
     return {
       id: serviceOrder.id,
       status: serviceOrder.status as CreateServiceOrderResponse['status'],
+      publicToken: serviceOrder.publicToken,
       createdAt: serviceOrder.createdAt.toISOString(),
     };
   }

@@ -1,6 +1,7 @@
 import type { PrismaClient } from '@prisma/client';
 import type { CreateVehicleRequest, UpdateVehicleRequest } from '@torquehub/contracts';
 
+/** Raw database record shape for a vehicle. */
 export interface VehicleRecord {
   id: string;
   workshopId: string;
@@ -15,6 +16,7 @@ export interface VehicleRecord {
   updatedAt: Date;
 }
 
+/** Prisma-backed repository for Vehicle persistence operations. */
 export class VehicleRepository {
   constructor(private readonly db: PrismaClient) {}
 

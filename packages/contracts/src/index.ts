@@ -1,11 +1,19 @@
+/**
+ * @torquehub/contracts — Shared DTOs, request/response types, and API shapes.
+ * Consumed by the API (backend) and could be used by a future admin web panel.
+ * @module contracts
+ */
+
 // ── API Response Types ──────────────────────────────────────────────────────
 
+/** Standard API success response envelope. */
 export interface ApiResponse<T> {
   success: boolean;
   data: T;
   meta?: Record<string, unknown>;
 }
 
+/** Standard API error response. */
 export interface ApiError {
   success: false;
   error: {
@@ -17,6 +25,7 @@ export interface ApiError {
 
 // ── Service Order Types ─────────────────────────────────────────────────────
 
+/** Data transfer object for a complete service order. */
 export interface ServiceOrderDTO {
   id: string;
   workshopId: string;
@@ -30,6 +39,7 @@ export interface ServiceOrderDTO {
   updatedAt: string;
 }
 
+/** Data transfer object for a service order line item. */
 export interface ServiceOrderItemDTO {
   id: string;
   description: string;
@@ -38,6 +48,7 @@ export interface ServiceOrderItemDTO {
   totalPrice: number;
 }
 
+/** Allowed status transitions for a service order. */
 export type ServiceOrderStatus =
   | 'draft'
   | 'pending_approval'
@@ -46,6 +57,7 @@ export type ServiceOrderStatus =
   | 'completed'
   | 'cancelled';
 
+/** Payload for creating a new service order. */
 export interface CreateServiceOrderRequest {
   workshopId: string;
   customerId: string;
@@ -54,6 +66,7 @@ export interface CreateServiceOrderRequest {
   items: Omit<ServiceOrderItemDTO, 'id' | 'totalPrice'>[];
 }
 
+/** Response after successfully creating a service order. */
 export interface CreateServiceOrderResponse {
   id: string;
   status: ServiceOrderStatus;
@@ -62,6 +75,7 @@ export interface CreateServiceOrderResponse {
 
 // ── Customer Types ──────────────────────────────────────────────────────────
 
+/** Data transfer object for a customer record. */
 export interface CustomerDTO {
   id: string;
   workshopId: string;
@@ -73,6 +87,7 @@ export interface CustomerDTO {
   updatedAt: string;
 }
 
+/** Payload for creating a new customer. */
 export interface CreateCustomerRequest {
   workshopId: string;
   name: string;
@@ -81,6 +96,7 @@ export interface CreateCustomerRequest {
   email?: string;
 }
 
+/** Payload for updating an existing customer. */
 export interface UpdateCustomerRequest {
   name?: string;
   document?: string;
@@ -90,6 +106,7 @@ export interface UpdateCustomerRequest {
 
 // ── Vehicle Types ───────────────────────────────────────────────────────────
 
+/** Data transfer object for a vehicle record. */
 export interface VehicleDTO {
   id: string;
   workshopId: string;
@@ -104,6 +121,7 @@ export interface VehicleDTO {
   updatedAt: string;
 }
 
+/** Payload for creating a new vehicle. */
 export interface CreateVehicleRequest {
   workshopId: string;
   customerId: string;
@@ -115,6 +133,7 @@ export interface CreateVehicleRequest {
   mileage?: number;
 }
 
+/** Payload for updating an existing vehicle. */
 export interface UpdateVehicleRequest {
   plate?: string;
   brand?: string;

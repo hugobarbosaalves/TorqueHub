@@ -12,18 +12,25 @@ import {
   ListVehiclesUseCase,
   GetVehicleUseCase,
 } from '../../application/use-cases/vehicle.use-cases.js';
+import {
+  createVehicleSchema,
+  listVehiclesSchema,
+  getVehicleSchema,
+  updateVehicleSchema,
+  deleteVehicleSchema,
+} from './vehicle.schemas.js';
 
 const repo = new VehicleRepository(prisma);
 const createUseCase = new CreateVehicleUseCase(repo);
 const listUseCase = new ListVehiclesUseCase(repo);
 const getUseCase = new GetVehicleUseCase(repo);
 
-export async function vehicleRoutes(app: FastifyInstance): Promise<void> {
-  // ── POST / — Criar veículo ──────────────────────────────────────────────
+/** Registers all vehicle CRUD HTTP routes. */
+export function vehicleRoutes(app: FastifyInstance): void {
   app.post<{
     Body: CreateVehicleRequest;
     Reply: ApiResponse<VehicleDTO>;
-  }>('/', async (request, reply) => {
+  }>('/', { schema: createVehicleSchema }, async (request, reply) => {
     const { workshopId, customerId, plate, brand, model } = request.body;
 
     if (!workshopId || !customerId || !plate || !brand || !model) {
@@ -42,7 +49,7 @@ export async function vehicleRoutes(app: FastifyInstance): Promise<void> {
   app.get<{
     Querystring: { workshopId?: string; customerId?: string };
     Reply: ApiResponse<VehicleDTO[]>;
-  }>('/', async (request, reply) => {
+  }>('/', { schema: listVehiclesSchema }, async (request, reply) => {
     const { workshopId, customerId } = request.query;
 
     if (!workshopId && !customerId) {
@@ -55,7 +62,7 @@ export async function vehicleRoutes(app: FastifyInstance): Promise<void> {
 
     const vehicles = customerId
       ? await listUseCase.executeByCustomer(customerId)
-      : await listUseCase.executeByWorkshop(workshopId!);
+      : await listUseCase.executeByWorkshop(workshopId ?? '');
 
     return reply.send({
       success: true,
@@ -68,7 +75,7 @@ export async function vehicleRoutes(app: FastifyInstance): Promise<void> {
   app.get<{
     Params: { id: string };
     Reply: ApiResponse<VehicleDTO>;
-  }>('/:id', async (request, reply) => {
+  }>('/:id', { schema: getVehicleSchema }, async (request, reply) => {
     const vehicle = await getUseCase.execute(request.params.id);
 
     if (!vehicle) {
@@ -87,10 +94,10 @@ export async function vehicleRoutes(app: FastifyInstance): Promise<void> {
     Params: { id: string };
     Body: UpdateVehicleRequest;
     Reply: ApiResponse<VehicleDTO>;
-  }>('/:id', async (request, reply) => {
+  }>('/:id', { schema: updateVehicleSchema }, async (request, reply) => {
     try {
       const updated = await repo.update(request.params.id, request.body);
-      return reply.send({
+      return await reply.send({
         success: true,
         data: {
           id: updated.id,
@@ -119,10 +126,10 @@ export async function vehicleRoutes(app: FastifyInstance): Promise<void> {
   app.delete<{
     Params: { id: string };
     Reply: ApiResponse<{ deleted: boolean }>;
-  }>('/:id', async (request, reply) => {
+  }>('/:id', { schema: deleteVehicleSchema }, async (request, reply) => {
     try {
       await repo.delete(request.params.id);
-      return reply.send({ success: true, data: { deleted: true } });
+      return await reply.send({ success: true, data: { deleted: true } });
     } catch {
       return reply.status(404).send({
         success: false,

@@ -1,6 +1,7 @@
 import type { CreateServiceOrderRequest, CreateServiceOrderResponse } from '@torquehub/contracts';
 import { ServiceOrderRepository } from '../../infrastructure/repositories/service-order.repository.js';
 
+/** Use case: create a new service order with line items. */
 export class CreateServiceOrderUseCase {
   constructor(private readonly repo: ServiceOrderRepository) {}
 

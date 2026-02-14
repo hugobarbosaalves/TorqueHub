@@ -10,7 +10,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:torquehub_mobile/main.dart';
 
 void main() {
-  testWidgets('App renders TorqueHub appbar and bottom nav', (WidgetTester tester) async {
+  testWidgets('App renders TorqueHub appbar and bottom nav', (
+    WidgetTester tester,
+  ) async {
     await tester.pumpWidget(const TorqueHubApp());
 
     // AppBar title

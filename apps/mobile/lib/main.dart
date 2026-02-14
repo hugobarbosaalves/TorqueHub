@@ -1,13 +1,22 @@
+/// TorqueHub Mobile — Mechanic's workshop management tool.
+///
+/// This is the entry point for the Flutter mobile application.
+/// The mobile app is designed for mechanics/workshop staff, NOT customers.
+/// Customers use the web portal at apps/web.
+library;
+
 import 'package:flutter/material.dart';
 import 'screens/orders_screen.dart';
 import 'screens/create_order_screen.dart';
 import 'screens/customers_screen.dart';
 import 'screens/vehicles_screen.dart';
 
+/// Entry point — launches the [TorqueHubApp] widget.
 void main() {
   runApp(const TorqueHubApp());
 }
 
+/// Root application widget with Material Design theme and bottom navigation.
 class TorqueHubApp extends StatelessWidget {
   const TorqueHubApp({super.key});
 
@@ -92,4 +101,3 @@ class _MainShellState extends State<MainShell> {
     );
   }
 }
-

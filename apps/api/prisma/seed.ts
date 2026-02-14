@@ -3,8 +3,10 @@ import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import pg from 'pg';
 
-const connectionString =
-  process.env['DATABASE_URL'] ?? 'postgresql://torquehub:torquehub123@localhost:5432/torquehub';
+const connectionString = process.env['DATABASE_URL'];
+if (!connectionString) {
+  throw new Error('DATABASE_URL environment variable is required');
+}
 const pool = new pg.Pool({ connectionString });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
@@ -67,7 +69,7 @@ async function seed(): Promise<void> {
   await pool.end();
 }
 
-seed().catch((e) => {
+await seed().catch((e: unknown) => {
   console.error('❌ Seed error:', e);
   process.exit(1);
 });

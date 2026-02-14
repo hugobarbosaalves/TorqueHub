@@ -14,13 +14,7 @@
     "resolveJsonModule": true,
     "declaration": true,
     "declarationMap": true,
-    "sourceMap": true,
-    "baseUrl": ".",
-    "paths": {
-      "@torquehub/contracts/*": ["packages/contracts/src/*"],
-      "@torquehub/entities/*": ["packages/entities/src/*"],
-      "@torquehub/utils/*": ["packages/utils/src/*"]
-    }
+    "sourceMap": true
   },
   "exclude": ["node_modules", "dist"]
 }

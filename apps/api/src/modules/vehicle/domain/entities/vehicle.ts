@@ -1,5 +1,6 @@
 import type { ID } from '@torquehub/entities';
 
+/** Properties that define a Vehicle entity. */
 export interface VehicleProps {
   id: ID;
   workshopId: string;
@@ -14,6 +15,7 @@ export interface VehicleProps {
   updatedAt: Date;
 }
 
+/** Vehicle domain entity with factory method and display formatting. */
 export class Vehicle {
   private readonly props: VehicleProps;
 

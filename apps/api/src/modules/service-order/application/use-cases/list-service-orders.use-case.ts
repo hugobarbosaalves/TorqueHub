@@ -2,6 +2,7 @@ import type { ServiceOrderDTO } from '@torquehub/contracts';
 import { ServiceOrderRepository } from '../../infrastructure/repositories/service-order.repository.js';
 import type { ServiceOrderWithItems } from '../../infrastructure/repositories/service-order.repository.js';
 
+/** Maps a raw ServiceOrderWithItems to the API-facing ServiceOrderDTO. */
 function toDTO(so: ServiceOrderWithItems): ServiceOrderDTO {
   return {
     id: so.id,
@@ -23,6 +24,7 @@ function toDTO(so: ServiceOrderWithItems): ServiceOrderDTO {
   };
 }
 
+/** Use case: list service orders, optionally filtered by workshop. */
 export class ListServiceOrdersUseCase {
   constructor(private readonly repo: ServiceOrderRepository) {}
 
@@ -35,6 +37,7 @@ export class ListServiceOrdersUseCase {
   }
 }
 
+/** Use case: get a single service order by ID. */
 export class GetServiceOrderUseCase {
   constructor(private readonly repo: ServiceOrderRepository) {}
 

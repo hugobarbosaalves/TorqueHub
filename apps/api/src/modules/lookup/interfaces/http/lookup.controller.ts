@@ -1,13 +1,18 @@
 import type { FastifyInstance } from 'fastify';
 import { prisma } from '../../../../shared/infrastructure/database/prisma.js';
+import {
+  listWorkshopsSchema,
+  listWorkshopCustomersSchema,
+  listWorkshopVehiclesSchema,
+} from './lookup.schemas.js';
 
 /**
- * Rotas de consulta rápida (lookup) para popular formulários no front-end.
- * Retorna workshops, clientes e veículos cadastrados.
+ * Lookup routes for populating front-end dropdowns.
+ * Returns workshops, customers, and vehicles.
  */
-export async function lookupRoutes(app: FastifyInstance): Promise<void> {
+export function lookupRoutes(app: FastifyInstance): void {
   // ── GET /workshops ──────────────────────────────────────────────────────
-  app.get('/', async (_request, reply) => {
+  app.get('/', { schema: listWorkshopsSchema }, async (_request, reply) => {
     const workshops = await prisma.workshop.findMany({
       orderBy: { name: 'asc' },
     });
@@ -17,6 +22,7 @@ export async function lookupRoutes(app: FastifyInstance): Promise<void> {
   // ── GET /workshops/:workshopId/customers ────────────────────────────────
   app.get<{ Params: { workshopId: string } }>(
     '/:workshopId/customers',
+    { schema: listWorkshopCustomersSchema },
     async (request, reply) => {
       const customers = await prisma.customer.findMany({
         where: { workshopId: request.params.workshopId },
@@ -29,6 +35,7 @@ export async function lookupRoutes(app: FastifyInstance): Promise<void> {
   // ── GET /workshops/:workshopId/vehicles ─────────────────────────────────
   app.get<{ Params: { workshopId: string }; Querystring: { customerId?: string } }>(
     '/:workshopId/vehicles',
+    { schema: listWorkshopVehiclesSchema },
     async (request, reply) => {
       const where: Record<string, string> = { workshopId: request.params.workshopId };
       if (request.query.customerId) {

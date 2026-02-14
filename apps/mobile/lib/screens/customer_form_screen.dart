@@ -1,3 +1,9 @@
+/// Customer form screen — create or edit a customer record.
+///
+/// Receives optional `workshopId` and `customer` map for editing.
+/// On submit, calls the appropriate API method (create or update).
+library;
+
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 
@@ -29,10 +35,18 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
   @override
   void initState() {
     super.initState();
-    _nameCtrl = TextEditingController(text: widget.customer?['name'] as String? ?? '');
-    _docCtrl = TextEditingController(text: widget.customer?['document'] as String? ?? '');
-    _phoneCtrl = TextEditingController(text: widget.customer?['phone'] as String? ?? '');
-    _emailCtrl = TextEditingController(text: widget.customer?['email'] as String? ?? '');
+    _nameCtrl = TextEditingController(
+      text: widget.customer?['name'] as String? ?? '',
+    );
+    _docCtrl = TextEditingController(
+      text: widget.customer?['document'] as String? ?? '',
+    );
+    _phoneCtrl = TextEditingController(
+      text: widget.customer?['phone'] as String? ?? '',
+    );
+    _emailCtrl = TextEditingController(
+      text: widget.customer?['email'] as String? ?? '',
+    );
   }
 
   @override
@@ -105,7 +119,8 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.person),
                 ),
-                validator: (v) => v == null || v.trim().isEmpty ? 'Nome obrigatório' : null,
+                validator: (v) =>
+                    v == null || v.trim().isEmpty ? 'Nome obrigatório' : null,
                 textCapitalization: TextCapitalization.words,
               ),
               const SizedBox(height: 16),
@@ -145,13 +160,19 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
                     ? const SizedBox(
                         width: 18,
                         height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
                       )
                     : Icon(_isEditing ? Icons.save : Icons.person_add),
                 label: Text(_isEditing ? 'Salvar' : 'Cadastrar'),
                 style: FilledButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 14),
-                  textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  textStyle: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ],

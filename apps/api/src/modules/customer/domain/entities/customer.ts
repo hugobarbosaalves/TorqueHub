@@ -1,5 +1,6 @@
 import type { ID } from '@torquehub/entities';
 
+/** Properties that define a Customer entity. */
 export interface CustomerProps {
   id: ID;
   workshopId: string;
@@ -11,6 +12,7 @@ export interface CustomerProps {
   updatedAt: Date;
 }
 
+/** Customer domain entity with factory method and immutable props. */
 export class Customer {
   private readonly props: CustomerProps;
 

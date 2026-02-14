@@ -2,6 +2,7 @@ import type { CustomerDTO, CreateCustomerRequest } from '@torquehub/contracts';
 import { CustomerRepository } from '../../infrastructure/repositories/customer.repository.js';
 import type { CustomerRecord } from '../../infrastructure/repositories/customer.repository.js';
 
+/** Maps a raw CustomerRecord to the API-facing CustomerDTO. */
 function toDTO(c: CustomerRecord): CustomerDTO {
   return {
     id: c.id,
@@ -15,6 +16,7 @@ function toDTO(c: CustomerRecord): CustomerDTO {
   };
 }
 
+/** Use case: create a new customer in the workshop. */
 export class CreateCustomerUseCase {
   constructor(private readonly repo: CustomerRepository) {}
 
@@ -24,6 +26,7 @@ export class CreateCustomerUseCase {
   }
 }
 
+/** Use case: list all customers for a given workshop. */
 export class ListCustomersUseCase {
   constructor(private readonly repo: CustomerRepository) {}
 
@@ -33,6 +36,7 @@ export class ListCustomersUseCase {
   }
 }
 
+/** Use case: get a single customer by ID. */
 export class GetCustomerUseCase {
   constructor(private readonly repo: CustomerRepository) {}
 

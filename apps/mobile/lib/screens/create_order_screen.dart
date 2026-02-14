@@ -1,3 +1,9 @@
+/// New service order screen — cascading form for creating orders.
+///
+/// Flow: select Workshop → Customer → Vehicle, then add line items
+/// with description, quantity, and unit price.
+library;
+
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 
@@ -114,10 +120,8 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
     final validItems = _items
         .where((i) => i.descCtrl.text.trim().isNotEmpty)
         .map((i) {
-          final price = double.tryParse(
-                i.priceCtrl.text.replaceAll(',', '.'),
-              ) ??
-              0;
+          final price =
+              double.tryParse(i.priceCtrl.text.replaceAll(',', '.')) ?? 0;
           return {
             'description': i.descCtrl.text.trim(),
             'quantity': int.tryParse(i.qtyCtrl.text) ?? 1,
@@ -166,9 +170,9 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
 
   void _showError(String msg) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(msg), backgroundColor: Colors.red),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(msg), backgroundColor: Colors.red));
   }
 
   // ── Build ─────────────────────────────────────────────────────────────────
@@ -192,10 +196,14 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                   _buildDropdown(
                     currentValue: _selectedWorkshopId,
                     hint: 'Selecione a oficina',
-                    items: _workshops.map((w) => DropdownMenuItem(
-                      value: w['id'] as String,
-                      child: Text(w['name'] as String),
-                    )).toList(),
+                    items: _workshops
+                        .map(
+                          (w) => DropdownMenuItem(
+                            value: w['id'] as String,
+                            child: Text(w['name'] as String),
+                          ),
+                        )
+                        .toList(),
                     onChanged: _onWorkshopChanged,
                   ),
 
@@ -218,7 +226,9 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                         child: Text(label),
                       );
                     }).toList(),
-                    onChanged: _selectedWorkshopId == null ? null : _onCustomerChanged,
+                    onChanged: _selectedWorkshopId == null
+                        ? null
+                        : _onCustomerChanged,
                   ),
 
                   const SizedBox(height: 16),
@@ -230,10 +240,16 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                     hint: _selectedCustomerId == null
                         ? 'Selecione um cliente primeiro'
                         : 'Selecione o veículo',
-                    items: _vehicles.map((v) => DropdownMenuItem(
-                      value: v['id'] as String,
-                      child: Text('${v['brand']} ${v['model']} — ${v['plate']}'),
-                    )).toList(),
+                    items: _vehicles
+                        .map(
+                          (v) => DropdownMenuItem(
+                            value: v['id'] as String,
+                            child: Text(
+                              '${v['brand']} ${v['model']} — ${v['plate']}',
+                            ),
+                          ),
+                        )
+                        .toList(),
                     onChanged: _selectedCustomerId == null
                         ? null
                         : (val) => setState(() => _selectedVehicleId = val),
@@ -252,8 +268,9 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                       border: OutlineInputBorder(),
                     ),
                     maxLines: 2,
-                    validator: (v) =>
-                        v == null || v.trim().isEmpty ? 'Informe a descrição' : null,
+                    validator: (v) => v == null || v.trim().isEmpty
+                        ? 'Informe a descrição'
+                        : null,
                   ),
 
                   const SizedBox(height: 24),
@@ -264,7 +281,8 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                     children: [
                       _buildSectionTitle('Itens / Serviços'),
                       TextButton.icon(
-                        onPressed: () => setState(() => _items.add(_ItemEntry())),
+                        onPressed: () =>
+                            setState(() => _items.add(_ItemEntry())),
                         icon: const Icon(Icons.add, size: 18),
                         label: const Text('Adicionar'),
                       ),
@@ -292,10 +310,15 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                             ),
                           )
                         : const Icon(Icons.check),
-                    label: Text(_loading ? 'Criando...' : 'Criar Ordem de Serviço'),
+                    label: Text(
+                      _loading ? 'Criando...' : 'Criar Ordem de Serviço',
+                    ),
                     style: FilledButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                      textStyle: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -310,7 +333,11 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
       padding: const EdgeInsets.only(bottom: 8),
       child: Text(
         text,
-        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black87),
+        style: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          color: Colors.black87,
+        ),
       ),
     );
   }
@@ -398,7 +425,9 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                       border: OutlineInputBorder(),
                       isDense: true,
                     ),
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
                   ),
                 ),
               ],

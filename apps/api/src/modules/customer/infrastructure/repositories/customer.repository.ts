@@ -1,6 +1,7 @@
 import type { PrismaClient } from '@prisma/client';
 import type { CreateCustomerRequest, UpdateCustomerRequest } from '@torquehub/contracts';
 
+/** Raw database record shape for a customer. */
 export interface CustomerRecord {
   id: string;
   workshopId: string;
@@ -12,6 +13,7 @@ export interface CustomerRecord {
   updatedAt: Date;
 }
 
+/** Prisma-backed repository for Customer persistence operations. */
 export class CustomerRepository {
   constructor(private readonly db: PrismaClient) {}
 

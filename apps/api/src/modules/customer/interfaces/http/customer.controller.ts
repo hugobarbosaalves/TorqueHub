@@ -12,18 +12,26 @@ import {
   ListCustomersUseCase,
   GetCustomerUseCase,
 } from '../../application/use-cases/customer.use-cases.js';
+import {
+  createCustomerSchema,
+  listCustomersSchema,
+  getCustomerSchema,
+  updateCustomerSchema,
+  deleteCustomerSchema,
+} from './customer.schemas.js';
 
 const repo = new CustomerRepository(prisma);
 const createUseCase = new CreateCustomerUseCase(repo);
 const listUseCase = new ListCustomersUseCase(repo);
 const getUseCase = new GetCustomerUseCase(repo);
 
-export async function customerRoutes(app: FastifyInstance): Promise<void> {
+/** Registers all customer CRUD HTTP routes. */
+export function customerRoutes(app: FastifyInstance): void {
   // ── POST / — Criar cliente ──────────────────────────────────────────────
   app.post<{
     Body: CreateCustomerRequest;
     Reply: ApiResponse<CustomerDTO>;
-  }>('/', async (request, reply) => {
+  }>('/', { schema: createCustomerSchema }, async (request, reply) => {
     const { workshopId, name } = request.body;
 
     if (!workshopId || !name) {
@@ -42,7 +50,7 @@ export async function customerRoutes(app: FastifyInstance): Promise<void> {
   app.get<{
     Querystring: { workshopId: string };
     Reply: ApiResponse<CustomerDTO[]>;
-  }>('/', async (request, reply) => {
+  }>('/', { schema: listCustomersSchema }, async (request, reply) => {
     const { workshopId } = request.query;
 
     if (!workshopId) {
@@ -65,7 +73,7 @@ export async function customerRoutes(app: FastifyInstance): Promise<void> {
   app.get<{
     Params: { id: string };
     Reply: ApiResponse<CustomerDTO>;
-  }>('/:id', async (request, reply) => {
+  }>('/:id', { schema: getCustomerSchema }, async (request, reply) => {
     const customer = await getUseCase.execute(request.params.id);
 
     if (!customer) {
@@ -84,10 +92,10 @@ export async function customerRoutes(app: FastifyInstance): Promise<void> {
     Params: { id: string };
     Body: UpdateCustomerRequest;
     Reply: ApiResponse<CustomerDTO>;
-  }>('/:id', async (request, reply) => {
+  }>('/:id', { schema: updateCustomerSchema }, async (request, reply) => {
     try {
       const updated = await repo.update(request.params.id, request.body);
-      return reply.send({
+      return await reply.send({
         success: true,
         data: {
           id: updated.id,
@@ -113,10 +121,10 @@ export async function customerRoutes(app: FastifyInstance): Promise<void> {
   app.delete<{
     Params: { id: string };
     Reply: ApiResponse<{ deleted: boolean }>;
-  }>('/:id', async (request, reply) => {
+  }>('/:id', { schema: deleteCustomerSchema }, async (request, reply) => {
     try {
       await repo.delete(request.params.id);
-      return reply.send({ success: true, data: { deleted: true } });
+      return await reply.send({ success: true, data: { deleted: true } });
     } catch {
       return reply.status(404).send({
         success: false,

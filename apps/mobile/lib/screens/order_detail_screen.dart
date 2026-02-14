@@ -1,17 +1,49 @@
+/// Order detail screen — shows full info for a single service order.
+///
+/// Displays status, description, line items table, total amount,
+/// and allows status transitions (e.g. approve, complete, cancel).
+library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../services/api_service.dart';
 
 const _statusConfig = <String, Map<String, dynamic>>{
   'DRAFT': {'label': 'Rascunho', 'color': 0xFF94A3B8, 'icon': Icons.edit_note},
-  'PENDING_APPROVAL': {'label': 'Aguardando Aprovação', 'color': 0xFFF59E0B, 'icon': Icons.hourglass_top},
-  'APPROVED': {'label': 'Aprovada', 'color': 0xFF3B82F6, 'icon': Icons.thumb_up_outlined},
-  'IN_PROGRESS': {'label': 'Em Andamento', 'color': 0xFF8B5CF6, 'icon': Icons.build_outlined},
-  'COMPLETED': {'label': 'Concluída', 'color': 0xFF22C55E, 'icon': Icons.check_circle_outline},
-  'CANCELLED': {'label': 'Cancelada', 'color': 0xFFEF4444, 'icon': Icons.cancel_outlined},
+  'PENDING_APPROVAL': {
+    'label': 'Aguardando Aprovação',
+    'color': 0xFFF59E0B,
+    'icon': Icons.hourglass_top,
+  },
+  'APPROVED': {
+    'label': 'Aprovada',
+    'color': 0xFF3B82F6,
+    'icon': Icons.thumb_up_outlined,
+  },
+  'IN_PROGRESS': {
+    'label': 'Em Andamento',
+    'color': 0xFF8B5CF6,
+    'icon': Icons.build_outlined,
+  },
+  'COMPLETED': {
+    'label': 'Concluída',
+    'color': 0xFF22C55E,
+    'icon': Icons.check_circle_outline,
+  },
+  'CANCELLED': {
+    'label': 'Cancelada',
+    'color': 0xFFEF4444,
+    'icon': Icons.cancel_outlined,
+  },
 };
 
-const _statusFlow = ['DRAFT', 'PENDING_APPROVAL', 'APPROVED', 'IN_PROGRESS', 'COMPLETED'];
+const _statusFlow = [
+  'DRAFT',
+  'PENDING_APPROVAL',
+  'APPROVED',
+  'IN_PROGRESS',
+  'COMPLETED',
+];
 
 /// Tela de detalhe de uma ordem de serviço.
 /// O mecânico pode ver os itens, avançar status, cancelar ou excluir.
@@ -57,7 +89,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   }
 
   String _formatCurrency(dynamic cents) {
-    final value = (cents is int ? cents : int.tryParse(cents.toString()) ?? 0) / 100;
+    final value =
+        (cents is int ? cents : int.tryParse(cents.toString()) ?? 0) / 100;
     return 'R\$ ${value.toStringAsFixed(2).replaceAll('.', ',')}';
   }
 
@@ -83,7 +116,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Status atualizado para: ${_statusConfig[next]?['label'] ?? next}'),
+          content: Text(
+            'Status atualizado para: ${_statusConfig[next]?['label'] ?? next}',
+          ),
           backgroundColor: Colors.green,
         ),
       );
@@ -101,12 +136,20 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Cancelar Ordem'),
-        content: const Text('Tem certeza que deseja cancelar esta ordem de serviço?'),
+        content: const Text(
+          'Tem certeza que deseja cancelar esta ordem de serviço?',
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Não')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Não'),
+          ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Sim, cancelar', style: TextStyle(color: Colors.red)),
+            child: const Text(
+              'Sim, cancelar',
+              style: TextStyle(color: Colors.red),
+            ),
           ),
         ],
       ),
@@ -117,7 +160,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       await ApiService.updateOrderStatus(widget.orderId, 'CANCELLED');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Ordem cancelada'), backgroundColor: Colors.orange),
+        const SnackBar(
+          content: Text('Ordem cancelada'),
+          backgroundColor: Colors.orange,
+        ),
       );
       _loadOrder();
     } catch (e) {
@@ -137,10 +183,16 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           'Tem certeza que deseja EXCLUIR esta ordem?\nEsta ação não pode ser desfeita.',
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Não')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Não'),
+          ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Sim, excluir', style: TextStyle(color: Colors.red)),
+            child: const Text(
+              'Sim, excluir',
+              style: TextStyle(color: Colors.red),
+            ),
           ),
         ],
       ),
@@ -151,7 +203,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       await ApiService.deleteServiceOrder(widget.orderId);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Ordem excluída'), backgroundColor: Colors.green),
+        const SnackBar(
+          content: Text('Ordem excluída'),
+          backgroundColor: Colors.green,
+        ),
       );
       Navigator.pop(context); // volta pra lista
     } catch (e) {
@@ -167,7 +222,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     if (token == null) return;
     Clipboard.setData(ClipboardData(text: token));
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Token copiado! Envie ao cliente para acompanhamento.')),
+      const SnackBar(
+        content: Text('Token copiado! Envie ao cliente para acompanhamento.'),
+      ),
     );
   }
 
@@ -176,17 +233,14 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Detalhes da Ordem'),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text('Detalhes da Ordem'), centerTitle: true),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _error != null
-              ? _buildError()
-              : _order == null
-                  ? const Center(child: Text('Ordem não encontrada'))
-                  : _buildContent(),
+          ? _buildError()
+          : _order == null
+          ? const Center(child: Text('Ordem não encontrada'))
+          : _buildContent(),
     );
   }
 
@@ -199,7 +253,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           children: [
             const Icon(Icons.error_outline, size: 64, color: Colors.red),
             const SizedBox(height: 16),
-            Text(_error!, style: const TextStyle(color: Colors.grey), textAlign: TextAlign.center),
+            Text(
+              _error!,
+              style: const TextStyle(color: Colors.grey),
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: 16),
             FilledButton.icon(
               onPressed: _loadOrder,
@@ -218,7 +276,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     final config = _statusConfig[status] ?? _statusConfig['DRAFT']!;
     final color = Color(config['color'] as int);
     final items = List<Map<String, dynamic>>.from(order['items'] ?? []);
-    final canAdvance = _statusFlow.contains(status) &&
+    final canAdvance =
+        _statusFlow.contains(status) &&
         _statusFlow.indexOf(status) < _statusFlow.length - 1;
     final canCancel = status != 'CANCELLED' && status != 'COMPLETED';
 
@@ -259,11 +318,16 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             order['description'] as String? ?? 'Sem descrição',
             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
           ),
-          if (order['observations'] != null && (order['observations'] as String).isNotEmpty) ...[
+          if (order['observations'] != null &&
+              (order['observations'] as String).isNotEmpty) ...[
             const SizedBox(height: 8),
             Text(
               order['observations'] as String,
-              style: TextStyle(fontSize: 14, color: Colors.grey.shade600, fontStyle: FontStyle.italic),
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey.shade600,
+                fontStyle: FontStyle.italic,
+              ),
             ),
           ],
           const SizedBox(height: 8),
@@ -356,7 +420,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               ),
               style: FilledButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 14),
-                textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                textStyle: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           if (canAdvance) const SizedBox(height: 10),
@@ -365,7 +432,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             OutlinedButton.icon(
               onPressed: _cancelOrder,
               icon: const Icon(Icons.cancel_outlined, color: Colors.orange),
-              label: const Text('Cancelar Ordem', style: TextStyle(color: Colors.orange)),
+              label: const Text(
+                'Cancelar Ordem',
+                style: TextStyle(color: Colors.orange),
+              ),
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(color: Colors.orange),
                 padding: const EdgeInsets.symmetric(vertical: 14),
@@ -376,7 +446,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           TextButton.icon(
             onPressed: _deleteOrder,
             icon: Icon(Icons.delete_outline, color: Colors.red.shade300),
-            label: Text('Excluir Ordem', style: TextStyle(color: Colors.red.shade300)),
+            label: Text(
+              'Excluir Ordem',
+              style: TextStyle(color: Colors.red.shade300),
+            ),
           ),
 
           const SizedBox(height: 24),
@@ -403,7 +476,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               children: [
                 Text(
                   item['description'] as String? ?? '',
-                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
                 const SizedBox(height: 2),
                 Text(

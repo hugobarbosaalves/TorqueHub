@@ -10,14 +10,18 @@
     "docker:logs": "docker compose logs -f",
     "build": "pnpm -r build",
     "lint": "pnpm -r lint",
-    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\""
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "docs": "typedoc",
+    "docs:api": "typedoc --entryPoints apps/api/src --out documentation/typedoc/api",
+    "docs:packages": "typedoc --entryPoints packages/*/src --out documentation/typedoc/packages"
   },
   "devDependencies": {
-    "prettier": "3.8.1",
+    "@eslint/js": "9.28.0",
     "eslint": "9.28.0",
+    "prettier": "3.8.1",
+    "typedoc": "^0.28.17",
     "typescript": "5.9.3",
-    "typescript-eslint": "8.55.0",
-    "@eslint/js": "9.28.0"
+    "typescript-eslint": "8.55.0"
   },
   "pnpm": {
     "onlyBuiltDependencies": [

@@ -42,5 +42,3 @@ export async function getVehicleHistory(token: string): Promise<ServiceOrder[]> 
   if (!res.ok) throw new Error(json.meta?.error ?? `Histórico não encontrado`);
   return json.data as ServiceOrder[];
 }
-
-

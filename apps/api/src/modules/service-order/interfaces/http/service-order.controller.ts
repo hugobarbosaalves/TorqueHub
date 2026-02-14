@@ -12,18 +12,26 @@ import {
   ListServiceOrdersUseCase,
   GetServiceOrderUseCase,
 } from '../../application/use-cases/list-service-orders.use-case.js';
+import {
+  createOrderSchema,
+  listOrdersSchema,
+  getOrderSchema,
+  updateStatusSchema,
+  deleteOrderSchema,
+} from './service-order.schemas.js';
 
 const repo = new ServiceOrderRepository(prisma);
 const createUseCase = new CreateServiceOrderUseCase(repo);
 const listUseCase = new ListServiceOrdersUseCase(repo);
 const getUseCase = new GetServiceOrderUseCase(repo);
 
-export async function serviceOrderRoutes(app: FastifyInstance): Promise<void> {
+/** Registers all service order HTTP routes. */
+export function serviceOrderRoutes(app: FastifyInstance): void {
   // ── POST / — Criar ordem de serviço ─────────────────────────────────────
   app.post<{
     Body: CreateServiceOrderRequest;
     Reply: ApiResponse<CreateServiceOrderResponse>;
-  }>('/', async (request, reply) => {
+  }>('/', { schema: createOrderSchema }, async (request, reply) => {
     const body = request.body;
 
     if (!body.workshopId || !body.customerId || !body.vehicleId || !body.description) {
@@ -54,7 +62,7 @@ export async function serviceOrderRoutes(app: FastifyInstance): Promise<void> {
   app.get<{
     Querystring: { workshopId?: string };
     Reply: ApiResponse<ServiceOrderDTO[]>;
-  }>('/', async (request, reply) => {
+  }>('/', { schema: listOrdersSchema }, async (request, reply) => {
     const { workshopId } = request.query;
     const orders = await listUseCase.execute(workshopId);
 
@@ -69,7 +77,7 @@ export async function serviceOrderRoutes(app: FastifyInstance): Promise<void> {
   app.get<{
     Params: { id: string };
     Reply: ApiResponse<ServiceOrderDTO>;
-  }>('/:id', async (request, reply) => {
+  }>('/:id', { schema: getOrderSchema }, async (request, reply) => {
     const order = await getUseCase.execute(request.params.id);
 
     if (!order) {
@@ -91,7 +99,7 @@ export async function serviceOrderRoutes(app: FastifyInstance): Promise<void> {
     Params: { id: string };
     Body: { status: string };
     Reply: ApiResponse<{ id: string; status: string }>;
-  }>('/:id/status', async (request, reply) => {
+  }>('/:id/status', { schema: updateStatusSchema }, async (request, reply) => {
     const { id } = request.params;
     const { status } = request.body;
 
@@ -130,7 +138,7 @@ export async function serviceOrderRoutes(app: FastifyInstance): Promise<void> {
   app.delete<{
     Params: { id: string };
     Reply: ApiResponse<{ deleted: boolean }>;
-  }>('/:id', async (request, reply) => {
+  }>('/:id', { schema: deleteOrderSchema }, async (request, reply) => {
     try {
       await repo.delete(request.params.id);
       return reply.send({

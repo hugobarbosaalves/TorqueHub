@@ -1,3 +1,9 @@
+/// Vehicle management screen — CRUD operations for workshop vehicles.
+///
+/// Lists vehicles filtered by workshop, with swipe-to-delete and
+/// navigation to [VehicleFormScreen] for create/edit.
+library;
+
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import 'vehicle_form_screen.dart';
@@ -74,9 +80,14 @@ class _VehiclesScreenState extends State<VehiclesScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Excluir Veículo'),
-        content: Text('Excluir "$label"? Isso pode falhar se houver ordens vinculadas.'),
+        content: Text(
+          'Excluir "$label"? Isso pode falhar se houver ordens vinculadas.',
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Não')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Não'),
+          ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             child: const Text('Sim', style: TextStyle(color: Colors.red)),
@@ -90,7 +101,10 @@ class _VehiclesScreenState extends State<VehiclesScreen> {
       await ApiService.deleteVehicle(id);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Veículo excluído'), backgroundColor: Colors.green),
+        const SnackBar(
+          content: Text('Veículo excluído'),
+          backgroundColor: Colors.green,
+        ),
       );
       _loadVehicles();
     } catch (e) {
@@ -134,12 +148,19 @@ class _VehiclesScreenState extends State<VehiclesScreen> {
                 decoration: const InputDecoration(
                   labelText: 'Oficina',
                   border: OutlineInputBorder(),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
                 ),
-                items: _workshops.map((w) => DropdownMenuItem(
-                  value: w['id'] as String,
-                  child: Text(w['name'] as String),
-                )).toList(),
+                items: _workshops
+                    .map(
+                      (w) => DropdownMenuItem(
+                        value: w['id'] as String,
+                        child: Text(w['name'] as String),
+                      ),
+                    )
+                    .toList(),
                 onChanged: (val) {
                   setState(() => _selectedWorkshopId = val);
                   _loadVehicles();
@@ -150,27 +171,33 @@ class _VehiclesScreenState extends State<VehiclesScreen> {
             child: _loading
                 ? const Center(child: CircularProgressIndicator())
                 : _error != null
-                    ? Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(_error!, style: const TextStyle(color: Colors.red)),
-                            const SizedBox(height: 8),
-                            FilledButton(onPressed: _loadVehicles, child: const Text('Retry')),
-                          ],
+                ? Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          _error!,
+                          style: const TextStyle(color: Colors.red),
                         ),
-                      )
-                    : _vehicles.isEmpty
-                        ? const Center(child: Text('Nenhum veículo cadastrado'))
-                        : RefreshIndicator(
-                            onRefresh: _loadVehicles,
-                            child: ListView.separated(
-                              padding: const EdgeInsets.all(16),
-                              itemCount: _vehicles.length,
-                              separatorBuilder: (_, __) => const SizedBox(height: 8),
-                              itemBuilder: (_, i) => _buildCard(_vehicles[i]),
-                            ),
-                          ),
+                        const SizedBox(height: 8),
+                        FilledButton(
+                          onPressed: _loadVehicles,
+                          child: const Text('Retry'),
+                        ),
+                      ],
+                    ),
+                  )
+                : _vehicles.isEmpty
+                ? const Center(child: Text('Nenhum veículo cadastrado'))
+                : RefreshIndicator(
+                    onRefresh: _loadVehicles,
+                    child: ListView.separated(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: _vehicles.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 8),
+                      itemBuilder: (_, i) => _buildCard(_vehicles[i]),
+                    ),
+                  ),
           ),
         ],
       ),
@@ -210,7 +237,10 @@ class _VehiclesScreenState extends State<VehiclesScreen> {
           },
           itemBuilder: (_) => [
             const PopupMenuItem(value: 'edit', child: Text('Editar')),
-            const PopupMenuItem(value: 'delete', child: Text('Excluir', style: TextStyle(color: Colors.red))),
+            const PopupMenuItem(
+              value: 'delete',
+              child: Text('Excluir', style: TextStyle(color: Colors.red)),
+            ),
           ],
         ),
         onTap: () => _openForm(vehicle: v),

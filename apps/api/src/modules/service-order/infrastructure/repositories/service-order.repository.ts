@@ -1,6 +1,7 @@
 import type { PrismaClient } from '@prisma/client';
 import type { CreateServiceOrderRequest } from '@torquehub/contracts';
 
+/** Raw database record shape for a service order with items. */
 export interface ServiceOrderWithItems {
   id: string;
   workshopId: string;
@@ -21,6 +22,7 @@ export interface ServiceOrderWithItems {
   }[];
 }
 
+/** Prisma-backed repository for ServiceOrder persistence operations. */
 export class ServiceOrderRepository {
   constructor(private readonly db: PrismaClient) {}
 

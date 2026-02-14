@@ -1,3 +1,9 @@
+/// Customer management screen — CRUD operations for workshop customers.
+///
+/// Lists customers filtered by workshop, with swipe-to-delete and
+/// navigation to [CustomerFormScreen] for create/edit.
+library;
+
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import 'customer_form_screen.dart';
@@ -54,7 +60,9 @@ class _CustomersScreenState extends State<CustomersScreen> {
       _error = null;
     });
     try {
-      final data = await ApiService.getCustomersByWorkshop(_selectedWorkshopId!);
+      final data = await ApiService.getCustomersByWorkshop(
+        _selectedWorkshopId!,
+      );
       if (!mounted) return;
       setState(() {
         _customers = data;
@@ -74,9 +82,14 @@ class _CustomersScreenState extends State<CustomersScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Excluir Cliente'),
-        content: Text('Excluir "$name"? Isso pode falhar se houver ordens vinculadas.'),
+        content: Text(
+          'Excluir "$name"? Isso pode falhar se houver ordens vinculadas.',
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Não')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Não'),
+          ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             child: const Text('Sim', style: TextStyle(color: Colors.red)),
@@ -90,7 +103,10 @@ class _CustomersScreenState extends State<CustomersScreen> {
       await ApiService.deleteCustomer(id);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Cliente excluído'), backgroundColor: Colors.green),
+        const SnackBar(
+          content: Text('Cliente excluído'),
+          backgroundColor: Colors.green,
+        ),
       );
       _loadCustomers();
     } catch (e) {
@@ -135,12 +151,19 @@ class _CustomersScreenState extends State<CustomersScreen> {
                 decoration: const InputDecoration(
                   labelText: 'Oficina',
                   border: OutlineInputBorder(),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
                 ),
-                items: _workshops.map((w) => DropdownMenuItem(
-                  value: w['id'] as String,
-                  child: Text(w['name'] as String),
-                )).toList(),
+                items: _workshops
+                    .map(
+                      (w) => DropdownMenuItem(
+                        value: w['id'] as String,
+                        child: Text(w['name'] as String),
+                      ),
+                    )
+                    .toList(),
                 onChanged: (val) {
                   setState(() => _selectedWorkshopId = val);
                   _loadCustomers();
@@ -153,27 +176,33 @@ class _CustomersScreenState extends State<CustomersScreen> {
             child: _loading
                 ? const Center(child: CircularProgressIndicator())
                 : _error != null
-                    ? Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(_error!, style: const TextStyle(color: Colors.red)),
-                            const SizedBox(height: 8),
-                            FilledButton(onPressed: _loadCustomers, child: const Text('Retry')),
-                          ],
+                ? Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          _error!,
+                          style: const TextStyle(color: Colors.red),
                         ),
-                      )
-                    : _customers.isEmpty
-                        ? const Center(child: Text('Nenhum cliente cadastrado'))
-                        : RefreshIndicator(
-                            onRefresh: _loadCustomers,
-                            child: ListView.separated(
-                              padding: const EdgeInsets.all(16),
-                              itemCount: _customers.length,
-                              separatorBuilder: (_, __) => const SizedBox(height: 8),
-                              itemBuilder: (_, i) => _buildCard(_customers[i]),
-                            ),
-                          ),
+                        const SizedBox(height: 8),
+                        FilledButton(
+                          onPressed: _loadCustomers,
+                          child: const Text('Retry'),
+                        ),
+                      ],
+                    ),
+                  )
+                : _customers.isEmpty
+                ? const Center(child: Text('Nenhum cliente cadastrado'))
+                : RefreshIndicator(
+                    onRefresh: _loadCustomers,
+                    child: ListView.separated(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: _customers.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 8),
+                      itemBuilder: (_, i) => _buildCard(_customers[i]),
+                    ),
+                  ),
           ),
         ],
       ),
@@ -192,7 +221,10 @@ class _CustomersScreenState extends State<CustomersScreen> {
           backgroundColor: Colors.blue.shade100,
           child: Text(
             name.isNotEmpty ? name[0].toUpperCase() : '?',
-            style: TextStyle(color: Colors.blue.shade700, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              color: Colors.blue.shade700,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
         title: Text(name, style: const TextStyle(fontWeight: FontWeight.w600)),
@@ -209,7 +241,10 @@ class _CustomersScreenState extends State<CustomersScreen> {
           },
           itemBuilder: (_) => [
             const PopupMenuItem(value: 'edit', child: Text('Editar')),
-            const PopupMenuItem(value: 'delete', child: Text('Excluir', style: TextStyle(color: Colors.red))),
+            const PopupMenuItem(
+              value: 'delete',
+              child: Text('Excluir', style: TextStyle(color: Colors.red)),
+            ),
           ],
         ),
         onTap: () => _openForm(customer: c),

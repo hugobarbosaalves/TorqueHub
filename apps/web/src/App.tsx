@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { getOrderByToken, type ServiceOrder } from './services/api';
 
 const STATUS_LABELS: Record<string, { label: string; color: string; icon: string }> = {
@@ -21,14 +21,14 @@ export function App() {
   const [error, setError] = useState('');
 
   // Verifica se há token na URL (?token=xxx)
-  useState(() => {
-    const params = new URLSearchParams(window.location.search);
+  useEffect(() => {
+    const params = new URLSearchParams(globalThis.location.search);
     const urlToken = params.get('token');
     if (urlToken) {
       setToken(urlToken);
-      fetchOrder(urlToken);
+      void fetchOrder(urlToken);
     }
-  });
+  }, []);
 
   async function fetchOrder(t: string): Promise<void> {
     if (!t.trim()) return;
@@ -51,7 +51,13 @@ export function App() {
   };
 
   return (
-    <div style={{ fontFamily: "'Segoe UI', system-ui, sans-serif", background: '#f8fafc', minHeight: '100vh' }}>
+    <div
+      style={{
+        fontFamily: "'Segoe UI', system-ui, sans-serif",
+        background: '#f8fafc',
+        minHeight: '100vh',
+      }}
+    >
       {/* Header */}
       <header
         style={{
@@ -130,9 +136,7 @@ export function App() {
               textAlign: 'center',
             }}
           >
-            <p style={{ margin: 0, fontSize: 15 }}>
-              😕 {error}
-            </p>
+            <p style={{ margin: 0, fontSize: 15 }}>😕 {error}</p>
             <p style={{ margin: '8px 0 0', fontSize: 13, color: '#9ca3af' }}>
               Verifique o código e tente novamente.
             </p>
@@ -151,7 +155,11 @@ export function App() {
           >
             {/* Status Banner */}
             {(() => {
-              const statusInfo = STATUS_LABELS[order.status] ?? { label: order.status, color: '#94a3b8', icon: '❓' };
+              const statusInfo = STATUS_LABELS[order.status] ?? {
+                label: order.status,
+                color: '#94a3b8',
+                icon: '❓',
+              };
               return (
                 <div
                   style={{
@@ -176,7 +184,14 @@ export function App() {
               </h3>
 
               {order.observations && (
-                <p style={{ margin: '0 0 16px', fontSize: 14, color: '#64748b', fontStyle: 'italic' }}>
+                <p
+                  style={{
+                    margin: '0 0 16px',
+                    fontSize: 14,
+                    color: '#64748b',
+                    fontStyle: 'italic',
+                  }}
+                >
                   {order.observations}
                 </p>
               )}
@@ -186,13 +201,38 @@ export function App() {
               </p>
 
               {/* Items Table */}
-              <table style={{ width: '100%', fontSize: 14, borderCollapse: 'collapse', marginBottom: 16 }}>
+              <table
+                style={{
+                  width: '100%',
+                  fontSize: 14,
+                  borderCollapse: 'collapse',
+                  marginBottom: 16,
+                }}
+              >
                 <thead>
-                  <tr style={{ borderBottom: '2px solid #e2e8f0', color: '#64748b', textAlign: 'left' }}>
+                  <tr
+                    style={{
+                      borderBottom: '2px solid #e2e8f0',
+                      color: '#64748b',
+                      textAlign: 'left',
+                    }}
+                  >
                     <th style={{ padding: '8px 0', fontWeight: 600 }}>Serviço / Peça</th>
-                    <th style={{ padding: '8px 0', fontWeight: 600, width: 60, textAlign: 'center' }}>Qtd</th>
-                    <th style={{ padding: '8px 0', fontWeight: 600, width: 110, textAlign: 'right' }}>Unitário</th>
-                    <th style={{ padding: '8px 0', fontWeight: 600, width: 110, textAlign: 'right' }}>Subtotal</th>
+                    <th
+                      style={{ padding: '8px 0', fontWeight: 600, width: 60, textAlign: 'center' }}
+                    >
+                      Qtd
+                    </th>
+                    <th
+                      style={{ padding: '8px 0', fontWeight: 600, width: 110, textAlign: 'right' }}
+                    >
+                      Unitário
+                    </th>
+                    <th
+                      style={{ padding: '8px 0', fontWeight: 600, width: 110, textAlign: 'right' }}
+                    >
+                      Subtotal
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -200,7 +240,9 @@ export function App() {
                     <tr key={item.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
                       <td style={{ padding: '10px 0' }}>{item.description}</td>
                       <td style={{ padding: '10px 0', textAlign: 'center' }}>{item.quantity}</td>
-                      <td style={{ padding: '10px 0', textAlign: 'right' }}>{formatCurrency(item.unitPrice)}</td>
+                      <td style={{ padding: '10px 0', textAlign: 'right' }}>
+                        {formatCurrency(item.unitPrice)}
+                      </td>
                       <td style={{ padding: '10px 0', textAlign: 'right', fontWeight: 600 }}>
                         {formatCurrency(item.totalPrice)}
                       </td>
@@ -233,9 +275,7 @@ export function App() {
         {!order && !error && !loading && (
           <div style={{ textAlign: 'center', marginTop: 40, color: '#94a3b8' }}>
             <span style={{ fontSize: 64 }}>🚗</span>
-            <p style={{ fontSize: 16, marginTop: 12 }}>
-              Bem-vindo ao portal do cliente TorqueHub
-            </p>
+            <p style={{ fontSize: 16, marginTop: 12 }}>Bem-vindo ao portal do cliente TorqueHub</p>
             <p style={{ fontSize: 14 }}>
               Aqui você pode acompanhar o orçamento e o andamento do serviço do seu veículo.
             </p>

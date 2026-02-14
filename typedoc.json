@@ -1,0 +1,18 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": [
+    "apps/api/src/**/*.ts",
+    "packages/contracts/src/**/*.ts",
+    "packages/entities/src/**/*.ts",
+    "packages/utils/src/**/*.ts"
+  ],
+  "exclude": ["**/node_modules/**", "**/dist/**", "**/generated/**"],
+  "out": "documentation/typedoc",
+  "name": "TorqueHub API Documentation",
+  "readme": "README.md",
+  "includeVersion": true,
+  "excludePrivate": true,
+  "excludeInternal": true,
+  "plugin": [],
+  "tsconfig": "tsconfig.base.json"
+}

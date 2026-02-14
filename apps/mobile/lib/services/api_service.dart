@@ -1,3 +1,10 @@
+/// TorqueHub API service — centralizes all HTTP calls to the backend.
+///
+/// Uses the singleton pattern via static methods.
+/// Base URL points to localhost via Android emulator bridge (10.0.2.2).
+/// For physical devices, change [baseUrl] to your machine's local IP.
+library;
+
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
@@ -160,10 +167,7 @@ class ApiService {
     String? phone,
     String? email,
   }) async {
-    final body = <String, dynamic>{
-      'workshopId': workshopId,
-      'name': name,
-    };
+    final body = <String, dynamic>{'workshopId': workshopId, 'name': name};
     if (document != null && document.isNotEmpty) body['document'] = document;
     if (phone != null && phone.isNotEmpty) body['phone'] = phone;
     if (email != null && email.isNotEmpty) body['email'] = email;

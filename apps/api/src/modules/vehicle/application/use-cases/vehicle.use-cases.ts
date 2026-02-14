@@ -2,6 +2,7 @@ import type { VehicleDTO, CreateVehicleRequest } from '@torquehub/contracts';
 import { VehicleRepository } from '../../infrastructure/repositories/vehicle.repository.js';
 import type { VehicleRecord } from '../../infrastructure/repositories/vehicle.repository.js';
 
+/** Maps a raw VehicleRecord to the API-facing VehicleDTO. */
 function toDTO(v: VehicleRecord): VehicleDTO {
   return {
     id: v.id,
@@ -18,6 +19,7 @@ function toDTO(v: VehicleRecord): VehicleDTO {
   };
 }
 
+/** Use case: register a new vehicle for a customer. */
 export class CreateVehicleUseCase {
   constructor(private readonly repo: VehicleRepository) {}
 
@@ -27,6 +29,7 @@ export class CreateVehicleUseCase {
   }
 }
 
+/** Use case: list vehicles filtered by workshop or customer. */
 export class ListVehiclesUseCase {
   constructor(private readonly repo: VehicleRepository) {}
 
@@ -41,6 +44,7 @@ export class ListVehiclesUseCase {
   }
 }
 
+/** Use case: get a single vehicle by ID. */
 export class GetVehicleUseCase {
   constructor(private readonly repo: VehicleRepository) {}
 

@@ -1,0 +1,137 @@
+// ── TorqueHub Database Schema ──────────────────────────────────────────────────
+// Prisma schema — PostgreSQL
+// Domain models: Workshop, Customer, Vehicle, ServiceOrder, ServiceOrderItem, Media
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ── Workshop (Oficina) ──────────────────────────────────────────────────────────
+model Workshop {
+  id        String   @id @default(uuid())
+  name      String
+  document  String   @unique // CNPJ ou CPF
+  phone     String?
+  email     String?
+  address   String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  customers     Customer[]
+  vehicles      Vehicle[]
+  serviceOrders ServiceOrder[]
+
+  @@map("workshops")
+}
+
+// ── Customer (Cliente) ──────────────────────────────────────────────────────────
+model Customer {
+  id         String   @id @default(uuid())
+  workshopId String   @map("workshop_id")
+  name       String
+  document   String? // CPF
+  phone      String?
+  email      String?
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  workshop      Workshop       @relation(fields: [workshopId], references: [id])
+  vehicles      Vehicle[]
+  serviceOrders ServiceOrder[]
+
+  @@map("customers")
+}
+
+// ── Vehicle (Veículo) ───────────────────────────────────────────────────────────
+model Vehicle {
+  id         String   @id @default(uuid())
+  workshopId String   @map("workshop_id")
+  customerId String   @map("customer_id")
+  plate      String
+  brand      String
+  model      String
+  year       Int?
+  color      String?
+  mileage    Int?     @default(0)
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  workshop      Workshop       @relation(fields: [workshopId], references: [id])
+  customer      Customer       @relation(fields: [customerId], references: [id])
+  serviceOrders ServiceOrder[]
+
+  @@map("vehicles")
+}
+
+// ── ServiceOrder (Ordem de Serviço) ─────────────────────────────────────────────
+model ServiceOrder {
+  id          String             @id @default(uuid())
+  workshopId  String             @map("workshop_id")
+  customerId  String             @map("customer_id")
+  vehicleId   String             @map("vehicle_id")
+  description String
+  status      ServiceOrderStatus @default(DRAFT)
+  observations String?
+  totalAmount  Int               @default(0) // valor em centavos
+  publicToken  String?           @unique @map("public_token") // link público para o cliente
+  createdAt    DateTime          @default(now()) @map("created_at")
+  updatedAt    DateTime          @updatedAt @map("updated_at")
+
+  workshop Workshop           @relation(fields: [workshopId], references: [id])
+  customer Customer           @relation(fields: [customerId], references: [id])
+  vehicle  Vehicle            @relation(fields: [vehicleId], references: [id])
+  items    ServiceOrderItem[]
+  media    Media[]
+
+  @@map("service_orders")
+}
+
+// ── ServiceOrderItem (Item da OS) ───────────────────────────────────────────────
+model ServiceOrderItem {
+  id             String @id @default(uuid())
+  serviceOrderId String @map("service_order_id")
+  description    String
+  quantity       Int    @default(1)
+  unitPrice      Int    @default(0) // valor em centavos
+
+  serviceOrder ServiceOrder @relation(fields: [serviceOrderId], references: [id], onDelete: Cascade)
+
+  @@map("service_order_items")
+}
+
+// ── Media (Fotos/Vídeos) ────────────────────────────────────────────────────────
+model Media {
+  id             String    @id @default(uuid())
+  serviceOrderId String    @map("service_order_id")
+  type           MediaType
+  url            String
+  caption        String?
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  serviceOrder ServiceOrder @relation(fields: [serviceOrderId], references: [id], onDelete: Cascade)
+
+  @@map("media")
+}
+
+// ── Enums ───────────────────────────────────────────────────────────────────────
+enum ServiceOrderStatus {
+  DRAFT
+  PENDING_APPROVAL
+  APPROVED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+
+  @@map("service_order_status")
+}
+
+enum MediaType {
+  PHOTO
+  VIDEO
+
+  @@map("media_type")
+}

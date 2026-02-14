@@ -1,0 +1,22 @@
+{
+  "name": "torquehub",
+  "private": true,
+  "packageManager": "pnpm@10.29.3",
+  "scripts": {
+    "dev:api": "pnpm --filter torquehub-api dev",
+    "dev:web": "pnpm --filter torquehub-web dev",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\""
+  },
+  "devDependencies": {
+    "prettier": "3.8.1",
+    "eslint": "9.28.0",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.55.0",
+    "@eslint/js": "9.28.0"
+  }
+}

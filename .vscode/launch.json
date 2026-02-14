@@ -1,0 +1,40 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "API: Debug (Fastify)",
+      "type": "node",
+      "request": "launch",
+      "program": "src/server.ts",
+      "cwd": "${workspaceFolder}/apps/api",
+      "runtimeArgs": ["--import", "tsx"],
+      "console": "integratedTerminal",
+      "env": {
+        "PORT": "3333",
+        "HOST": "0.0.0.0"
+      },
+      "skipFiles": ["<node_internals>/**", "node_modules/**"]
+    },
+    {
+      "name": "Mobile: Debug (Flutter)",
+      "type": "dart",
+      "request": "launch",
+      "program": "lib/main.dart",
+      "cwd": "${workspaceFolder}/apps/mobile"
+    },
+    {
+      "name": "Mobile: Debug (Flutter - Chrome)",
+      "type": "dart",
+      "request": "launch",
+      "program": "lib/main.dart",
+      "cwd": "${workspaceFolder}/apps/mobile",
+      "args": ["-d", "chrome"]
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Full Stack: API + Mobile",
+      "configurations": ["API: Debug (Fastify)", "Mobile: Debug (Flutter)"]
+    }
+  ]
+}

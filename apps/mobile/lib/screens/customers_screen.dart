@@ -137,6 +137,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
       floatingActionButton: _selectedWorkshopId == null
           ? null
           : FloatingActionButton(
+              heroTag: 'fab_customers',
               onPressed: () => _openForm(),
               child: const Icon(Icons.person_add),
             ),

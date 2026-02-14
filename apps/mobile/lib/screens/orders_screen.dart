@@ -111,6 +111,7 @@ class OrdersScreenState extends State<OrdersScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
+        heroTag: 'fab_orders',
         onPressed: _createOrder,
         child: const Icon(Icons.add),
       ),

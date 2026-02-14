@@ -135,6 +135,7 @@ class _VehiclesScreenState extends State<VehiclesScreen> {
       floatingActionButton: _selectedWorkshopId == null
           ? null
           : FloatingActionButton(
+              heroTag: 'fab_vehicles',
               onPressed: () => _openForm(),
               child: const Icon(Icons.directions_car),
             ),

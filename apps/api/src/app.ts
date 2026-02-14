@@ -19,7 +19,6 @@ export async function buildApp() {
     },
   });
 
-  // ── Plugins ───────────────────────────────────────────────────────────────
   await app.register(cors, { origin: true });
 
   await app.register(swagger, {
@@ -47,7 +46,7 @@ export async function buildApp() {
     uiConfig: { docExpansion: 'list', deepLinking: true },
   });
 
-  // ── Health Check ──────────────────────────────────────────────────────────
+  /** Endpoint de verificação de saúde da API. */
   app.get(
     '/health',
     {
@@ -70,7 +69,6 @@ export async function buildApp() {
     },
   );
 
-  // ── Module Routes ─────────────────────────────────────────────────────────
   await app.register(lookupRoutes, { prefix: '/workshops' });
   await app.register(serviceOrderRoutes, { prefix: '/service-orders' });
   await app.register(customerRoutes, { prefix: '/customers' });

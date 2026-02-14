@@ -3,12 +3,10 @@
  * @module entities
  */
 
-// ── ID Type ─────────────────────────────────────────────────────────────
 
 /** Domain identifier type — UUID string alias for semantic clarity. */
 export type ID = string;
 
-// ── Base Entity ─────────────────────────────────────────────────────────────
 
 /**
  * Abstract base class for all domain entities.
@@ -36,7 +34,6 @@ export abstract class BaseEntity<T extends { id: ID }> {
   }
 }
 
-// ── Value Object ────────────────────────────────────────────────────────────
 
 /**
  * Abstract base class for immutable value objects.
@@ -55,7 +52,6 @@ export abstract class ValueObject<T extends Record<string, unknown>> {
   }
 }
 
-// ── Domain Error ────────────────────────────────────────────────────────────
 
 /**
  * Custom domain error with a machine-readable code.

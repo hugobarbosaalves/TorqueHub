@@ -4,7 +4,6 @@
  * @module contracts
  */
 
-// ── API Response Types ──────────────────────────────────────────────────────
 
 /** Standard API success response envelope. */
 export interface ApiResponse<T> {
@@ -22,8 +21,6 @@ export interface ApiError {
     details?: Record<string, unknown>;
   };
 }
-
-// ── Service Order Types ─────────────────────────────────────────────────────
 
 /** Data transfer object for a complete service order. */
 export interface ServiceOrderDTO {
@@ -73,7 +70,6 @@ export interface CreateServiceOrderResponse {
   createdAt: string;
 }
 
-// ── Customer Types ──────────────────────────────────────────────────────────
 
 /** Data transfer object for a customer record. */
 export interface CustomerDTO {
@@ -104,7 +100,6 @@ export interface UpdateCustomerRequest {
   email?: string;
 }
 
-// ── Vehicle Types ───────────────────────────────────────────────────────────
 
 /** Data transfer object for a vehicle record. */
 export interface VehicleDTO {

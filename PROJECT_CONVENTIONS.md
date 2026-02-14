@@ -7,12 +7,12 @@
 
 ## 1. Arquitetura
 
-| Camada             | Responsabilidade                                | Dependências Permitidas    |
-| ------------------ | ----------------------------------------------- | -------------------------- |
-| **Domain**         | Entidades, Value Objects, Erros de Domínio      | Apenas `@torquehub/entities` |
-| **Application**    | Use Cases (orquestração apenas)                 | Domain + portas de Repository |
-| **Infrastructure** | Repos Prisma, adaptadores HTTP, serviços ext.   | Application + Domain       |
-| **Interfaces**     | Controllers (rotas HTTP), DTOs                  | Application + contracts    |
+| Camada             | Responsabilidade                              | Dependências Permitidas       |
+| ------------------ | --------------------------------------------- | ----------------------------- |
+| **Domain**         | Entidades, Value Objects, Erros de Domínio    | Apenas `@torquehub/entities`  |
+| **Application**    | Use Cases (orquestração apenas)               | Domain + portas de Repository |
+| **Infrastructure** | Repos Prisma, adaptadores HTTP, serviços ext. | Application + Domain          |
+| **Interfaces**     | Controllers (rotas HTTP), DTOs                | Application + contracts       |
 
 ### Regra de Dependência
 
@@ -28,11 +28,11 @@ Interfaces → Application → Domain
 
 ## 2. Responsabilidades das Plataformas
 
-| Plataforma    | Usuário Alvo | Propósito                          |
-| ------------- | ------------ | ---------------------------------- |
+| Plataforma    | Usuário Alvo | Propósito                             |
+| ------------- | ------------ | ------------------------------------- |
 | `apps/api`    | Ambos        | REST API (Fastify), lógica de negócio |
-| `apps/web`    | Cliente      | Portal público — consulta por token |
-| `apps/mobile` | Mecânico     | CRUD completo de oficina           |
+| `apps/web`    | Cliente      | Portal público — consulta por token   |
+| `apps/mobile` | Mecânico     | CRUD completo de oficina              |
 
 > **CRÍTICO**: O web app é **portal do cliente** (consulta por token).
 > Todas as funcionalidades de mecânico/oficina pertencem **apenas ao mobile**.
@@ -45,27 +45,27 @@ Estas regras são **invioláveis** em qualquer stack do projeto.
 
 ### 3.1 Proibições Universais
 
-| Regra                                  | Motivo                                        |
-| -------------------------------------- | --------------------------------------------- |
-| **NUNCA** usar `any` (TS) ou evitar `dynamic` desnecessário (Dart) | Segurança de tipos é obrigatória |
-| **NUNCA** usar `||` para valores default | Usar `??` (nullish coalescing). `||` só em condições booleanas puras |
-| **NUNCA** usar `!` (non-null assertion) | Usar type guards, early return ou `??` |
-| **NUNCA** usar `as` cast sem validação | Usar type guards + `unknown` |
-| **NUNCA** hardcodar credenciais        | Usar variáveis de ambiente |
-| **NUNCA** exceder 200 linhas por arquivo | Dividir em módulos menores |
-| **NUNCA** usar comentários decorativos | Nada de `// ── GET /path ──────` — usar JSDoc descritivo |
-| **NUNCA** deixar `console.log` em prod | Usar logger estruturado |
-| **NUNCA** ignorar erros silenciosamente | Sempre tratar ou relançar |
+| Regra                                                              | Motivo                                                   |
+| ------------------------------------------------------------------ | -------------------------------------------------------- | ---------------------- | --------------------------------- | --- | --------------------------------- |
+| **NUNCA** usar `any` (TS) ou evitar `dynamic` desnecessário (Dart) | Segurança de tipos é obrigatória                         |
+| **NUNCA** usar `                                                   |                                                          | ` para valores default | Usar `??` (nullish coalescing). ` |     | ` só em condições booleanas puras |
+| **NUNCA** usar `!` (non-null assertion)                            | Usar type guards, early return ou `??`                   |
+| **NUNCA** usar `as` cast sem validação                             | Usar type guards + `unknown`                             |
+| **NUNCA** hardcodar credenciais                                    | Usar variáveis de ambiente                               |
+| **NUNCA** exceder 200 linhas por arquivo                           | Dividir em módulos menores                               |
+| **NUNCA** usar comentários decorativos                             | Nada de `// ── GET /path ──────` — usar JSDoc descritivo |
+| **NUNCA** deixar `console.log` em prod                             | Usar logger estruturado                                  |
+| **NUNCA** ignorar erros silenciosamente                            | Sempre tratar ou relançar                                |
 
 ### 3.2 Obrigações Universais
 
-| Regra                                   | Aplicação                                     |
-| --------------------------------------- | --------------------------------------------- |
-| **Sempre** tipar retornos explicitamente | Funções, métodos, variáveis complexas         |
-| **Sempre** documentar com JSDoc/DartDoc | Toda função/classe/interface exportada        |
-| **Sempre** usar early return            | Evitar aninhamento profundo                   |
-| **Sempre** validar inputs               | Nunca confiar em dados externos               |
-| **Sempre** usar `const` quando possível | TS: `as const`, Dart: `const` constructors    |
+| Regra                                    | Aplicação                                  |
+| ---------------------------------------- | ------------------------------------------ |
+| **Sempre** tipar retornos explicitamente | Funções, métodos, variáveis complexas      |
+| **Sempre** documentar com JSDoc/DartDoc  | Toda função/classe/interface exportada     |
+| **Sempre** usar early return             | Evitar aninhamento profundo                |
+| **Sempre** validar inputs                | Nunca confiar em dados externos            |
+| **Sempre** usar `const` quando possível  | TS: `as const`, Dart: `const` constructors |
 
 ---
 
@@ -188,12 +188,12 @@ export function createCustomer() {}
 
 ### 7.3 Requisitos por Stack
 
-| Stack    | Ferramenta       | Comando                    |
-| -------- | ---------------- | -------------------------- |
-| Backend  | JSDoc + TypeDoc  | `pnpm docs:api`            |
-| Web      | JSDoc + TypeDoc  | `pnpm docs:packages`       |
-| Mobile   | DartDoc          | `cd apps/mobile && dart doc` |
-| Swagger  | Schema objects   | Automático via `/docs`     |
+| Stack   | Ferramenta      | Comando                      |
+| ------- | --------------- | ---------------------------- |
+| Backend | JSDoc + TypeDoc | `pnpm docs:api`              |
+| Web     | JSDoc + TypeDoc | `pnpm docs:packages`         |
+| Mobile  | DartDoc         | `cd apps/mobile && dart doc` |
+| Swagger | Schema objects  | Automático via `/docs`       |
 
 ---
 
@@ -232,11 +232,11 @@ modules/<feature>/
 
 ## 10. Shared Packages
 
-| Package                | Propósito                                  |
-| ---------------------- | ------------------------------------------ |
+| Package                | Propósito                                   |
+| ---------------------- | ------------------------------------------- |
 | `@torquehub/contracts` | DTOs, tipos de request/response, API shapes |
-| `@torquehub/entities`  | `BaseEntity`, `ValueObject`, `DomainError` |
-| `@torquehub/utils`     | `formatCurrency`, `slugify`, `generateId`  |
+| `@torquehub/entities`  | `BaseEntity`, `ValueObject`, `DomainError`  |
+| `@torquehub/utils`     | `formatCurrency`, `slugify`, `generateId`   |
 
 - Shared packages **nunca** importam de `apps/*`
 
@@ -254,18 +254,19 @@ modules/<feature>/
 
 ### REST Conventions
 
-| Ação             | Método   | Path             | Status |
-| ---------------- | -------- | ---------------- | ------ |
-| Criar            | `POST`   | `/resources`     | 201    |
-| Listar           | `GET`    | `/resources`     | 200    |
-| Buscar por ID    | `GET`    | `/resources/:id` | 200    |
-| Atualizar        | `PUT`    | `/resources/:id` | 200    |
-| Atualizar parcial| `PATCH`  | `/resources/:id` | 200    |
-| Deletar          | `DELETE` | `/resources/:id` | 200    |
+| Ação              | Método   | Path             | Status |
+| ----------------- | -------- | ---------------- | ------ |
+| Criar             | `POST`   | `/resources`     | 201    |
+| Listar            | `GET`    | `/resources`     | 200    |
+| Buscar por ID     | `GET`    | `/resources/:id` | 200    |
+| Atualizar         | `PUT`    | `/resources/:id` | 200    |
+| Atualizar parcial | `PATCH`  | `/resources/:id` | 200    |
+| Deletar           | `DELETE` | `/resources/:id` | 200    |
 
 ### Swagger
 
 Todos os endpoints DEVEM ter schemas documentados com:
+
 - Body, params, querystring e responses (sucesso + erro)
 - Tags por módulo
 
@@ -285,7 +286,7 @@ Todos os endpoints DEVEM ter schemas documentados com:
 
 - **main**: código pronto para produção
 - **develop**: branch de integração
-- **feature/***: uma branch por feature/issue
+- **feature/\***: uma branch por feature/issue
 - Mensagens: `feat:`, `fix:`, `docs:`, `refactor:`, `chore:`
 - Sempre commitar a partir da branch `develop`
 

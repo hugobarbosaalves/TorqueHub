@@ -1,6 +1,6 @@
 const API_URL = import.meta.env['VITE_API_URL'] ?? 'http://localhost:3333';
 
-// ── Types ─────────────────────────────────────────────────────────────────────
+/** Item de uma ordem de serviço. */
 export interface ServiceOrderItem {
   id: string;
   description: string;
@@ -20,7 +20,6 @@ export interface ServiceOrder {
   updatedAt: string;
 }
 
-// ── API Functions ─────────────────────────────────────────────────────────────
 
 /**
  * Busca uma ordem de serviço pelo token público.

@@ -15,13 +15,13 @@ export default tseslint.config(
   {
     files: ['**/*.ts', '**/*.tsx'],
     rules: {
-      // ── TorqueHub Code Standards ──────────────────────────────────────────
+
       'prefer-const': 'error',
       'no-var': 'error',
       'no-console': 'warn',
       eqeqeq: ['error', 'always'],
 
-      // ── TypeScript Strict Rules ───────────────────────────────────────────
+
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/explicit-function-return-type': [
         'warn',

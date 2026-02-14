@@ -1,4 +1,3 @@
-// ── Type Guards ──────────────────────────────────────────────────────────────
 
 /**
  * Checks if a value is defined (not null or undefined).
@@ -16,7 +15,6 @@ export function assert(condition: unknown, message: string): asserts condition {
   }
 }
 
-// ── String Utilities ────────────────────────────────────────────────────────
 
 /**
  * Generates a simple unique ID (not cryptographically secure).
@@ -37,7 +35,6 @@ export function slugify(text: string): string {
     .replaceAll(/-+/g, '-');
 }
 
-// ── Number Utilities ────────────────────────────────────────────────────────
 
 /**
  * Rounds a number to a given number of decimal places.
@@ -57,7 +54,6 @@ export function formatCurrency(valueInCents: number): string {
   }).format(valueInCents / 100);
 }
 
-// ── Date Utilities ──────────────────────────────────────────────────────────
 
 /**
  * Returns the current ISO timestamp.

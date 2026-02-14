@@ -102,8 +102,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     return '${local.day.toString().padLeft(2, '0')}/${local.month.toString().padLeft(2, '0')}/${local.year} ${local.hour.toString().padLeft(2, '0')}:${local.minute.toString().padLeft(2, '0')}';
   }
 
-  // ── Actions ───────────────────────────────────────────────────────────────
-
+  /// Avança o status da ordem para o próximo passo do fluxo.
   Future<void> _advanceStatus() async {
     final status = _order?['status'] as String?;
     if (status == null) return;
@@ -228,8 +227,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     );
   }
 
-  // ── Build ─────────────────────────────────────────────────────────────────
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -286,7 +283,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // ── Status Badge ──────────────────────────────────────────
+
           Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 16),
@@ -313,7 +310,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
 
           const SizedBox(height: 20),
 
-          // ── Descrição ─────────────────────────────────────────────
+
           Text(
             order['description'] as String? ?? 'Sem descrição',
             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
@@ -336,7 +333,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
           ),
 
-          // ── Token público ─────────────────────────────────────────
+
           const SizedBox(height: 12),
           InkWell(
             onTap: _copyPublicToken,
@@ -373,7 +370,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           const Divider(),
           const SizedBox(height: 16),
 
-          // ── Itens ─────────────────────────────────────────────────
+
           const Text(
             'Itens / Serviços',
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
@@ -381,7 +378,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           const SizedBox(height: 12),
           ...items.map((item) => _buildItemRow(item)),
 
-          // ── Total ─────────────────────────────────────────────────
+
           const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -410,7 +407,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
 
           const SizedBox(height: 28),
 
-          // ── Actions ───────────────────────────────────────────────
           if (canAdvance)
             FilledButton.icon(
               onPressed: _advanceStatus,

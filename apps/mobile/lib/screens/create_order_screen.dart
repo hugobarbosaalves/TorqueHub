@@ -19,17 +19,14 @@ class CreateOrderScreen extends StatefulWidget {
 }
 
 class _CreateOrderScreenState extends State<CreateOrderScreen> {
-  // ── Data sources ──────────────────────────────────────────────────────────
   List<Map<String, dynamic>> _workshops = [];
   List<Map<String, dynamic>> _customers = [];
   List<Map<String, dynamic>> _vehicles = [];
 
-  // ── Selected values ───────────────────────────────────────────────────────
   String? _selectedWorkshopId;
   String? _selectedCustomerId;
   String? _selectedVehicleId;
 
-  // ── Form ──────────────────────────────────────────────────────────────────
   final _descriptionCtrl = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   final List<_ItemEntry> _items = [_ItemEntry()];
@@ -52,8 +49,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
     super.dispose();
   }
 
-  // ── Data Loading ──────────────────────────────────────────────────────────
-
+  /// Carrega as oficinas disponíveis na API.
   Future<void> _loadWorkshops() async {
     try {
       final data = await ApiService.getWorkshops();
@@ -106,8 +102,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
     }
   }
 
-  // ── Submit ────────────────────────────────────────────────────────────────
-
+  /// Envia a nova ordem de serviço para a API.
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedWorkshopId == null ||
@@ -175,8 +170,6 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
     ).showSnackBar(SnackBar(content: Text(msg), backgroundColor: Colors.red));
   }
 
-  // ── Build ─────────────────────────────────────────────────────────────────
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -191,7 +184,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
               child: ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
-                  // ── Oficina ───────────────────────────────────────
+
                   _buildSectionTitle('Oficina'),
                   _buildDropdown(
                     currentValue: _selectedWorkshopId,
@@ -209,7 +202,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
 
                   const SizedBox(height: 16),
 
-                  // ── Cliente ───────────────────────────────────────
+
                   _buildSectionTitle('Cliente'),
                   _buildDropdown(
                     currentValue: _selectedCustomerId,
@@ -233,7 +226,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
 
                   const SizedBox(height: 16),
 
-                  // ── Veículo ───────────────────────────────────────
+
                   _buildSectionTitle('Veículo'),
                   _buildDropdown(
                     currentValue: _selectedVehicleId,
@@ -259,7 +252,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                   const Divider(),
                   const SizedBox(height: 16),
 
-                  // ── Descrição ─────────────────────────────────────
+
                   _buildSectionTitle('Descrição do Serviço'),
                   TextFormField(
                     controller: _descriptionCtrl,
@@ -275,7 +268,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
 
                   const SizedBox(height: 24),
 
-                  // ── Itens ─────────────────────────────────────────
+
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -297,7 +290,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
 
                   const SizedBox(height: 32),
 
-                  // ── Botão Criar ───────────────────────────────────
+
                   FilledButton.icon(
                     onPressed: _loading ? null : _submit,
                     icon: _loading

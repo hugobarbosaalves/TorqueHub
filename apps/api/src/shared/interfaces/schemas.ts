@@ -4,8 +4,6 @@
  * @module schemas
  */
 
-// ── Reusable Schema Components ──────────────────────────────────────────────
-
 /** Standard success response wrapper schema. */
 export function successResponse(dataSchema: Record<string, unknown>): Record<string, unknown> {
   return {
@@ -40,8 +38,7 @@ export const idParam = {
   required: ['id'],
 };
 
-// ── Customer Schemas ────────────────────────────────────────────────────────
-
+/** Schema de representação de um cliente. */
 export const customerSchema = {
   type: 'object' as const,
   properties: {
@@ -78,8 +75,7 @@ export const updateCustomerBody = {
   },
 };
 
-// ── Vehicle Schemas ─────────────────────────────────────────────────────────
-
+/** Schema de representação de um veículo. */
 export const vehicleSchema = {
   type: 'object' as const,
   properties: {

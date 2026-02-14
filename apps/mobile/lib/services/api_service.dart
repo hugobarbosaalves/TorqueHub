@@ -14,8 +14,7 @@ class ApiService {
   // Device físico: trocar para o IP local (ex: 192.168.1.x)
   static const String baseUrl = 'http://10.0.2.2:3333';
 
-  // ── Helpers ───────────────────────────────────────────────────────────────
-
+  /// Executa uma requisição GET e retorna o campo `data` da resposta.
   static Future<dynamic> _get(String path) async {
     final res = await http.get(Uri.parse('$baseUrl$path'));
     final json = jsonDecode(res.body);
@@ -72,22 +71,19 @@ class ApiService {
     }
   }
 
-  // ── Health ────────────────────────────────────────────────────────────────
-
+  /// Verifica a saúde da API.
   static Future<Map<String, dynamic>> health() async {
     final res = await http.get(Uri.parse('$baseUrl/health'));
     return jsonDecode(res.body) as Map<String, dynamic>;
   }
 
-  // ── Workshops ─────────────────────────────────────────────────────────────
-
+  /// Lista todas as oficinas cadastradas.
   static Future<List<Map<String, dynamic>>> getWorkshops() async {
     final data = await _get('/workshops');
     return List<Map<String, dynamic>>.from(data);
   }
 
-  // ── Customers ─────────────────────────────────────────────────────────────
-
+  /// Lista os clientes de uma oficina.
   static Future<List<Map<String, dynamic>>> getCustomers(
     String workshopId,
   ) async {
@@ -95,8 +91,7 @@ class ApiService {
     return List<Map<String, dynamic>>.from(data);
   }
 
-  // ── Vehicles ──────────────────────────────────────────────────────────────
-
+  /// Lista os veículos de uma oficina, opcionalmente filtrando por cliente.
   static Future<List<Map<String, dynamic>>> getVehicles(
     String workshopId, {
     String? customerId,
@@ -106,8 +101,7 @@ class ApiService {
     return List<Map<String, dynamic>>.from(data);
   }
 
-  // ── Service Orders ────────────────────────────────────────────────────────
-
+  /// Lista ordens de serviço, opcionalmente filtrando por oficina.
   static Future<List<Map<String, dynamic>>> getServiceOrders({
     String? workshopId,
   }) async {
@@ -146,8 +140,7 @@ class ApiService {
     await _delete('/service-orders/$id');
   }
 
-  // ── Customer CRUD ─────────────────────────────────────────────────────────
-
+  /// CRUD completo de clientes.
   static Future<List<Map<String, dynamic>>> getCustomersByWorkshop(
     String workshopId,
   ) async {
@@ -187,8 +180,7 @@ class ApiService {
     await _delete('/customers/$id');
   }
 
-  // ── Vehicle CRUD ──────────────────────────────────────────────────────────
-
+  /// CRUD completo de veículos.
   static Future<List<Map<String, dynamic>>> getVehiclesByWorkshop(
     String workshopId,
   ) async {

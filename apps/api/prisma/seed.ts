@@ -14,7 +14,6 @@ const prisma = new PrismaClient({ adapter });
 async function seed(): Promise<void> {
   console.log('🌱 Seeding database...');
 
-  // ── Workshop ────────────────────────────────────────────────────────────
   const workshop = await prisma.workshop.upsert({
     where: { document: '12345678000100' },
     update: {},
@@ -28,7 +27,6 @@ async function seed(): Promise<void> {
   });
   console.log(`  ✅ Workshop: ${workshop.name} (${workshop.id})`);
 
-  // ── Customer ────────────────────────────────────────────────────────────
   const customer = await prisma.customer.upsert({
     where: { id: workshop.id + '-customer' }, // fallback — upsert por nome
     update: {},
@@ -42,7 +40,6 @@ async function seed(): Promise<void> {
   });
   console.log(`  ✅ Customer: ${customer.name} (${customer.id})`);
 
-  // ── Vehicle ─────────────────────────────────────────────────────────────
   const vehicle = await prisma.vehicle.create({
     data: {
       workshopId: workshop.id,

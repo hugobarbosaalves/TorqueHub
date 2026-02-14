@@ -1,6 +1,5 @@
-// ── TorqueHub Database Schema ──────────────────────────────────────────────────
-// Prisma schema — PostgreSQL
-// Domain models: Workshop, Customer, Vehicle, ServiceOrder, ServiceOrderItem, Media
+/// Schema do banco de dados TorqueHub — PostgreSQL via Prisma.
+/// Modelos: Workshop, Customer, Vehicle, ServiceOrder, ServiceOrderItem, Media.
 
 generator client {
   provider = "prisma-client-js"
@@ -10,7 +9,7 @@ datasource db {
   provider = "postgresql"
 }
 
-// ── Workshop (Oficina) ──────────────────────────────────────────────────────────
+/// Oficina — tenant principal do sistema.
 model Workshop {
   id        String   @id @default(uuid())
   name      String
@@ -28,7 +27,7 @@ model Workshop {
   @@map("workshops")
 }
 
-// ── Customer (Cliente) ──────────────────────────────────────────────────────────
+/// Cliente vinculado a uma oficina.
 model Customer {
   id         String   @id @default(uuid())
   workshopId String   @map("workshop_id")
@@ -46,7 +45,7 @@ model Customer {
   @@map("customers")
 }
 
-// ── Vehicle (Veículo) ───────────────────────────────────────────────────────────
+/// Veículo de um cliente, vinculado a uma oficina.
 model Vehicle {
   id         String   @id @default(uuid())
   workshopId String   @map("workshop_id")
@@ -67,7 +66,7 @@ model Vehicle {
   @@map("vehicles")
 }
 
-// ── ServiceOrder (Ordem de Serviço) ─────────────────────────────────────────────
+/// Ordem de serviço com itens, status e token público.
 model ServiceOrder {
   id          String             @id @default(uuid())
   workshopId  String             @map("workshop_id")
@@ -90,7 +89,7 @@ model ServiceOrder {
   @@map("service_orders")
 }
 
-// ── ServiceOrderItem (Item da OS) ───────────────────────────────────────────────
+/// Item individual de uma ordem de serviço.
 model ServiceOrderItem {
   id             String @id @default(uuid())
   serviceOrderId String @map("service_order_id")
@@ -103,7 +102,7 @@ model ServiceOrderItem {
   @@map("service_order_items")
 }
 
-// ── Media (Fotos/Vídeos) ────────────────────────────────────────────────────────
+/// Mídias (fotos/vídeos) associadas a uma ordem de serviço.
 model Media {
   id             String    @id @default(uuid())
   serviceOrderId String    @map("service_order_id")
@@ -117,7 +116,7 @@ model Media {
   @@map("media")
 }
 
-// ── Enums ───────────────────────────────────────────────────────────────────────
+/// Status possíveis de uma ordem de serviço.
 enum ServiceOrderStatus {
   DRAFT
   PENDING_APPROVAL

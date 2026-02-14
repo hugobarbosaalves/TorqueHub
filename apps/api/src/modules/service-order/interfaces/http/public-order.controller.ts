@@ -6,10 +6,7 @@ import {
   GetOrderByTokenUseCase,
   GetVehicleHistoryUseCase,
 } from '../../application/use-cases/public-order.use-case.js';
-import {
-  getOrderByTokenSchema,
-  getVehicleHistorySchema,
-} from './public-order.schemas.js';
+import { getOrderByTokenSchema, getVehicleHistorySchema } from './public-order.schemas.js';
 
 const repo = new ServiceOrderRepository(prisma);
 const getByTokenUseCase = new GetOrderByTokenUseCase(repo);

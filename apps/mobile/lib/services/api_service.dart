@@ -6,6 +6,7 @@
 library;
 
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 
 /// Serviço centralizado para chamadas à API do TorqueHub.
@@ -234,6 +235,43 @@ class ApiService {
 
   static Future<void> deleteVehicle(String id) async {
     await _delete('/vehicles/$id');
+  }
+
+  /// Upload de mídia (foto/vídeo) para uma ordem de serviço.
+  static Future<Map<String, dynamic>> uploadMedia(
+    String serviceOrderId,
+    File file, {
+    String? caption,
+  }) async {
+    final uri = Uri.parse('$baseUrl/service-orders/$serviceOrderId/media');
+    final request = http.MultipartRequest('POST', uri)
+      ..files.add(await http.MultipartFile.fromPath('file', file.path));
+    if (caption != null && caption.isNotEmpty) {
+      request.fields['caption'] = caption;
+    }
+    final streamed = await request.send();
+    final body = await streamed.stream.bytesToString();
+    final json = jsonDecode(body);
+    if (streamed.statusCode >= 400) {
+      throw ApiException(json['meta']?['error'] ?? 'Erro no upload');
+    }
+    return Map<String, dynamic>.from(json['data']);
+  }
+
+  /// Lista mídias de uma ordem de serviço.
+  static Future<List<Map<String, dynamic>>> getMedia(
+    String serviceOrderId,
+  ) async {
+    final data = await _get('/service-orders/$serviceOrderId/media');
+    return List<Map<String, dynamic>>.from(data);
+  }
+
+  /// Exclui uma mídia de uma ordem de serviço.
+  static Future<void> deleteMedia(
+    String serviceOrderId,
+    String mediaId,
+  ) async {
+    await _delete('/service-orders/$serviceOrderId/media/$mediaId');
   }
 }
 

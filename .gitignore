@@ -29,6 +29,9 @@ pnpm-debug.log*
 # Coverage
 coverage/
 
+# Uploads (media files)
+apps/api/uploads/
+
 # Flutter
 apps/mobile/.dart_tool/
 apps/mobile/.packages

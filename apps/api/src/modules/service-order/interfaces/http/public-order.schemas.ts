@@ -59,7 +59,8 @@ export const getOrderByTokenSchema = {
 export const getVehicleHistorySchema = {
   tags: ['Public'],
   summary: 'Histórico de serviços do veículo via token público',
-  description: 'Busca todas as ordens de serviço do veículo vinculado à ordem identificada pelo token.',
+  description:
+    'Busca todas as ordens de serviço do veículo vinculado à ordem identificada pelo token.',
   params: {
     type: 'object' as const,
     properties: {

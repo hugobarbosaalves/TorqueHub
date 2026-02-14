@@ -143,7 +143,7 @@ DRAFT → PENDING_APPROVAL → APPROVED → IN_PROGRESS → COMPLETED
 | Vehicle          | id, workshopId, customerId, plate, brand, model, year, color, mileage                |
 | ServiceOrder     | id, workshopId, customerId, vehicleId, description, status, totalAmount, publicToken |
 | ServiceOrderItem | id, serviceOrderId, description, quantity, unitPrice                                 |
-| Media            | id, serviceOrderId, type, url, caption (future)                                      |
+| Media            | id, serviceOrderId, type, url, caption                                        |
 
 ---
 
@@ -196,12 +196,20 @@ Swagger UI: `http://localhost:3333/docs`
 | PATCH  | `/service-orders/:id/status`  | Update status           |
 | DELETE | `/service-orders/:id`         | Delete order            |
 
-### 7.6 Public (Acesso do Cliente)
+### 7.6 Media
 
-| Method | Path                                        | Description                        |
-| ------ | ------------------------------------------- | ---------------------------------- |
-| GET    | `/public/orders/:token`                     | Get order by public token          |
-| GET    | `/public/orders/:token/vehicle-history`     | Get vehicle service history        |
+| Method | Path                                         | Description           |
+| ------ | -------------------------------------------- | --------------------- |
+| POST   | `/service-orders/:id/media`                  | Upload photo/video    |
+| GET    | `/service-orders/:id/media`                  | List media for order  |
+| DELETE | `/service-orders/:id/media/:mediaId`         | Delete a media file   |
+
+### 7.7 Public (Acesso do Cliente)
+
+| Method | Path                                    | Description                 |
+| ------ | --------------------------------------- | --------------------------- |
+| GET    | `/public/orders/:token`                 | Get order by public token   |
+| GET    | `/public/orders/:token/vehicle-history` | Get vehicle service history |
 
 ---
 
@@ -213,7 +221,7 @@ Swagger UI: `http://localhost:3333/docs`
 | 2   | Database layer (Prisma + PostgreSQL) | ✅ Done    |
 | 3   | ServiceOrder CRUD persistence        | ✅ Done    |
 | 4   | Customer + Vehicle modules           | ✅ Done    |
-| 5   | Media upload flow                    | ⏳ Pending |
+| 5   | Media upload flow                    | ✅ Done    |
 | 6   | Customer public access link (web)    | ✅ Done    |
 | 7   | Basic authentication                 | ⏳ Pending |
 | 8   | Swagger + TypeDoc + Conventions      | ✅ Done    |

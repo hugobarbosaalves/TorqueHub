@@ -137,3 +137,25 @@ export interface UpdateVehicleRequest {
   color?: string;
   mileage?: number;
 }
+
+/** Allowed media types. */
+export type MediaType = 'PHOTO' | 'VIDEO';
+
+/** Data transfer object for a media record. */
+export interface MediaDTO {
+  id: string;
+  serviceOrderId: string;
+  type: MediaType;
+  url: string;
+  caption: string | null;
+  createdAt: string;
+}
+
+/** Response after uploading a media file. */
+export interface UploadMediaResponse {
+  id: string;
+  type: MediaType;
+  url: string;
+  caption: string | null;
+  createdAt: string;
+}

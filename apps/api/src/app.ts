@@ -1,5 +1,9 @@
+import { join } from 'node:path';
+import { existsSync, mkdirSync } from 'node:fs';
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
+import multipart from '@fastify/multipart';
+import fastifyStatic from '@fastify/static';
 import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
 import { serviceOrderRoutes } from './modules/service-order/interfaces/http/service-order.controller.js';
@@ -7,6 +11,7 @@ import { lookupRoutes } from './modules/lookup/interfaces/http/lookup.controller
 import { customerRoutes } from './modules/customer/interfaces/http/customer.controller.js';
 import { vehicleRoutes } from './modules/vehicle/interfaces/http/vehicle.controller.js';
 import { publicOrderRoutes } from './modules/service-order/interfaces/http/public-order.controller.js';
+import { mediaRoutes } from './modules/service-order/interfaces/http/media.controller.js';
 
 /** Builds and configures the Fastify application instance. */
 export async function buildApp() {
@@ -21,6 +26,17 @@ export async function buildApp() {
   });
 
   await app.register(cors, { origin: true });
+
+  await app.register(multipart, { limits: { fileSize: 20 * 1024 * 1024 } });
+
+  const uploadsDir = join(process.cwd(), 'uploads');
+  if (!existsSync(uploadsDir)) mkdirSync(uploadsDir, { recursive: true });
+
+  await app.register(fastifyStatic, {
+    root: uploadsDir,
+    prefix: '/uploads/',
+    decorateReply: false,
+  });
 
   await app.register(swagger, {
     openapi: {
@@ -38,7 +54,11 @@ export async function buildApp() {
         { name: 'Customers', description: 'Customer management CRUD' },
         { name: 'Vehicles', description: 'Vehicle management CRUD' },
         { name: 'Service Orders', description: 'Service order management CRUD' },
-        { name: 'Public', description: 'Endpoints públicos de acesso do cliente (sem autenticação)' },
+        {
+          name: 'Public',
+          description: 'Endpoints públicos de acesso do cliente (sem autenticação)',
+        },
+        { name: 'Media', description: 'Upload e gerenciamento de fotos/vídeos' },
       ],
     },
   });
@@ -76,6 +96,7 @@ export async function buildApp() {
   await app.register(customerRoutes, { prefix: '/customers' });
   await app.register(vehicleRoutes, { prefix: '/vehicles' });
   await app.register(publicOrderRoutes, { prefix: '/public/orders' });
+  await app.register(mediaRoutes, { prefix: '/service-orders' });
 
   return app;
 }

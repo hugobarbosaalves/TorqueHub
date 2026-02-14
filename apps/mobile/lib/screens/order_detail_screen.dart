@@ -1,12 +1,13 @@
 /// Order detail screen — shows full info for a single service order.
 ///
 /// Displays status, description, line items table, total amount,
-/// and allows status transitions (e.g. approve, complete, cancel).
+/// media gallery, and allows status transitions.
 library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../services/api_service.dart';
+import 'media_section_widget.dart';
 
 const _statusConfig = <String, Map<String, dynamic>>{
   'DRAFT': {'label': 'Rascunho', 'color': 0xFF94A3B8, 'icon': Icons.edit_note},
@@ -58,6 +59,7 @@ class OrderDetailScreen extends StatefulWidget {
 
 class _OrderDetailScreenState extends State<OrderDetailScreen> {
   Map<String, dynamic>? _order;
+  List<Map<String, dynamic>> _media = [];
   bool _loading = true;
   String? _error;
 
@@ -74,9 +76,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     });
     try {
       final data = await ApiService.getServiceOrder(widget.orderId);
+      final media = await ApiService.getMedia(widget.orderId);
       if (!mounted) return;
       setState(() {
         _order = data;
+        _media = media;
         _loading = false;
       });
     } catch (e) {
@@ -361,6 +365,15 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 ],
               ),
             ),
+          ),
+
+          const SizedBox(height: 24),
+          const Divider(),
+          const SizedBox(height: 16),
+
+          MediaSectionWidget(
+            serviceOrderId: widget.orderId,
+            initialMedia: _media,
           ),
 
           const SizedBox(height: 24),

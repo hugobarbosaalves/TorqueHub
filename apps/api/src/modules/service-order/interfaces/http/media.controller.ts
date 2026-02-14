@@ -13,7 +13,11 @@ import type { ApiResponse, MediaDTO, UploadMediaResponse } from '@torquehub/cont
 import { prisma } from '../../../../shared/infrastructure/database/prisma.js';
 import { ServiceOrderRepository } from '../../infrastructure/repositories/service-order.repository.js';
 import { MediaRepository } from '../../infrastructure/repositories/media.repository.js';
-import { UploadMediaUseCase, ListMediaUseCase, DeleteMediaUseCase } from '../../application/use-cases/media.use-case.js';
+import {
+  UploadMediaUseCase,
+  ListMediaUseCase,
+  DeleteMediaUseCase,
+} from '../../application/use-cases/media.use-case.js';
 import { uploadMediaSchema, listMediaSchema, deleteMediaSchema } from './media.schemas.js';
 
 const UPLOADS_DIR = join(process.cwd(), 'uploads');
@@ -74,16 +78,19 @@ export function mediaRoutes(app: FastifyInstance): void {
         return reply.status(400).send({
           success: false,
           data: undefined as never,
-          meta: { error: `File type "${ext}" not allowed. Use: ${[...ALLOWED_EXTENSIONS].join(', ')}` },
+          meta: {
+            error: `File type "${ext}" not allowed. Use: ${[...ALLOWED_EXTENSIONS].join(', ')}`,
+          },
         });
       }
 
       const buffer = await data.toBuffer();
       if (buffer.length > MAX_FILE_SIZE) {
+        const maxMB = String(MAX_FILE_SIZE / 1024 / 1024);
         return reply.status(400).send({
           success: false,
           data: undefined as never,
-          meta: { error: `File too large. Max size: ${MAX_FILE_SIZE / 1024 / 1024} MB` },
+          meta: { error: `File too large. Max size: ${maxMB} MB` },
         });
       }
 
@@ -94,7 +101,7 @@ export function mediaRoutes(app: FastifyInstance): void {
       const type = resolveMediaType(ext);
       const url = `/uploads/${filename}`;
       const captionValue = data.fields['caption']
-        ? String((data.fields['caption'] as { value?: string }).value ?? '')
+        ? ((data.fields['caption'] as { value?: string }).value ?? '')
         : null;
 
       const result = await uploadUseCase.execute({

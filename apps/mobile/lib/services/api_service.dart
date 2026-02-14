@@ -267,10 +267,7 @@ class ApiService {
   }
 
   /// Exclui uma mídia de uma ordem de serviço.
-  static Future<void> deleteMedia(
-    String serviceOrderId,
-    String mediaId,
-  ) async {
+  static Future<void> deleteMedia(String serviceOrderId, String mediaId) async {
     await _delete('/service-orders/$serviceOrderId/media/$mediaId');
   }
 }

@@ -11,10 +11,11 @@ import { lookupRoutes } from './modules/lookup/interfaces/http/lookup.controller
 import { customerRoutes } from './modules/customer/interfaces/http/customer.controller.js';
 import { vehicleRoutes } from './modules/vehicle/interfaces/http/vehicle.controller.js';
 import { publicOrderRoutes } from './modules/service-order/interfaces/http/public-order.controller.js';
+import type { FastifyInstance } from 'fastify';
 import { mediaRoutes } from './modules/service-order/interfaces/http/media.controller.js';
 
 /** Builds and configures the Fastify application instance. */
-export async function buildApp() {
+export async function buildApp(): Promise<FastifyInstance> {
   const app = Fastify({
     logger: {
       level: 'info',
@@ -86,9 +87,7 @@ export async function buildApp() {
         },
       },
     },
-    async () => {
-      return { status: 'ok', timestamp: new Date().toISOString() };
-    },
+    () => ({ status: 'ok', timestamp: new Date().toISOString() }),
   );
 
   await app.register(lookupRoutes, { prefix: '/workshops' });

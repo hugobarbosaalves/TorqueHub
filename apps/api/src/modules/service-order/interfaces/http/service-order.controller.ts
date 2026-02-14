@@ -42,7 +42,7 @@ export function serviceOrderRoutes(app: FastifyInstance): void {
       });
     }
 
-    if (!body.items || body.items.length === 0) {
+    if (body.items.length === 0) {
       return reply.status(400).send({
         success: false,
         data: undefined as never,
@@ -121,7 +121,7 @@ export function serviceOrderRoutes(app: FastifyInstance): void {
 
     try {
       const updated = await repo.updateStatus(id, status);
-      return reply.send({
+      return await reply.send({
         success: true,
         data: { id: updated.id, status: updated.status },
       });
@@ -141,7 +141,7 @@ export function serviceOrderRoutes(app: FastifyInstance): void {
   }>('/:id', { schema: deleteOrderSchema }, async (request, reply) => {
     try {
       await repo.delete(request.params.id);
-      return reply.send({
+      return await reply.send({
         success: true,
         data: { deleted: true },
       });

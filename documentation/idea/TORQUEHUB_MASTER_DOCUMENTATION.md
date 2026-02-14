@@ -143,7 +143,7 @@ DRAFT → PENDING_APPROVAL → APPROVED → IN_PROGRESS → COMPLETED
 | Vehicle          | id, workshopId, customerId, plate, brand, model, year, color, mileage                |
 | ServiceOrder     | id, workshopId, customerId, vehicleId, description, status, totalAmount, publicToken |
 | ServiceOrderItem | id, serviceOrderId, description, quantity, unitPrice                                 |
-| Media            | id, serviceOrderId, type, url, caption                                        |
+| Media            | id, serviceOrderId, type, url, caption                                               |
 
 ---
 
@@ -198,11 +198,11 @@ Swagger UI: `http://localhost:3333/docs`
 
 ### 7.6 Media
 
-| Method | Path                                         | Description           |
-| ------ | -------------------------------------------- | --------------------- |
-| POST   | `/service-orders/:id/media`                  | Upload photo/video    |
-| GET    | `/service-orders/:id/media`                  | List media for order  |
-| DELETE | `/service-orders/:id/media/:mediaId`         | Delete a media file   |
+| Method | Path                                 | Description          |
+| ------ | ------------------------------------ | -------------------- |
+| POST   | `/service-orders/:id/media`          | Upload photo/video   |
+| GET    | `/service-orders/:id/media`          | List media for order |
+| DELETE | `/service-orders/:id/media/:mediaId` | Delete a media file  |
 
 ### 7.7 Public (Acesso do Cliente)
 

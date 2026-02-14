@@ -6,7 +6,7 @@ function generatePublicToken(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
   let token = '';
   for (let i = 0; i < 12; i++) {
-    token += chars[Math.floor(Math.random() * chars.length)];
+    token += chars.charAt(Math.floor(Math.random() * chars.length));
   }
   return token;
 }

@@ -74,10 +74,7 @@ class _MediaSectionWidgetState extends State<MediaSectionWidget> {
 
     setState(() => _uploading = true);
     try {
-      await ApiService.uploadMedia(
-        widget.serviceOrderId,
-        File(picked.path),
-      );
+      await ApiService.uploadMedia(widget.serviceOrderId, File(picked.path));
       final media = await ApiService.getMedia(widget.serviceOrderId);
       if (!mounted) return;
       setState(() {
@@ -205,7 +202,7 @@ class _MediaSectionWidgetState extends State<MediaSectionWidget> {
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: _media.length,
-        separatorBuilder: (_, _a) => const SizedBox(width: 8),
+        separatorBuilder: (_, _) => const SizedBox(width: 8),
         itemBuilder: (context, index) {
           final item = _media[index];
           final url = '${ApiService.baseUrl}${item['url']}';
@@ -227,7 +224,7 @@ class _MediaSectionWidgetState extends State<MediaSectionWidget> {
               width: 120,
               height: 120,
               fit: BoxFit.cover,
-              errorBuilder: (_, _a, _b) => Container(
+              errorBuilder: (_, _, _) => Container(
                 width: 120,
                 height: 120,
                 color: Colors.grey.shade200,
@@ -245,11 +242,7 @@ class _MediaSectionWidgetState extends State<MediaSectionWidget> {
                     color: Colors.black54,
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
-                    Icons.close,
-                    size: 16,
-                    color: Colors.white,
-                  ),
+                  child: const Icon(Icons.close, size: 16, color: Colors.white),
                 ),
               ),
             ),

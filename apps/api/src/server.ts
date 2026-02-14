@@ -14,22 +14,19 @@ async function main(): Promise<void> {
     app.log.info('🗄️  Database connected');
 
     await app.listen({ port: PORT, host: HOST });
-    app.log.info(`🚗 TorqueHub API running on http://${HOST}:${PORT}`);
+    app.log.info(`🚗 TorqueHub API running on http://${HOST}:${String(PORT)}`);
   } catch (error) {
     app.log.error(error);
     process.exit(1);
   }
 }
 
-// Graceful shutdown
-process.on('SIGINT', async () => {
-  await prisma.$disconnect();
-  process.exit(0);
-});
+/** Graceful shutdown — disconnects from the database before exiting. */
+function gracefulShutdown(): void {
+  void prisma.$disconnect().then(() => process.exit(0));
+}
 
-process.on('SIGTERM', async () => {
-  await prisma.$disconnect();
-  process.exit(0);
-});
+process.on('SIGINT', gracefulShutdown);
+process.on('SIGTERM', gracefulShutdown);
 
 await main();

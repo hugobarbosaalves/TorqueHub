@@ -25,10 +25,7 @@ export class ServiceOrderRepository {
   constructor(private readonly db: PrismaClient) {}
 
   async create(input: CreateServiceOrderRequest): Promise<ServiceOrderWithItems> {
-    const totalAmount = input.items.reduce(
-      (sum, item) => sum + item.quantity * item.unitPrice,
-      0,
-    );
+    const totalAmount = input.items.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0);
 
     return this.db.serviceOrder.create({
       data: {

@@ -8,7 +8,10 @@ import type {
 import { prisma } from '../../../../shared/infrastructure/database/prisma.js';
 import { ServiceOrderRepository } from '../../infrastructure/repositories/service-order.repository.js';
 import { CreateServiceOrderUseCase } from '../../application/use-cases/create-service-order.use-case.js';
-import { ListServiceOrdersUseCase, GetServiceOrderUseCase } from '../../application/use-cases/list-service-orders.use-case.js';
+import {
+  ListServiceOrdersUseCase,
+  GetServiceOrderUseCase,
+} from '../../application/use-cases/list-service-orders.use-case.js';
 
 const repo = new ServiceOrderRepository(prisma);
 const createUseCase = new CreateServiceOrderUseCase(repo);
@@ -92,7 +95,14 @@ export async function serviceOrderRoutes(app: FastifyInstance): Promise<void> {
     const { id } = request.params;
     const { status } = request.body;
 
-    const validStatuses = ['DRAFT', 'PENDING_APPROVAL', 'APPROVED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'];
+    const validStatuses = [
+      'DRAFT',
+      'PENDING_APPROVAL',
+      'APPROVED',
+      'IN_PROGRESS',
+      'COMPLETED',
+      'CANCELLED',
+    ];
     if (!validStatuses.includes(status)) {
       return reply.status(400).send({
         success: false,

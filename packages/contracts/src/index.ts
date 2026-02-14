@@ -59,3 +59,67 @@ export interface CreateServiceOrderResponse {
   status: ServiceOrderStatus;
   createdAt: string;
 }
+
+// ── Customer Types ──────────────────────────────────────────────────────────
+
+export interface CustomerDTO {
+  id: string;
+  workshopId: string;
+  name: string;
+  document: string | null;
+  phone: string | null;
+  email: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateCustomerRequest {
+  workshopId: string;
+  name: string;
+  document?: string;
+  phone?: string;
+  email?: string;
+}
+
+export interface UpdateCustomerRequest {
+  name?: string;
+  document?: string;
+  phone?: string;
+  email?: string;
+}
+
+// ── Vehicle Types ───────────────────────────────────────────────────────────
+
+export interface VehicleDTO {
+  id: string;
+  workshopId: string;
+  customerId: string;
+  plate: string;
+  brand: string;
+  model: string;
+  year: number | null;
+  color: string | null;
+  mileage: number | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateVehicleRequest {
+  workshopId: string;
+  customerId: string;
+  plate: string;
+  brand: string;
+  model: string;
+  year?: number;
+  color?: string;
+  mileage?: number;
+}
+
+export interface UpdateVehicleRequest {
+  plate?: string;
+  brand?: string;
+  model?: string;
+  year?: number;
+  color?: string;
+  mileage?: number;
+}

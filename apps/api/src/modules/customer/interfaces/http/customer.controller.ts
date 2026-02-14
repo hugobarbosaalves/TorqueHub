@@ -1,0 +1,128 @@
+import type { FastifyInstance } from 'fastify';
+import type {
+  CreateCustomerRequest,
+  UpdateCustomerRequest,
+  ApiResponse,
+  CustomerDTO,
+} from '@torquehub/contracts';
+import { prisma } from '../../../../shared/infrastructure/database/prisma.js';
+import { CustomerRepository } from '../../infrastructure/repositories/customer.repository.js';
+import {
+  CreateCustomerUseCase,
+  ListCustomersUseCase,
+  GetCustomerUseCase,
+} from '../../application/use-cases/customer.use-cases.js';
+
+const repo = new CustomerRepository(prisma);
+const createUseCase = new CreateCustomerUseCase(repo);
+const listUseCase = new ListCustomersUseCase(repo);
+const getUseCase = new GetCustomerUseCase(repo);
+
+export async function customerRoutes(app: FastifyInstance): Promise<void> {
+  // ── POST / — Criar cliente ──────────────────────────────────────────────
+  app.post<{
+    Body: CreateCustomerRequest;
+    Reply: ApiResponse<CustomerDTO>;
+  }>('/', async (request, reply) => {
+    const { workshopId, name } = request.body;
+
+    if (!workshopId || !name) {
+      return reply.status(400).send({
+        success: false,
+        data: undefined as never,
+        meta: { error: 'Missing required fields: workshopId, name' },
+      });
+    }
+
+    const result = await createUseCase.execute(request.body);
+    return reply.status(201).send({ success: true, data: result });
+  });
+
+  // ── GET / — Listar clientes (por workshopId) ───────────────────────────
+  app.get<{
+    Querystring: { workshopId: string };
+    Reply: ApiResponse<CustomerDTO[]>;
+  }>('/', async (request, reply) => {
+    const { workshopId } = request.query;
+
+    if (!workshopId) {
+      return reply.status(400).send({
+        success: false,
+        data: undefined as never,
+        meta: { error: 'Query parameter workshopId is required' },
+      });
+    }
+
+    const customers = await listUseCase.execute(workshopId);
+    return reply.send({
+      success: true,
+      data: customers,
+      meta: { total: customers.length },
+    });
+  });
+
+  // ── GET /:id — Buscar cliente por ID ────────────────────────────────────
+  app.get<{
+    Params: { id: string };
+    Reply: ApiResponse<CustomerDTO>;
+  }>('/:id', async (request, reply) => {
+    const customer = await getUseCase.execute(request.params.id);
+
+    if (!customer) {
+      return reply.status(404).send({
+        success: false,
+        data: undefined as never,
+        meta: { error: 'Customer not found' },
+      });
+    }
+
+    return reply.send({ success: true, data: customer });
+  });
+
+  // ── PUT /:id — Atualizar cliente ────────────────────────────────────────
+  app.put<{
+    Params: { id: string };
+    Body: UpdateCustomerRequest;
+    Reply: ApiResponse<CustomerDTO>;
+  }>('/:id', async (request, reply) => {
+    try {
+      const updated = await repo.update(request.params.id, request.body);
+      return reply.send({
+        success: true,
+        data: {
+          id: updated.id,
+          workshopId: updated.workshopId,
+          name: updated.name,
+          document: updated.document,
+          phone: updated.phone,
+          email: updated.email,
+          createdAt: updated.createdAt.toISOString(),
+          updatedAt: updated.updatedAt.toISOString(),
+        },
+      });
+    } catch {
+      return reply.status(404).send({
+        success: false,
+        data: undefined as never,
+        meta: { error: 'Customer not found' },
+      });
+    }
+  });
+
+  // ── DELETE /:id — Deletar cliente ───────────────────────────────────────
+  app.delete<{
+    Params: { id: string };
+    Reply: ApiResponse<{ deleted: boolean }>;
+  }>('/:id', async (request, reply) => {
+    try {
+      await repo.delete(request.params.id);
+      return reply.send({ success: true, data: { deleted: true } });
+    } catch {
+      return reply.status(404).send({
+        success: false,
+        data: undefined as never,
+        meta: { error: 'Customer not found' },
+      });
+    }
+  });
+}

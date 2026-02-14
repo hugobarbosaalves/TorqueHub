@@ -44,6 +44,19 @@ class ApiService {
     return json['data'];
   }
 
+  static Future<dynamic> _put(String path, Map<String, dynamic> body) async {
+    final res = await http.put(
+      Uri.parse('$baseUrl$path'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(body),
+    );
+    final json = jsonDecode(res.body);
+    if (res.statusCode >= 400) {
+      throw ApiException(json['meta']?['error'] ?? 'Erro ${res.statusCode}');
+    }
+    return json['data'];
+  }
+
   static Future<void> _delete(String path) async {
     final res = await http.delete(Uri.parse('$baseUrl$path'));
     if (res.statusCode >= 400) {
@@ -124,6 +137,107 @@ class ApiService {
 
   static Future<void> deleteServiceOrder(String id) async {
     await _delete('/service-orders/$id');
+  }
+
+  // ── Customer CRUD ─────────────────────────────────────────────────────────
+
+  static Future<List<Map<String, dynamic>>> getCustomersByWorkshop(
+    String workshopId,
+  ) async {
+    final data = await _get('/customers?workshopId=$workshopId');
+    return List<Map<String, dynamic>>.from(data);
+  }
+
+  static Future<Map<String, dynamic>> getCustomer(String id) async {
+    final data = await _get('/customers/$id');
+    return Map<String, dynamic>.from(data);
+  }
+
+  static Future<Map<String, dynamic>> createCustomer({
+    required String workshopId,
+    required String name,
+    String? document,
+    String? phone,
+    String? email,
+  }) async {
+    final body = <String, dynamic>{
+      'workshopId': workshopId,
+      'name': name,
+    };
+    if (document != null && document.isNotEmpty) body['document'] = document;
+    if (phone != null && phone.isNotEmpty) body['phone'] = phone;
+    if (email != null && email.isNotEmpty) body['email'] = email;
+    final data = await _post('/customers', body);
+    return Map<String, dynamic>.from(data);
+  }
+
+  static Future<Map<String, dynamic>> updateCustomer(
+    String id,
+    Map<String, dynamic> fields,
+  ) async {
+    final data = await _put('/customers/$id', fields);
+    return Map<String, dynamic>.from(data);
+  }
+
+  static Future<void> deleteCustomer(String id) async {
+    await _delete('/customers/$id');
+  }
+
+  // ── Vehicle CRUD ──────────────────────────────────────────────────────────
+
+  static Future<List<Map<String, dynamic>>> getVehiclesByWorkshop(
+    String workshopId,
+  ) async {
+    final data = await _get('/vehicles?workshopId=$workshopId');
+    return List<Map<String, dynamic>>.from(data);
+  }
+
+  static Future<List<Map<String, dynamic>>> getVehiclesByCustomer(
+    String customerId,
+  ) async {
+    final data = await _get('/vehicles?customerId=$customerId');
+    return List<Map<String, dynamic>>.from(data);
+  }
+
+  static Future<Map<String, dynamic>> getVehicle(String id) async {
+    final data = await _get('/vehicles/$id');
+    return Map<String, dynamic>.from(data);
+  }
+
+  static Future<Map<String, dynamic>> createVehicle({
+    required String workshopId,
+    required String customerId,
+    required String plate,
+    required String brand,
+    required String model,
+    int? year,
+    String? color,
+    int? mileage,
+  }) async {
+    final body = <String, dynamic>{
+      'workshopId': workshopId,
+      'customerId': customerId,
+      'plate': plate,
+      'brand': brand,
+      'model': model,
+    };
+    if (year != null) body['year'] = year;
+    if (color != null && color.isNotEmpty) body['color'] = color;
+    if (mileage != null) body['mileage'] = mileage;
+    final data = await _post('/vehicles', body);
+    return Map<String, dynamic>.from(data);
+  }
+
+  static Future<Map<String, dynamic>> updateVehicle(
+    String id,
+    Map<String, dynamic> fields,
+  ) async {
+    final data = await _put('/vehicles/$id', fields);
+    return Map<String, dynamic>.from(data);
+  }
+
+  static Future<void> deleteVehicle(String id) async {
+    await _delete('/vehicles/$id');
   }
 }
 

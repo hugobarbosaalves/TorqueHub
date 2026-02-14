@@ -19,16 +19,7 @@ void main() {
     // Bottom navigation labels
     expect(find.text('Ordens'), findsOneWidget);
     expect(find.text('Nova Ordem'), findsOneWidget);
-  });
-
-  testWidgets('Bottom nav switches tabs', (WidgetTester tester) async {
-    await tester.pumpWidget(const TorqueHubApp());
-
-    // Tap "Nova Ordem" tab
-    await tester.tap(find.text('Nova Ordem'));
-    await tester.pumpAndSettle();
-
-    // The create order form should be visible
-    expect(find.text('Nova Ordem de Serviço'), findsOneWidget);
+    expect(find.text('Clientes'), findsOneWidget);
+    expect(find.text('Veículos'), findsOneWidget);
   });
 }

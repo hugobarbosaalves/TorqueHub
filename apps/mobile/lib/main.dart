@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'screens/orders_screen.dart';
 import 'screens/create_order_screen.dart';
+import 'screens/customers_screen.dart';
+import 'screens/vehicles_screen.dart';
 
 void main() {
   runApp(const TorqueHubApp());
@@ -24,7 +26,7 @@ class TorqueHubApp extends StatelessWidget {
   }
 }
 
-/// Shell com BottomNavigationBar: Ordens | Nova Ordem
+/// Shell com BottomNavigationBar: Ordens | Nova Ordem | Clientes | Veículos
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
 
@@ -52,6 +54,8 @@ class _MainShellState extends State<MainShell> {
           _ordersKey.currentState?.refresh();
         },
       ),
+      const CustomersScreen(),
+      const VehiclesScreen(),
     ];
   }
 
@@ -72,6 +76,16 @@ class _MainShellState extends State<MainShell> {
             icon: Icon(Icons.add_circle_outline),
             selectedIcon: Icon(Icons.add_circle),
             label: 'Nova Ordem',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.people_outline),
+            selectedIcon: Icon(Icons.people),
+            label: 'Clientes',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.directions_car_outlined),
+            selectedIcon: Icon(Icons.directions_car),
+            label: 'Veículos',
           ),
         ],
       ),

@@ -1,29 +1,16 @@
 import type { CreateServiceOrderRequest, CreateServiceOrderResponse } from '@torquehub/contracts';
-import { generateId, nowISO } from '@torquehub/utils';
-import { ServiceOrder } from '../../domain/entities/service-order.js';
+import { ServiceOrderRepository } from '../../infrastructure/repositories/service-order.repository.js';
 
 export class CreateServiceOrderUseCase {
-  async execute(input: CreateServiceOrderRequest): Promise<CreateServiceOrderResponse> {
-    const serviceOrder = ServiceOrder.create({
-      id: generateId(),
-      workshopId: input.workshopId,
-      customerId: input.customerId,
-      vehicleId: input.vehicleId,
-      description: input.description,
-      items: input.items.map((item) => ({
-        id: generateId(),
-        description: item.description,
-        quantity: item.quantity,
-        unitPrice: item.unitPrice,
-      })),
-    });
+  constructor(private readonly repo: ServiceOrderRepository) {}
 
-    // TODO: persist via repository when database is ready
+  async execute(input: CreateServiceOrderRequest): Promise<CreateServiceOrderResponse> {
+    const serviceOrder = await this.repo.create(input);
 
     return {
       id: serviceOrder.id,
-      status: serviceOrder.status,
-      createdAt: nowISO(),
+      status: serviceOrder.status as CreateServiceOrderResponse['status'],
+      createdAt: serviceOrder.createdAt.toISOString(),
     };
   }
 }

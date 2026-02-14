@@ -95,6 +95,8 @@ Managed with **pnpm workspaces**. Flutter is isolated from pnpm.
 | PostgreSQL       | 17 Alpine      | Database (Docker)          |
 | Redis            | 7 Alpine       | Cache (Docker, future use) |
 | @fastify/swagger | latest         | OpenAPI docs               |
+| @fastify/jwt     | latest         | JWT authentication         |
+| bcryptjs         | latest         | Password hashing           |
 | TypeDoc          | latest         | Code documentation         |
 
 ### 5.2 Web (`apps/web`)
@@ -111,7 +113,8 @@ Managed with **pnpm workspaces**. Flutter is isolated from pnpm.
 | ---------- | ------- | ------------ |
 | Flutter    | 3.41.x  | UI framework |
 | Dart       | 3.11.x  | Language     |
-| http       | 1.6.x   | HTTP client  |
+| http       | 1.6.x   | HTTP client         |
+| shared_preferences | 2.5.x | Local token storage |
 
 ---
 
@@ -122,9 +125,11 @@ Managed with **pnpm workspaces**. Flutter is isolated from pnpm.
 ```
 Workshop ──┬── Customer ──── Vehicle
            │
+           ├── User (ADMIN | MECHANIC)
+           │
            └── ServiceOrder ──── ServiceOrderItem
                     │
-                    └── Media (future)
+                    └── Media
 ```
 
 ### 6.2 ServiceOrder Status Flow
@@ -144,6 +149,7 @@ DRAFT → PENDING_APPROVAL → APPROVED → IN_PROGRESS → COMPLETED
 | ServiceOrder     | id, workshopId, customerId, vehicleId, description, status, totalAmount, publicToken |
 | ServiceOrderItem | id, serviceOrderId, description, quantity, unitPrice                                 |
 | Media            | id, serviceOrderId, type, url, caption                                               |
+| User             | id, workshopId, name, email, passwordHash, role (ADMIN/MECHANIC)                     |
 
 ---
 
@@ -152,13 +158,24 @@ DRAFT → PENDING_APPROVAL → APPROVED → IN_PROGRESS → COMPLETED
 Base URL: `http://localhost:3333`
 Swagger UI: `http://localhost:3333/docs`
 
-### 7.1 Health
+### 7.1 Auth
+
+| Method | Path             | Auth     | Description                              |
+| ------ | ---------------- | -------- | ---------------------------------------- |
+| POST   | `/auth/login`    | Public   | Authenticate with email + password (JWT) |
+| POST   | `/auth/register` | Public   | Register a new user                      |
+| GET    | `/auth/me`       | Required | Get authenticated user profile           |
+
+> All non-public routes require `Authorization: Bearer <token>` header.
+> Public prefixes: `/health`, `/auth/`, `/public/`, `/docs`, `/uploads/`
+
+### 7.2 Health
 
 | Method | Path      | Description  |
 | ------ | --------- | ------------ |
 | GET    | `/health` | Health check |
 
-### 7.2 Workshops (Lookup)
+### 7.3 Workshops (Lookup)
 
 | Method | Path                               | Description                 |
 | ------ | ---------------------------------- | --------------------------- |
@@ -166,7 +183,7 @@ Swagger UI: `http://localhost:3333/docs`
 | GET    | `/workshops/:workshopId/customers` | List customers for workshop |
 | GET    | `/workshops/:workshopId/vehicles`  | List vehicles for workshop  |
 
-### 7.3 Customers
+### 7.4 Customers
 
 | Method | Path                     | Description                |
 | ------ | ------------------------ | -------------------------- |
@@ -176,7 +193,7 @@ Swagger UI: `http://localhost:3333/docs`
 | PUT    | `/customers/:id`         | Update customer            |
 | DELETE | `/customers/:id`         | Delete customer            |
 
-### 7.4 Vehicles
+### 7.5 Vehicles
 
 | Method | Path                                      | Description       |
 | ------ | ----------------------------------------- | ----------------- |
@@ -186,7 +203,7 @@ Swagger UI: `http://localhost:3333/docs`
 | PUT    | `/vehicles/:id`                           | Update vehicle    |
 | DELETE | `/vehicles/:id`                           | Delete vehicle    |
 
-### 7.5 Service Orders
+### 7.6 Service Orders
 
 | Method | Path                          | Description             |
 | ------ | ----------------------------- | ----------------------- |
@@ -196,7 +213,7 @@ Swagger UI: `http://localhost:3333/docs`
 | PATCH  | `/service-orders/:id/status`  | Update status           |
 | DELETE | `/service-orders/:id`         | Delete order            |
 
-### 7.6 Media
+### 7.7 Media
 
 | Method | Path                                 | Description          |
 | ------ | ------------------------------------ | -------------------- |
@@ -204,7 +221,7 @@ Swagger UI: `http://localhost:3333/docs`
 | GET    | `/service-orders/:id/media`          | List media for order |
 | DELETE | `/service-orders/:id/media/:mediaId` | Delete a media file  |
 
-### 7.7 Public (Acesso do Cliente)
+### 7.8 Public (Acesso do Cliente)
 
 | Method | Path                                    | Description                 |
 | ------ | --------------------------------------- | --------------------------- |
@@ -223,7 +240,7 @@ Swagger UI: `http://localhost:3333/docs`
 | 4   | Customer + Vehicle modules           | ✅ Done    |
 | 5   | Media upload flow                    | ✅ Done    |
 | 6   | Customer public access link (web)    | ✅ Done    |
-| 7   | Basic authentication                 | ⏳ Pending |
+| 7   | Basic authentication                 | ✅ Done    |
 | 8   | Swagger + TypeDoc + Conventions      | ✅ Done    |
 
 ---

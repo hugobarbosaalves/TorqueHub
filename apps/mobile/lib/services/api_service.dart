@@ -8,6 +8,7 @@ library;
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'auth_service.dart';
 
 /// Serviço centralizado para chamadas à API do TorqueHub.
 class ApiService {
@@ -15,9 +16,18 @@ class ApiService {
   // Device físico: trocar para o IP local (ex: 192.168.1.x)
   static const String baseUrl = 'http://10.0.2.2:3333';
 
+  /// Retorna headers com Authorization se autenticado.
+  static Map<String, String> _headers({bool json = false}) {
+    final h = <String, String>{};
+    if (json) h['Content-Type'] = 'application/json';
+    final token = AuthService.token;
+    if (token != null) h['Authorization'] = 'Bearer $token';
+    return h;
+  }
+
   /// Executa uma requisição GET e retorna o campo `data` da resposta.
   static Future<dynamic> _get(String path) async {
-    final res = await http.get(Uri.parse('$baseUrl$path'));
+    final res = await http.get(Uri.parse('$baseUrl$path'), headers: _headers());
     final json = jsonDecode(res.body);
     if (res.statusCode >= 400) {
       throw ApiException(json['meta']?['error'] ?? 'Erro ${res.statusCode}');
@@ -28,7 +38,7 @@ class ApiService {
   static Future<dynamic> _post(String path, Map<String, dynamic> body) async {
     final res = await http.post(
       Uri.parse('$baseUrl$path'),
-      headers: {'Content-Type': 'application/json'},
+      headers: _headers(json: true),
       body: jsonEncode(body),
     );
     final json = jsonDecode(res.body);
@@ -41,7 +51,7 @@ class ApiService {
   static Future<dynamic> _patch(String path, Map<String, dynamic> body) async {
     final res = await http.patch(
       Uri.parse('$baseUrl$path'),
-      headers: {'Content-Type': 'application/json'},
+      headers: _headers(json: true),
       body: jsonEncode(body),
     );
     final json = jsonDecode(res.body);
@@ -54,7 +64,7 @@ class ApiService {
   static Future<dynamic> _put(String path, Map<String, dynamic> body) async {
     final res = await http.put(
       Uri.parse('$baseUrl$path'),
-      headers: {'Content-Type': 'application/json'},
+      headers: _headers(json: true),
       body: jsonEncode(body),
     );
     final json = jsonDecode(res.body);
@@ -65,7 +75,10 @@ class ApiService {
   }
 
   static Future<void> _delete(String path) async {
-    final res = await http.delete(Uri.parse('$baseUrl$path'));
+    final res = await http.delete(
+      Uri.parse('$baseUrl$path'),
+      headers: _headers(),
+    );
     if (res.statusCode >= 400) {
       final json = jsonDecode(res.body);
       throw ApiException(json['meta']?['error'] ?? 'Erro ${res.statusCode}');
@@ -245,6 +258,7 @@ class ApiService {
   }) async {
     final uri = Uri.parse('$baseUrl/service-orders/$serviceOrderId/media');
     final request = http.MultipartRequest('POST', uri)
+      ..headers.addAll(_headers())
       ..files.add(await http.MultipartFile.fromPath('file', file.path));
     if (caption != null && caption.isNotEmpty) {
       request.fields['caption'] = caption;

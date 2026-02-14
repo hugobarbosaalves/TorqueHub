@@ -28,6 +28,11 @@
       "@prisma/engines",
       "prisma",
       "esbuild"
+    ],
+    "ignoredBuiltDependencies": [
+      "@prisma/engines",
+      "bcrypt",
+      "prisma"
     ]
   }
 }

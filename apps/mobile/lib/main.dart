@@ -6,16 +6,20 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'screens/login_screen.dart';
 import 'screens/orders_screen.dart';
 import 'screens/customers_screen.dart';
 import 'screens/vehicles_screen.dart';
+import 'services/auth_service.dart';
 
-/// Entry point — launches the [TorqueHubApp] widget.
-void main() {
+/// Entry point — initializes auth state and launches the app.
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await AuthService.init();
   runApp(const TorqueHubApp());
 }
 
-/// Root application widget with Material Design theme and bottom navigation.
+/// Root application widget with Material Design theme and route management.
 class TorqueHubApp extends StatelessWidget {
   const TorqueHubApp({super.key});
 
@@ -29,7 +33,11 @@ class TorqueHubApp extends StatelessWidget {
         useMaterial3: true,
         brightness: Brightness.light,
       ),
-      home: const MainShell(),
+      initialRoute: AuthService.isAuthenticated ? '/home' : '/login',
+      routes: {
+        '/login': (_) => const LoginScreen(),
+        '/home': (_) => const MainShell(),
+      },
     );
   }
 }

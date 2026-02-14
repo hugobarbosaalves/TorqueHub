@@ -159,3 +159,46 @@ export interface UploadMediaResponse {
   caption: string | null;
   createdAt: string;
 }
+
+// ─── Auth ──────────────────────────────────────────────────────
+
+/** Allowed user roles. */
+export type UserRole = 'ADMIN' | 'MECHANIC';
+
+/** Data transfer object for a user record (no password). */
+export interface UserDTO {
+  id: string;
+  workshopId: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  createdAt: string;
+}
+
+/** Payload for logging in. */
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+/** Payload for registering a new user. */
+export interface RegisterRequest {
+  workshopId: string;
+  name: string;
+  email: string;
+  password: string;
+  role?: UserRole;
+}
+
+/** Response after successful authentication. */
+export interface AuthResponse {
+  token: string;
+  user: UserDTO;
+}
+
+/** JWT payload shape — stored inside the token. */
+export interface JwtPayload {
+  sub: string;
+  workshopId: string;
+  role: UserRole;
+}

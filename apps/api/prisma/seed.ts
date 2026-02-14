@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
+import { hashSync } from 'bcryptjs';
 import pg from 'pg';
 
 const connectionString = process.env['DATABASE_URL'];
@@ -54,11 +55,26 @@ async function seed(): Promise<void> {
   });
   console.log(`  ✅ Vehicle: ${vehicle.brand} ${vehicle.model} - ${vehicle.plate} (${vehicle.id})`);
 
+  const adminUser = await prisma.user.upsert({
+    where: { email: 'admin@torquehub.com.br' },
+    update: {},
+    create: {
+      workshopId: workshop.id,
+      name: 'Admin TorqueHub',
+      email: 'admin@torquehub.com.br',
+      passwordHash: hashSync('admin123', 10),
+      role: 'ADMIN',
+    },
+  });
+  console.log(`  ✅ User: ${adminUser.name} (${adminUser.email}) — role: ${adminUser.role}`);
+
   console.log('');
   console.log('📋 Seed data IDs (use these for API testing):');
   console.log(`   workshopId:  ${workshop.id}`);
   console.log(`   customerId:  ${customer.id}`);
   console.log(`   vehicleId:   ${vehicle.id}`);
+  console.log(`   userId:      ${adminUser.id}`);
+  console.log('   login:       admin@torquehub.com.br / admin123');
   console.log('');
   console.log('🌱 Seeding complete!');
 

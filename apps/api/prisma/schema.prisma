@@ -23,6 +23,7 @@ model Workshop {
   customers     Customer[]
   vehicles      Vehicle[]
   serviceOrders ServiceOrder[]
+  users         User[]
 
   @@map("workshops")
 }
@@ -133,4 +134,28 @@ enum MediaType {
   VIDEO
 
   @@map("media_type")
+}
+
+/// Usuário do sistema — mecânico ou admin da oficina.
+model User {
+  id           String   @id @default(uuid())
+  workshopId   String   @map("workshop_id")
+  name         String
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  role         UserRole @default(MECHANIC)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  workshop Workshop @relation(fields: [workshopId], references: [id])
+
+  @@map("users")
+}
+
+/// Papéis de usuário no sistema.
+enum UserRole {
+  ADMIN
+  MECHANIC
+
+  @@map("user_role")
 }

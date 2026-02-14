@@ -6,6 +6,7 @@ library;
 
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../services/auth_service.dart';
 import 'create_order_screen.dart';
 import 'order_detail_screen.dart';
 
@@ -96,6 +97,13 @@ class OrdersScreenState extends State<OrdersScreen> {
     return 'R\$ ${value.toStringAsFixed(2).replaceAll('.', ',')}';
   }
 
+  /// Encerra a sessão e volta para a tela de login.
+  Future<void> _handleLogout() async {
+    await AuthService.logout();
+    if (!mounted) return;
+    Navigator.of(context).pushReplacementNamed('/login');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -107,6 +115,23 @@ class OrdersScreenState extends State<OrdersScreen> {
             onPressed: refresh,
             icon: const Icon(Icons.refresh),
             tooltip: 'Atualizar',
+          ),
+          PopupMenuButton<String>(
+            onSelected: (value) {
+              if (value == 'logout') _handleLogout();
+            },
+            itemBuilder: (_) => [
+              const PopupMenuItem(
+                value: 'logout',
+                child: Row(
+                  children: [
+                    Icon(Icons.logout, size: 20),
+                    SizedBox(width: 8),
+                    Text('Sair'),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),

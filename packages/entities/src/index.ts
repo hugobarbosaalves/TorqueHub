@@ -3,10 +3,8 @@
  * @module entities
  */
 
-
 /** Domain identifier type — UUID string alias for semantic clarity. */
 export type ID = string;
-
 
 /**
  * Abstract base class for all domain entities.
@@ -34,7 +32,6 @@ export abstract class BaseEntity<T extends { id: ID }> {
   }
 }
 
-
 /**
  * Abstract base class for immutable value objects.
  * Equality is determined by deep comparison of properties.
@@ -51,7 +48,6 @@ export abstract class ValueObject<T extends Record<string, unknown>> {
     return JSON.stringify(this.props) === JSON.stringify(other.props);
   }
 }
-
 
 /**
  * Custom domain error with a machine-readable code.

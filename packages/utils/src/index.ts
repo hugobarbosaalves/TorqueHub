@@ -1,4 +1,3 @@
-
 /**
  * Checks if a value is defined (not null or undefined).
  */
@@ -14,7 +13,6 @@ export function assert(condition: unknown, message: string): asserts condition {
     throw new Error(`[TorqueHub Assertion] ${message}`);
   }
 }
-
 
 /**
  * Generates a simple unique ID (not cryptographically secure).
@@ -35,7 +33,6 @@ export function slugify(text: string): string {
     .replaceAll(/-+/g, '-');
 }
 
-
 /**
  * Rounds a number to a given number of decimal places.
  */
@@ -53,7 +50,6 @@ export function formatCurrency(valueInCents: number): string {
     currency: 'BRL',
   }).format(valueInCents / 100);
 }
-
 
 /**
  * Returns the current ISO timestamp.

@@ -20,7 +20,6 @@ export interface ServiceOrder {
   updatedAt: string;
 }
 
-
 /**
  * Busca uma ordem de serviço pelo token público.
  * Usado pelo cliente para acessar seu orçamento/serviço.

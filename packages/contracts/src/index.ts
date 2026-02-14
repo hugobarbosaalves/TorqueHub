@@ -4,7 +4,6 @@
  * @module contracts
  */
 
-
 /** Standard API success response envelope. */
 export interface ApiResponse<T> {
   success: boolean;
@@ -70,7 +69,6 @@ export interface CreateServiceOrderResponse {
   createdAt: string;
 }
 
-
 /** Data transfer object for a customer record. */
 export interface CustomerDTO {
   id: string;
@@ -99,7 +97,6 @@ export interface UpdateCustomerRequest {
   phone?: string;
   email?: string;
 }
-
 
 /** Data transfer object for a vehicle record. */
 export interface VehicleDTO {

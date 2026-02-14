@@ -7,7 +7,6 @@ library;
 
 import 'package:flutter/material.dart';
 import 'screens/orders_screen.dart';
-import 'screens/create_order_screen.dart';
 import 'screens/customers_screen.dart';
 import 'screens/vehicles_screen.dart';
 
@@ -35,7 +34,7 @@ class TorqueHubApp extends StatelessWidget {
   }
 }
 
-/// Shell com BottomNavigationBar: Ordens | Nova Ordem | Clientes | Veículos
+/// Shell com BottomNavigationBar: Ordens | Clientes | Veículos
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
 
@@ -46,7 +45,6 @@ class MainShell extends StatefulWidget {
 class _MainShellState extends State<MainShell> {
   int _currentIndex = 0;
 
-  // GlobalKey para poder dar refresh na lista de ordens após criar uma
   final _ordersKey = GlobalKey<OrdersScreenState>();
 
   late final List<Widget> _screens;
@@ -56,13 +54,6 @@ class _MainShellState extends State<MainShell> {
     super.initState();
     _screens = [
       OrdersScreen(key: _ordersKey),
-      CreateOrderScreen(
-        onOrderCreated: () {
-          // Volta pra aba de ordens e recarrega
-          setState(() => _currentIndex = 0);
-          _ordersKey.currentState?.refresh();
-        },
-      ),
       const CustomersScreen(),
       const VehiclesScreen(),
     ];
@@ -80,11 +71,6 @@ class _MainShellState extends State<MainShell> {
             icon: Icon(Icons.list_alt_outlined),
             selectedIcon: Icon(Icons.list_alt),
             label: 'Ordens',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.add_circle_outline),
-            selectedIcon: Icon(Icons.add_circle),
-            label: 'Nova Ordem',
           ),
           NavigationDestination(
             icon: Icon(Icons.people_outline),

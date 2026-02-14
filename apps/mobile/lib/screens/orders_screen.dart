@@ -6,6 +6,7 @@ library;
 
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import 'create_order_screen.dart';
 import 'order_detail_screen.dart';
 
 const _statusConfig = {
@@ -77,6 +78,18 @@ class OrdersScreenState extends State<OrdersScreen> {
     }
   }
 
+  /// Abre a tela de criação de ordem e recarrega a lista ao voltar.
+  Future<void> _createOrder() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) =>
+            CreateOrderScreen(onOrderCreated: () => Navigator.pop(context)),
+      ),
+    );
+    refresh();
+  }
+
   String _formatCurrency(dynamic cents) {
     final value =
         (cents is int ? cents : int.tryParse(cents.toString()) ?? 0) / 100;
@@ -96,6 +109,10 @@ class OrdersScreenState extends State<OrdersScreen> {
             tooltip: 'Atualizar',
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _createOrder,
+        child: const Icon(Icons.add),
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
@@ -155,7 +172,7 @@ class OrdersScreenState extends State<OrdersScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Toque em "Nova Ordem" para criar a primeira.',
+              'Toque em + para criar a primeira.',
               style: TextStyle(color: Colors.grey.shade500),
             ),
           ],

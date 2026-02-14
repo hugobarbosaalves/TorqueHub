@@ -184,7 +184,6 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
               child: ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
-
                   _buildSectionTitle('Oficina'),
                   _buildDropdown(
                     currentValue: _selectedWorkshopId,
@@ -201,7 +200,6 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                   ),
 
                   const SizedBox(height: 16),
-
 
                   _buildSectionTitle('Cliente'),
                   _buildDropdown(
@@ -225,7 +223,6 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                   ),
 
                   const SizedBox(height: 16),
-
 
                   _buildSectionTitle('Veículo'),
                   _buildDropdown(
@@ -252,7 +249,6 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                   const Divider(),
                   const SizedBox(height: 16),
 
-
                   _buildSectionTitle('Descrição do Serviço'),
                   TextFormField(
                     controller: _descriptionCtrl,
@@ -267,7 +263,6 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                   ),
 
                   const SizedBox(height: 24),
-
 
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -289,7 +284,6 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                   }),
 
                   const SizedBox(height: 32),
-
 
                   FilledButton.icon(
                     onPressed: _loading ? null : _submit,

@@ -283,7 +283,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-
           Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 16),
@@ -310,7 +309,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
 
           const SizedBox(height: 20),
 
-
           Text(
             order['description'] as String? ?? 'Sem descrição',
             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
@@ -332,7 +330,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             'Criada em: ${_formatDate(order['createdAt'] as String?)}',
             style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
           ),
-
 
           const SizedBox(height: 12),
           InkWell(
@@ -370,14 +367,12 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           const Divider(),
           const SizedBox(height: 16),
 
-
           const Text(
             'Itens / Serviços',
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 12),
           ...items.map((item) => _buildItemRow(item)),
-
 
           const SizedBox(height: 12),
           Container(

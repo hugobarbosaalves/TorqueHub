@@ -5,7 +5,7 @@ services:
     container_name: torquehub-postgres
     restart: unless-stopped
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      - '${POSTGRES_PORT:-5432}:5432'
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-torquehub}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-torquehub123}
@@ -13,7 +13,7 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-torquehub}"]
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-torquehub}']
       interval: 5s
       timeout: 5s
       retries: 5
@@ -24,12 +24,12 @@ services:
     container_name: torquehub-redis
     restart: unless-stopped
     ports:
-      - "${REDIS_PORT:-6379}:6379"
+      - '${REDIS_PORT:-6379}:6379'
     command: redis-server --appendonly yes --maxmemory 128mb --maxmemory-policy allkeys-lru
     volumes:
       - redisdata:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ['CMD', 'redis-cli', 'ping']
       interval: 5s
       timeout: 5s
       retries: 5

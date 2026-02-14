@@ -57,10 +57,7 @@ export class ServiceOrder {
   }
 
   get totalAmount(): number {
-    return this.props.items.reduce(
-      (sum, item) => sum + item.quantity * item.unitPrice,
-      0,
-    );
+    return this.props.items.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0);
   }
 
   toJSON(): ServiceOrderProps {

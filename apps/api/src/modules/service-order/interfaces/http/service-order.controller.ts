@@ -1,5 +1,9 @@
 import type { FastifyInstance } from 'fastify';
-import type { CreateServiceOrderRequest, ApiResponse, CreateServiceOrderResponse } from '@torquehub/contracts';
+import type {
+  CreateServiceOrderRequest,
+  ApiResponse,
+  CreateServiceOrderResponse,
+} from '@torquehub/contracts';
 import { CreateServiceOrderUseCase } from '../../application/use-cases/create-service-order.use-case.js';
 
 const createServiceOrderUseCase = new CreateServiceOrderUseCase();

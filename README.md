@@ -9,13 +9,13 @@ Plataforma de gestão de manutenção automotiva.
 
 ## 📦 Stack
 
-| Camada | Tecnologia | Versão |
-|--------|-----------|--------|
-| Monorepo | pnpm workspace | 10.29.3 |
-| Backend | Node.js + Fastify + TypeScript | Node 24.13.1 / Fastify 5.7.4 / TS 5.9.3 |
-| Web | React + Vite + TypeScript | React 19.2.4 / Vite 7.3.1 |
-| Mobile | Flutter | 3.41.0 |
-| Linting | ESLint + Prettier | ESLint 9.28.0 / Prettier 3.8.1 |
+| Camada   | Tecnologia                     | Versão                                  |
+| -------- | ------------------------------ | --------------------------------------- |
+| Monorepo | pnpm workspace                 | 10.29.3                                 |
+| Backend  | Node.js + Fastify + TypeScript | Node 24.13.1 / Fastify 5.7.4 / TS 5.9.3 |
+| Web      | React + Vite + TypeScript      | React 19.2.4 / Vite 7.3.1               |
+| Mobile   | Flutter                        | 3.41.0                                  |
+| Linting  | ESLint + Prettier              | ESLint 9.28.0 / Prettier 3.8.1          |
 
 ---
 
@@ -137,13 +137,13 @@ modules/{module}/
 
 ## 🧹 Scripts Disponíveis
 
-| Script | Descrição |
-|--------|-----------|
+| Script         | Descrição                          |
+| -------------- | ---------------------------------- |
 | `pnpm dev:api` | Inicia API em modo desenvolvimento |
 | `pnpm dev:web` | Inicia Web em modo desenvolvimento |
-| `pnpm build` | Build de todos os projetos |
-| `pnpm lint` | Lint de todos os projetos |
-| `pnpm format` | Formata código com Prettier |
+| `pnpm build`   | Build de todos os projetos         |
+| `pnpm lint`    | Lint de todos os projetos          |
+| `pnpm format`  | Formata código com Prettier        |
 
 ---
 

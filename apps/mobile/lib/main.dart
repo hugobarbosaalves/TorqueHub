@@ -47,15 +47,14 @@ class _HomeScreenState extends State<HomeScreen> {
     });
 
     try {
-      final response = await http.get(
-        Uri.parse('$apiBaseUrl/health'),
-      );
+      final response = await http.get(Uri.parse('$apiBaseUrl/health'));
 
       // Coloque um BREAKPOINT aqui para inspecionar a response
       final body = jsonDecode(response.body);
 
       setState(() {
-        _status = '✅ Health OK\n'
+        _status =
+            '✅ Health OK\n'
             'Status: ${response.statusCode}\n'
             'Body: ${const JsonEncoder.withIndent('  ').convert(body)}';
       });
@@ -95,7 +94,8 @@ class _HomeScreenState extends State<HomeScreen> {
       final body = jsonDecode(response.body);
 
       setState(() {
-        _status = '✅ Ordem criada!\n'
+        _status =
+            '✅ Ordem criada!\n'
             'Status: ${response.statusCode}\n'
             'Body: ${const JsonEncoder.withIndent('  ').convert(body)}';
       });
@@ -111,17 +111,17 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('TorqueHub'),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text('TorqueHub'), centerTitle: true),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Icon(Icons.build_circle_outlined,
-                size: 80, color: Color(0xFF1A1A2E)),
+            const Icon(
+              Icons.build_circle_outlined,
+              size: 80,
+              color: Color(0xFF1A1A2E),
+            ),
             const SizedBox(height: 16),
             const Text(
               'TorqueHub Mobile',
@@ -137,8 +137,10 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 32),
             const Divider(),
             const SizedBox(height: 16),
-            const Text('Testar Backend',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+            const Text(
+              'Testar Backend',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+            ),
             const SizedBox(height: 12),
             ElevatedButton.icon(
               onPressed: _loading ? null : _testHealth,
@@ -161,7 +163,10 @@ class _HomeScreenState extends State<HomeScreen> {
               child: SelectableText(
                 _status,
                 style: const TextStyle(
-                    fontFamily: 'monospace', fontSize: 13, height: 1.5),
+                  fontFamily: 'monospace',
+                  fontSize: 13,
+                  height: 1.5,
+                ),
               ),
             ),
           ],

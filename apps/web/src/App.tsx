@@ -27,12 +27,12 @@ export function App() {
   }
 
   return (
-    <div style={{ fontFamily: 'system-ui, sans-serif', maxWidth: 800, margin: '0 auto', padding: 40 }}>
+    <div
+      style={{ fontFamily: 'system-ui, sans-serif', maxWidth: 800, margin: '0 auto', padding: 40 }}
+    >
       <h1 style={{ color: '#1a1a2e' }}>🚗 TorqueHub</h1>
       <h2 style={{ color: '#16213e' }}>Portal do Cliente</h2>
-      <p style={{ color: '#666' }}>
-        Plataforma de gestão de manutenção automotiva.
-      </p>
+      <p style={{ color: '#666' }}>Plataforma de gestão de manutenção automotiva.</p>
 
       <hr style={{ margin: '24px 0', border: 'none', borderTop: '1px solid #eee' }} />
 

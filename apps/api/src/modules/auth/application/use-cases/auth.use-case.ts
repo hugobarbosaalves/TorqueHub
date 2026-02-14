@@ -5,7 +5,10 @@
 
 import { compare, hash } from 'bcryptjs';
 import type { UserDTO, AuthResponse, JwtPayload } from '@torquehub/contracts';
-import type { UserRepository, UserRecord } from '../../infrastructure/repositories/user.repository.js';
+import type {
+  UserRepository,
+  UserRecord,
+} from '../../infrastructure/repositories/user.repository.js';
 import type { UserRole as PrismaUserRole } from '@prisma/client';
 
 const SALT_ROUNDS = 10;

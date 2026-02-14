@@ -8,6 +8,7 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'api_service.dart';
+import 'app_config.dart';
 
 /// Gerencia autenticação e persistência do token JWT.
 class AuthService {
@@ -42,7 +43,7 @@ class AuthService {
     String password,
   ) async {
     final res = await http.post(
-      Uri.parse('${ApiService.baseUrl}/auth/login'),
+      Uri.parse('${AppConfig.apiBaseUrl}/auth/login'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'email': email, 'password': password}),
     );

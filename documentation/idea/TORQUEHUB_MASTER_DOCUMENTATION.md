@@ -109,12 +109,12 @@ Managed with **pnpm workspaces**. Flutter is isolated from pnpm.
 
 ### 5.3 Mobile (`apps/mobile`)
 
-| Technology | Version | Purpose      |
-| ---------- | ------- | ------------ |
-| Flutter    | 3.41.x  | UI framework |
-| Dart       | 3.11.x  | Language     |
-| http       | 1.6.x   | HTTP client         |
-| shared_preferences | 2.5.x | Local token storage |
+| Technology         | Version | Purpose             |
+| ------------------ | ------- | ------------------- |
+| Flutter            | 3.41.x  | UI framework        |
+| Dart               | 3.11.x  | Language            |
+| http               | 1.6.x   | HTTP client         |
+| shared_preferences | 2.5.x   | Local token storage |
 
 ---
 
@@ -232,16 +232,16 @@ Swagger UI: `http://localhost:3333/docs`
 
 ## 8. Development Checklist
 
-| #   | Task                                 | Status     |
-| --- | ------------------------------------ | ---------- |
-| 1   | Domain models (entities, types)      | ✅ Done    |
-| 2   | Database layer (Prisma + PostgreSQL) | ✅ Done    |
-| 3   | ServiceOrder CRUD persistence        | ✅ Done    |
-| 4   | Customer + Vehicle modules           | ✅ Done    |
-| 5   | Media upload flow                    | ✅ Done    |
-| 6   | Customer public access link (web)    | ✅ Done    |
-| 7   | Basic authentication                 | ✅ Done    |
-| 8   | Swagger + TypeDoc + Conventions      | ✅ Done    |
+| #   | Task                                 | Status  |
+| --- | ------------------------------------ | ------- |
+| 1   | Domain models (entities, types)      | ✅ Done |
+| 2   | Database layer (Prisma + PostgreSQL) | ✅ Done |
+| 3   | ServiceOrder CRUD persistence        | ✅ Done |
+| 4   | Customer + Vehicle modules           | ✅ Done |
+| 5   | Media upload flow                    | ✅ Done |
+| 6   | Customer public access link (web)    | ✅ Done |
+| 7   | Basic authentication                 | ✅ Done |
+| 8   | Swagger + TypeDoc + Conventions      | ✅ Done |
 
 ---
 

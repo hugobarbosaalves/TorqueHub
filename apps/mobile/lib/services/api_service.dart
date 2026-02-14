@@ -1,20 +1,19 @@
 /// TorqueHub API service — centralizes all HTTP calls to the backend.
 ///
 /// Uses the singleton pattern via static methods.
-/// Base URL points to localhost via Android emulator bridge (10.0.2.2).
-/// For physical devices, change [baseUrl] to your machine's local IP.
+/// Base URL is configured via [AppConfig.apiBaseUrl].
 library;
 
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'app_config.dart';
 import 'auth_service.dart';
 
 /// Serviço centralizado para chamadas à API do TorqueHub.
 class ApiService {
-  // Emulador Android: 10.0.2.2 = localhost da máquina host
-  // Device físico: trocar para o IP local (ex: 192.168.1.x)
-  static const String baseUrl = 'http://10.0.2.2:3333';
+  /// URL base da API — configurada em [AppConfig].
+  static String get baseUrl => AppConfig.apiBaseUrl;
 
   /// Retorna headers com Authorization se autenticado.
   static Map<String, String> _headers({bool json = false}) {

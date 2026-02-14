@@ -1,0 +1,25 @@
+# Render Blueprint — auto-configures the TorqueHub API service.
+# https://docs.render.com/infrastructure-as-code
+#
+# Uso: conecte o repo no Render e ele detecta este arquivo automaticamente.
+# Ou acesse: https://dashboard.render.com/select-repo → selecione TorqueHub.
+
+services:
+  - type: web
+    name: torquehub-api
+    runtime: docker
+    dockerfilePath: apps/api/Dockerfile
+    dockerContext: .
+    branch: develop
+    plan: free
+    envVars:
+      - key: DATABASE_URL
+        sync: false # Preencher manualmente com a URL do Neon
+      - key: JWT_SECRET
+        generateValue: true # Render gera automaticamente
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "3333"
+      - key: HOST
+        value: "0.0.0.0"

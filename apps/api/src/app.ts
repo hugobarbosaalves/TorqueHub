@@ -16,16 +16,14 @@ import { vehicleRoutes } from './modules/vehicle/interfaces/http/vehicle.control
 import { publicOrderRoutes } from './modules/service-order/interfaces/http/public-order.controller.js';
 import { mediaRoutes } from './modules/service-order/interfaces/http/media.controller.js';
 
+const IS_PRODUCTION = process.env['NODE_ENV'] === 'production';
+
 /** Builds and configures the Fastify application instance. */
 export async function buildApp(): Promise<FastifyInstance> {
   const app = Fastify({
-    logger: {
-      level: 'info',
-      transport: {
-        target: 'pino-pretty',
-        options: { colorize: true },
-      },
-    },
+    logger: IS_PRODUCTION
+      ? { level: 'info' }
+      : { level: 'info', transport: { target: 'pino-pretty', options: { colorize: true } } },
   });
 
   await app.register(cors, { origin: true });
@@ -50,7 +48,9 @@ export async function buildApp(): Promise<FastifyInstance> {
         version: '0.1.0',
         contact: { name: 'TorqueHub Team' },
       },
-      servers: [{ url: 'http://localhost:3333', description: 'Development' }],
+      servers: IS_PRODUCTION
+        ? [{ url: process.env['RENDER_EXTERNAL_URL'] ?? 'https://torquehub-api.onrender.com', description: 'Production' }]
+        : [{ url: 'http://localhost:3333', description: 'Development' }],
       tags: [
         { name: 'Health', description: 'Health check endpoint' },
         { name: 'Auth', description: 'Authentication — login, register, profile' },

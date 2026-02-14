@@ -11,7 +11,7 @@ import {
  * Returns workshops, customers, and vehicles.
  */
 export function lookupRoutes(app: FastifyInstance): void {
-  // ── GET /workshops ──────────────────────────────────────────────────────
+  /** Lista todas as oficinas cadastradas, ordenadas por nome. */
   app.get('/', { schema: listWorkshopsSchema }, async (_request, reply) => {
     const workshops = await prisma.workshop.findMany({
       orderBy: { name: 'asc' },
@@ -19,7 +19,7 @@ export function lookupRoutes(app: FastifyInstance): void {
     return reply.send({ success: true, data: workshops });
   });
 
-  // ── GET /workshops/:workshopId/customers ────────────────────────────────
+  /** Lista clientes de uma oficina para popular dropdowns. */
   app.get<{ Params: { workshopId: string } }>(
     '/:workshopId/customers',
     { schema: listWorkshopCustomersSchema },
@@ -32,7 +32,7 @@ export function lookupRoutes(app: FastifyInstance): void {
     },
   );
 
-  // ── GET /workshops/:workshopId/vehicles ─────────────────────────────────
+  /** Lista veículos de uma oficina, com filtro opcional por cliente. */
   app.get<{ Params: { workshopId: string }; Querystring: { customerId?: string } }>(
     '/:workshopId/vehicles',
     { schema: listWorkshopVehiclesSchema },

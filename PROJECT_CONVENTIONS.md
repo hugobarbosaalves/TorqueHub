@@ -1,20 +1,20 @@
 # TorqueHub — Project Conventions & AI Internal Protocol
 
-> **MANDATORY**: Any AI agent or human developer MUST read this file AND
-> `documentation/idea/TORQUEHUB_MASTER_DOCUMENTATION.md` before writing any code.
+> **OBRIGATÓRIO**: Qualquer agente IA ou desenvolvedor DEVE ler este arquivo E
+> `documentation/idea/TORQUEHUB_MASTER_DOCUMENTATION.md` ANTES de escrever qualquer código.
 
 ---
 
-## 1. Architecture Overview
+## 1. Arquitetura
 
-| Layer           | Responsibility                              | Allowed Dependencies         |
-|----------------|---------------------------------------------|------------------------------|
-| **Domain**      | Entities, Value Objects, Domain Errors      | Only `@torquehub/entities`   |
-| **Application** | Use Cases (orchestration only)              | Domain + Repository ports    |
-| **Infrastructure** | Prisma repos, HTTP adapters, external services | Application + Domain     |
-| **Interfaces**  | Controllers (HTTP routes), DTOs             | Application + contracts      |
+| Camada             | Responsabilidade                                | Dependências Permitidas    |
+| ------------------ | ----------------------------------------------- | -------------------------- |
+| **Domain**         | Entidades, Value Objects, Erros de Domínio      | Apenas `@torquehub/entities` |
+| **Application**    | Use Cases (orquestração apenas)                 | Domain + portas de Repository |
+| **Infrastructure** | Repos Prisma, adaptadores HTTP, serviços ext.   | Application + Domain       |
+| **Interfaces**     | Controllers (rotas HTTP), DTOs                  | Application + contracts    |
 
-### Dependency Rule
+### Regra de Dependência
 
 ```
 Interfaces → Application → Domain
@@ -22,197 +22,304 @@ Interfaces → Application → Domain
         Infrastructure
 ```
 
-**Never** import from `interfaces/` or `infrastructure/` inside `domain/` or `application/`.
+**Nunca** importe de `interfaces/` ou `infrastructure/` dentro de `domain/` ou `application/`.
 
 ---
 
-## 2. Platform Responsibilities
+## 2. Responsabilidades das Plataformas
 
-| Platform       | Target User | Purpose                             |
-|---------------|-------------|-------------------------------------|
-| `apps/api`    | Both        | REST API (Fastify), business logic  |
-| `apps/web`    | Customer    | Public portal — order lookup only   |
-| `apps/mobile` | Mechanic    | Full CRUD workshop management tool  |
+| Plataforma    | Usuário Alvo | Propósito                          |
+| ------------- | ------------ | ---------------------------------- |
+| `apps/api`    | Ambos        | REST API (Fastify), lógica de negócio |
+| `apps/web`    | Cliente      | Portal público — consulta por token |
+| `apps/mobile` | Mecânico     | CRUD completo de oficina           |
 
-> **CRITICAL**: The web app is a **customer portal** (token lookup).
-> All mechanic/workshop features belong in **mobile only**.
+> **CRÍTICO**: O web app é **portal do cliente** (consulta por token).
+> Todas as funcionalidades de mecânico/oficina pertencem **apenas ao mobile**.
 
 ---
 
-## 3. Code Standards
+## 3. Regras Absolutas (Todas as Stacks)
 
-### 3.1 File Size
-- **Maximum 200 lines per file** — no exceptions
-- If a file grows beyond 200 lines, split into smaller, well-named modules
+Estas regras são **invioláveis** em qualquer stack do projeto.
 
-### 3.2 Naming Conventions
+### 3.1 Proibições Universais
 
-| Artifact           | Convention                    | Example                          |
-|-------------------|-------------------------------|----------------------------------|
-| Files             | `kebab-case`                  | `customer.controller.ts`         |
-| Classes           | `PascalCase`                  | `CreateCustomerUseCase`          |
-| Interfaces/Types  | `PascalCase`                  | `CustomerDTO`, `ApiResponse`     |
-| Functions         | `camelCase`                   | `customerRoutes`, `toDTO`        |
-| Constants         | `UPPER_SNAKE_CASE`            | `STATUS_LABELS`, `MAX_RETRIES`   |
-| Folders           | `kebab-case`                  | `service-order/`, `use-cases/`   |
-| Dart files        | `snake_case`                  | `api_service.dart`               |
-| Dart classes      | `PascalCase`                  | `OrdersScreen`                   |
+| Regra                                  | Motivo                                        |
+| -------------------------------------- | --------------------------------------------- |
+| **NUNCA** usar `any` (TS) ou evitar `dynamic` desnecessário (Dart) | Segurança de tipos é obrigatória |
+| **NUNCA** usar `||` para valores default | Usar `??` (nullish coalescing). `||` só em condições booleanas puras |
+| **NUNCA** usar `!` (non-null assertion) | Usar type guards, early return ou `??` |
+| **NUNCA** usar `as` cast sem validação | Usar type guards + `unknown` |
+| **NUNCA** hardcodar credenciais        | Usar variáveis de ambiente |
+| **NUNCA** exceder 200 linhas por arquivo | Dividir em módulos menores |
+| **NUNCA** usar comentários decorativos | Nada de `// ── GET /path ──────` — usar JSDoc descritivo |
+| **NUNCA** deixar `console.log` em prod | Usar logger estruturado |
+| **NUNCA** ignorar erros silenciosamente | Sempre tratar ou relançar |
 
-### 3.3 Module Structure (Backend)
+### 3.2 Obrigações Universais
 
-Every feature module follows this structure:
+| Regra                                   | Aplicação                                     |
+| --------------------------------------- | --------------------------------------------- |
+| **Sempre** tipar retornos explicitamente | Funções, métodos, variáveis complexas         |
+| **Sempre** documentar com JSDoc/DartDoc | Toda função/classe/interface exportada        |
+| **Sempre** usar early return            | Evitar aninhamento profundo                   |
+| **Sempre** validar inputs               | Nunca confiar em dados externos               |
+| **Sempre** usar `const` quando possível | TS: `as const`, Dart: `const` constructors    |
+
+---
+
+## 4. TypeScript — Regras Específicas
+
+### 4.1 Operadores
+
+```typescript
+// ❌ ERRADO — || para default values
+const port = process.env.PORT || 3333;
+const name = user.name || 'Anônimo';
+
+// ✅ CORRETO — ?? para nullish coalescing
+const port = Number(process.env['PORT'] ?? 3333);
+const name = user.name ?? 'Anônimo';
+
+// ✅ OK — || em condições booleanas puras
+if (!workshopId || !name) { return reply.status(400)... }
+if (loading || disabled) { ... }
+```
+
+### 4.2 Tipagem
+
+```typescript
+// ❌ ERRADO
+const data: any = await response.json();
+const items = result as Item[];
+const where: Record<string, any> = {};
+
+// ✅ CORRETO
+const data: unknown = await response.json();
+const items = isItemArray(data) ? data : [];
+const where: Record<string, string> = {};
+```
+
+### 4.3 Imports
+
+```typescript
+// ❌ ERRADO
+import { FastifyInstance } from 'fastify';
+
+// ✅ CORRETO — type imports para tipos
+import type { FastifyInstance } from 'fastify';
+```
+
+### 4.4 Outras Regras TS
+
+- Strict mode obrigatório (`"strict": true`)
+- Usar `.replaceAll()` em vez de `.replace()` para substituições globais
+- Usar `globalThis` em vez de `window` no código web
+- Top-level `await` em vez de `main().catch()` patterns
+- Funções de registro de rotas **NÃO** são `async` (registram, não executam)
+- Sempre `await` em `return` dentro de `try/catch`
+
+---
+
+## 5. Dart/Flutter — Regras Específicas
+
+### 5.1 Tipagem
+
+```dart
+// ❌ EVITAR — dynamic sem necessidade
+dynamic result = await fetchData();
+var items = someList;
+
+// ✅ CORRETO — tipos explícitos
+final Map<String, Object?> result = await fetchData();
+final List<String> items = someList;
+
+// ✅ ACEITÁVEL — dynamic apenas para JSON decode (sem modelo tipado)
+final Map<String, dynamic> json = jsonDecode(response.body);
+// Justificativa: jsonDecode retorna dynamic por design do Dart
+```
+
+### 5.2 Outras Regras Dart
+
+- `const` constructors sempre que possível
+- DartDoc (`///`) em toda classe, método e widget público
+- Screen files em `lib/screens/`, services em `lib/services/`
+- Preferir `StatelessWidget` a menos que estado seja necessário
+- Nunca usar `print()` em produção — usar logger
+
+---
+
+## 6. React/Web — Regras Específicas
+
+- `useEffect` para side effects, **NUNCA** `useState` com callback de inicialização
+- `globalThis` em vez de `window`
+- Props tipadas via interface, nunca `any`
+- Componentes documentados com JSDoc
+- `??` para fallbacks, `||` apenas em boolean JSX (`disabled={loading || !token}`)
+
+---
+
+## 7. Documentação de Código
+
+### 7.1 Padrão de Comentários — Rotas API
+
+```typescript
+// ❌ PROIBIDO — comentários decorativos sem valor
+// ── GET /workshops/:workshopId/vehicles ─────────────────────────────────
+app.get(...)
+
+// ✅ CORRETO — JSDoc descritivo antes do handler
+/** Lista veículos de uma oficina, com filtro opcional por cliente. */
+app.get<{ Params: { workshopId: string }; Querystring: { customerId?: string } }>(...)
+```
+
+### 7.2 Padrão Geral
+
+```typescript
+// ❌ PROIBIDO
+// This function creates a customer
+export function createCustomer() {}
+
+// ✅ CORRETO
+/** Cria um novo cliente vinculado a uma oficina. */
+export function createCustomer() {}
+```
+
+### 7.3 Requisitos por Stack
+
+| Stack    | Ferramenta       | Comando                    |
+| -------- | ---------------- | -------------------------- |
+| Backend  | JSDoc + TypeDoc  | `pnpm docs:api`            |
+| Web      | JSDoc + TypeDoc  | `pnpm docs:packages`       |
+| Mobile   | DartDoc          | `cd apps/mobile && dart doc` |
+| Swagger  | Schema objects   | Automático via `/docs`     |
+
+---
+
+## 8. Naming Conventions
+
+| Artefato         | Convenção          | Exemplo                        |
+| ---------------- | ------------------ | ------------------------------ |
+| Arquivos TS      | `kebab-case`       | `customer.controller.ts`       |
+| Classes          | `PascalCase`       | `CreateCustomerUseCase`        |
+| Interfaces/Types | `PascalCase`       | `CustomerDTO`, `ApiResponse`   |
+| Funções          | `camelCase`        | `customerRoutes`, `toDTO`      |
+| Constantes       | `UPPER_SNAKE_CASE` | `STATUS_LABELS`, `MAX_RETRIES` |
+| Pastas           | `kebab-case`       | `service-order/`, `use-cases/` |
+| Arquivos Dart    | `snake_case`       | `api_service.dart`             |
+| Classes Dart     | `PascalCase`       | `OrdersScreen`                 |
+
+---
+
+## 9. Estrutura de Módulo (Backend)
 
 ```
 modules/<feature>/
 ├── domain/
-│   └── entities/<feature>.ts          # Domain entity
+│   └── entities/<feature>.ts
 ├── application/
-│   └── use-cases/<feature>.use-cases.ts  # All use cases
+│   └── use-cases/<feature>.use-cases.ts
 ├── infrastructure/
-│   └── repositories/<feature>.repository.ts  # Prisma repo
+│   └── repositories/<feature>.repository.ts
 └── interfaces/
-    └── http/<feature>.controller.ts   # Fastify route handler
+    └── http/
+        ├── <feature>.controller.ts
+        └── <feature>.schemas.ts
 ```
 
-### 3.4 TypeScript Rules
-- Strict mode always (`"strict": true`)
-- No `any` — use `unknown` + type guards
-- No non-null assertions (`!`) — use proper guards
-- Always `await` in `try/catch` return statements
-- Use `type` imports: `import type { X } from '...'`
-- Route handler registration functions are NOT `async` (they register, not run)
-- Top-level `await` preferred over `main().catch()` patterns
-- Use `globalThis` instead of `window` in web code
-- Use `.replaceAll()` instead of `.replace()` for global replacements
+---
 
-### 3.5 Dart/Flutter Rules
-- Use `const` constructors where possible
-- All public APIs must have DartDoc comments (`///`)
-- Screen files go in `lib/screens/`
-- Service files go in `lib/services/`
-- Prefer `StatelessWidget` unless state is really needed
+## 10. Shared Packages
+
+| Package                | Propósito                                  |
+| ---------------------- | ------------------------------------------ |
+| `@torquehub/contracts` | DTOs, tipos de request/response, API shapes |
+| `@torquehub/entities`  | `BaseEntity`, `ValueObject`, `DomainError` |
+| `@torquehub/utils`     | `formatCurrency`, `slugify`, `generateId`  |
+
+- Shared packages **nunca** importam de `apps/*`
 
 ---
 
-## 4. Shared Packages
+## 11. API Design
 
-| Package                  | Purpose                                   |
-|-------------------------|-------------------------------------------|
-| `@torquehub/contracts`  | DTOs, request/response types, API shapes  |
-| `@torquehub/entities`   | `BaseEntity`, `ValueObject`, `DomainError`|
-| `@torquehub/utils`      | `formatCurrency`, `slugify`, `generateId` |
-
-### Import Rules
-- Backend modules import `@torquehub/contracts` for DTOs
-- Backend domain imports `@torquehub/entities` for base classes
-- Shared packages **never** import from `apps/*`
-
----
-
-## 5. API Design
-
-### 5.1 Response Format
-All API responses follow this structure:
+### Response Format
 
 ```typescript
-// Success
 { "success": true, "data": T }
-
-// Success with metadata
 { "success": true, "data": T, "meta": { "total": 42 } }
-
-// Error
-{ "success": false, "data": undefined, "meta": { "error": "message" } }
+{ "success": false, "data": undefined, "meta": { "error": "mensagem" } }
 ```
 
-### 5.2 REST Conventions
+### REST Conventions
 
-| Action        | Method   | Path               | Status |
-|--------------|----------|--------------------|--------|
-| Create        | `POST`   | `/resources`       | 201    |
-| List all      | `GET`    | `/resources`       | 200    |
-| Get by ID     | `GET`    | `/resources/:id`   | 200    |
-| Update        | `PUT`    | `/resources/:id`   | 200    |
-| Partial update| `PATCH`  | `/resources/:id`   | 200    |
-| Delete        | `DELETE` | `/resources/:id`   | 200    |
+| Ação             | Método   | Path             | Status |
+| ---------------- | -------- | ---------------- | ------ |
+| Criar            | `POST`   | `/resources`     | 201    |
+| Listar           | `GET`    | `/resources`     | 200    |
+| Buscar por ID    | `GET`    | `/resources/:id` | 200    |
+| Atualizar        | `PUT`    | `/resources/:id` | 200    |
+| Atualizar parcial| `PATCH`  | `/resources/:id` | 200    |
+| Deletar          | `DELETE` | `/resources/:id` | 200    |
 
-### 5.3 Swagger
-All endpoints MUST be documented in Swagger with:
-- Request body schemas
-- Response schemas (success + error)
-- Path parameters
-- Query parameter descriptions
-- Tag grouping by module
+### Swagger
+
+Todos os endpoints DEVEM ter schemas documentados com:
+- Body, params, querystring e responses (sucesso + erro)
+- Tags por módulo
 
 ---
 
-## 6. Database
+## 12. Database
 
-- **ORM**: Prisma 7.x with `@prisma/adapter-pg` driver adapter
+- **ORM**: Prisma 7.x com `@prisma/adapter-pg`
 - **DB**: PostgreSQL 17 (Docker)
-- **Migrations**: Descriptive names (`init_domain_models`, `add_media_table`)
-- **Environment**: `DATABASE_URL` env var **required** (no hardcoded credentials)
-- **Seed**: `prisma/seed.ts` — must use `await` at top level
+- **Migrations**: Nomes descritivos (`init_domain_models`, `add_media_table`)
+- **Env**: `DATABASE_URL` **obrigatória** (nunca hardcodar)
+- **Seed**: `prisma/seed.ts` com `await` no top level
 
 ---
 
-## 7. Documentation Requirements
+## 13. Git Workflow
 
-### 7.1 Backend
-- **JSDoc** on every exported function, class, and interface
-- **Swagger** annotations on all route handlers
-- **TypeDoc** generation via `pnpm docs:api`
-
-### 7.2 Frontend (Web)
-- Component-level JSDoc for React components
-- **TypeDoc** generation via `pnpm docs:web`
-
-### 7.3 Mobile (Flutter)
-- DartDoc (`///`) on all public classes, methods, and widgets
-- Generated docs via `dart doc`
-
-### 7.4 Master Documentation
-- `documentation/idea/TORQUEHUB_MASTER_DOCUMENTATION.md` is the single source of truth
-- Update it when adding new modules or changing architecture
+- **main**: código pronto para produção
+- **develop**: branch de integração
+- **feature/***: uma branch por feature/issue
+- Mensagens: `feat:`, `fix:`, `docs:`, `refactor:`, `chore:`
+- Sempre commitar a partir da branch `develop`
 
 ---
 
-## 8. Git Workflow
-
-- **main**: production-ready code only
-- **develop**: integration branch (all features merge here first)
-- **feature/***: one branch per feature/issue
-- Commit messages: `feat:`, `fix:`, `docs:`, `refactor:`, `chore:`
-- Always commit from `develop` branch during active development
-
----
-
-## 9. Environment Setup
+## 14. Environment Setup
 
 ```bash
-# Prerequisites: Node.js 24+, pnpm 10+, Docker Desktop
-docker compose up -d        # Start PostgreSQL + Redis
-pnpm install                # Install all workspace deps
-pnpm --filter api db:push   # Push Prisma schema to DB
-pnpm --filter api db:seed   # Seed test data
-pnpm --filter api dev       # Start API server (port 3333)
-pnpm --filter web dev       # Start web portal (port 5173)
-cd apps/mobile && flutter run # Start mobile app
+docker compose up -d
+pnpm install
+pnpm --filter torquehub-api db:push
+pnpm --filter torquehub-api db:seed
+pnpm dev:api         # API na porta 3333
+pnpm dev:web         # Web na porta 5173
+cd apps/mobile && flutter run
 ```
 
 ---
 
-## 10. AI Agent Instructions
+## 15. Instruções para Agentes IA
 
-When working on this project as an AI coding assistant:
+Ao trabalhar neste projeto como assistente de código IA:
 
-1. **Always read** this file AND the master documentation first
-2. **Consult** existing code patterns before creating new files
-3. **Never exceed** 200 lines per file
-4. **Follow** the module structure exactly
-5. **Run** `get_errors()` after making changes to verify
-6. **Test** endpoints with curl after implementing
-7. **Update documentation** when adding new features
-8. **Use `develop` branch** for all work
-9. **Never hardcode** credentials — use environment variables
-10. **Kill processes surgically** — never batch-kill `node.exe` or `dart.exe`
+1. **Ler** este arquivo E a documentação master ANTES de qualquer ação
+2. **Consultar** padrões existentes no código antes de criar novos arquivos
+3. **Nunca** exceder 200 linhas por arquivo
+4. **Seguir** a estrutura de módulos exatamente
+5. **Executar** `get_errors()` após mudanças para verificar
+6. **Testar** endpoints com curl após implementação
+7. **Atualizar** documentação ao adicionar features
+8. **Usar** branch `develop` para todo trabalho
+9. **Nunca** hardcodar credenciais
+10. **Nunca** batch-kill `node.exe` ou `dart.exe` — encerrar processos cirurgicamente
+11. **Nunca** usar `any`, `||` para defaults, `!`, ou comentários decorativos
+12. **Sempre** responder em português brasileiro
+13. **Sempre** usar JSDoc descritivo, não comentários de linha decorativos
+14. **Nunca** criar arquivos desnecessários — só o essencial para a task

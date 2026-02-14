@@ -48,17 +48,27 @@ export async function buildApp() {
   });
 
   // ── Health Check ──────────────────────────────────────────────────────────
-  app.get('/health', {
-    schema: {
-      tags: ['Health'],
-      summary: 'Health check',
-      response: { 200: { type: 'object', properties: {
-        status: { type: 'string' }, timestamp: { type: 'string' },
-      } } },
+  app.get(
+    '/health',
+    {
+      schema: {
+        tags: ['Health'],
+        summary: 'Health check',
+        response: {
+          200: {
+            type: 'object',
+            properties: {
+              status: { type: 'string' },
+              timestamp: { type: 'string' },
+            },
+          },
+        },
+      },
     },
-  }, async () => {
-    return { status: 'ok', timestamp: new Date().toISOString() };
-  });
+    async () => {
+      return { status: 'ok', timestamp: new Date().toISOString() };
+    },
+  );
 
   // ── Module Routes ─────────────────────────────────────────────────────────
   await app.register(lookupRoutes, { prefix: '/workshops' });

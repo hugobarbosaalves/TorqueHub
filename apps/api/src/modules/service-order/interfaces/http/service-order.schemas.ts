@@ -23,7 +23,10 @@ const orderSchema = {
     customerId: { type: 'string', format: 'uuid' },
     vehicleId: { type: 'string', format: 'uuid' },
     description: { type: 'string' },
-    status: { type: 'string', enum: ['DRAFT', 'PENDING_APPROVAL', 'APPROVED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'] },
+    status: {
+      type: 'string',
+      enum: ['DRAFT', 'PENDING_APPROVAL', 'APPROVED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'],
+    },
     items: { type: 'array', items: orderItemSchema },
     totalAmount: { type: 'integer', description: 'Total in cents' },
     createdAt: { type: 'string', format: 'date-time' },
@@ -78,14 +81,22 @@ export const listOrdersSchema = {
 export const getOrderSchema = {
   tags: ['Service Orders'],
   summary: 'Get service order by ID',
-  params: { type: 'object' as const, properties: { id: { type: 'string', format: 'uuid' } }, required: ['id'] },
+  params: {
+    type: 'object' as const,
+    properties: { id: { type: 'string', format: 'uuid' } },
+    required: ['id'],
+  },
   response: { 200: successResponse(orderSchema), 404: errorResponse },
 };
 
 export const updateStatusSchema = {
   tags: ['Service Orders'],
   summary: 'Update service order status',
-  params: { type: 'object' as const, properties: { id: { type: 'string', format: 'uuid' } }, required: ['id'] },
+  params: {
+    type: 'object' as const,
+    properties: { id: { type: 'string', format: 'uuid' } },
+    required: ['id'],
+  },
   body: {
     type: 'object' as const,
     required: ['status'],
@@ -97,7 +108,10 @@ export const updateStatusSchema = {
     },
   },
   response: {
-    200: successResponse({ type: 'object' as const, properties: { id: { type: 'string' }, status: { type: 'string' } } }),
+    200: successResponse({
+      type: 'object' as const,
+      properties: { id: { type: 'string' }, status: { type: 'string' } },
+    }),
     400: errorResponse,
     404: errorResponse,
   },
@@ -106,7 +120,11 @@ export const updateStatusSchema = {
 export const deleteOrderSchema = {
   tags: ['Service Orders'],
   summary: 'Delete a service order',
-  params: { type: 'object' as const, properties: { id: { type: 'string', format: 'uuid' } }, required: ['id'] },
+  params: {
+    type: 'object' as const,
+    properties: { id: { type: 'string', format: 'uuid' } },
+    required: ['id'],
+  },
   response: {
     200: successResponse({ type: 'object' as const, properties: { deleted: { type: 'boolean' } } }),
     404: errorResponse,

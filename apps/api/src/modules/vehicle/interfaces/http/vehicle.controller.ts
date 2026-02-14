@@ -27,6 +27,7 @@ const getUseCase = new GetVehicleUseCase(repo);
 
 /** Registers all vehicle CRUD HTTP routes. */
 export function vehicleRoutes(app: FastifyInstance): void {
+  /** Cadastra um novo veículo vinculado a uma oficina e cliente. */
   app.post<{
     Body: CreateVehicleRequest;
     Reply: ApiResponse<VehicleDTO>;
@@ -45,7 +46,7 @@ export function vehicleRoutes(app: FastifyInstance): void {
     return reply.status(201).send({ success: true, data: result });
   });
 
-  // ── GET / — Listar veículos (por workshopId ou customerId) ──────────────
+  /** Lista veículos filtrados por oficina ou cliente. Requer ao menos um filtro. */
   app.get<{
     Querystring: { workshopId?: string; customerId?: string };
     Reply: ApiResponse<VehicleDTO[]>;
@@ -71,7 +72,7 @@ export function vehicleRoutes(app: FastifyInstance): void {
     });
   });
 
-  // ── GET /:id — Buscar veículo por ID ───────────────────────────────────
+  /** Busca um veículo específico pelo ID. Retorna 404 se não encontrado. */
   app.get<{
     Params: { id: string };
     Reply: ApiResponse<VehicleDTO>;
@@ -89,7 +90,7 @@ export function vehicleRoutes(app: FastifyInstance): void {
     return reply.send({ success: true, data: vehicle });
   });
 
-  // ── PUT /:id — Atualizar veículo ───────────────────────────────────────
+  /** Atualiza dados de um veículo existente. Retorna 404 se não encontrado. */
   app.put<{
     Params: { id: string };
     Body: UpdateVehicleRequest;
@@ -122,7 +123,7 @@ export function vehicleRoutes(app: FastifyInstance): void {
     }
   });
 
-  // ── DELETE /:id — Deletar veículo ──────────────────────────────────────
+  /** Remove um veículo pelo ID. Retorna 404 se não encontrado. */
   app.delete<{
     Params: { id: string };
     Reply: ApiResponse<{ deleted: boolean }>;

@@ -43,7 +43,8 @@ export const listWorkshopCustomersSchema = {
       items: {
         type: 'object' as const,
         properties: {
-          id: { type: 'string' }, name: { type: 'string' },
+          id: { type: 'string' },
+          name: { type: 'string' },
           document: { type: 'string', nullable: true },
         },
       },
@@ -74,8 +75,10 @@ export const listWorkshopVehiclesSchema = {
       items: {
         type: 'object' as const,
         properties: {
-          id: { type: 'string' }, plate: { type: 'string' },
-          brand: { type: 'string' }, model: { type: 'string' },
+          id: { type: 'string' },
+          plate: { type: 'string' },
+          brand: { type: 'string' },
+          model: { type: 'string' },
         },
       },
     }),

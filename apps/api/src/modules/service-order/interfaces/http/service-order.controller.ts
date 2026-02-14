@@ -27,7 +27,7 @@ const getUseCase = new GetServiceOrderUseCase(repo);
 
 /** Registers all service order HTTP routes. */
 export function serviceOrderRoutes(app: FastifyInstance): void {
-  // ── POST / — Criar ordem de serviço ─────────────────────────────────────
+  /** Cria uma nova ordem de serviço com itens. Requer ao menos 1 item. */
   app.post<{
     Body: CreateServiceOrderRequest;
     Reply: ApiResponse<CreateServiceOrderResponse>;
@@ -58,7 +58,7 @@ export function serviceOrderRoutes(app: FastifyInstance): void {
     });
   });
 
-  // ── GET / — Listar ordens de serviço ────────────────────────────────────
+  /** Lista ordens de serviço, com filtro opcional por oficina. */
   app.get<{
     Querystring: { workshopId?: string };
     Reply: ApiResponse<ServiceOrderDTO[]>;
@@ -73,7 +73,7 @@ export function serviceOrderRoutes(app: FastifyInstance): void {
     });
   });
 
-  // ── GET /:id — Buscar ordem por ID ──────────────────────────────────────
+  /** Busca uma ordem de serviço pelo ID, incluindo itens. */
   app.get<{
     Params: { id: string };
     Reply: ApiResponse<ServiceOrderDTO>;
@@ -94,7 +94,7 @@ export function serviceOrderRoutes(app: FastifyInstance): void {
     });
   });
 
-  // ── PATCH /:id/status — Atualizar status ────────────────────────────────
+  /** Atualiza o status de uma ordem. Valida contra a lista de status permitidos. */
   app.patch<{
     Params: { id: string };
     Body: { status: string };
@@ -134,7 +134,7 @@ export function serviceOrderRoutes(app: FastifyInstance): void {
     }
   });
 
-  // ── DELETE /:id — Deletar ordem ─────────────────────────────────────────
+  /** Remove uma ordem de serviço pelo ID. Retorna 404 se não encontrada. */
   app.delete<{
     Params: { id: string };
     Reply: ApiResponse<{ deleted: boolean }>;

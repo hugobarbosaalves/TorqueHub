@@ -27,7 +27,7 @@ const getUseCase = new GetCustomerUseCase(repo);
 
 /** Registers all customer CRUD HTTP routes. */
 export function customerRoutes(app: FastifyInstance): void {
-  // ── POST / — Criar cliente ──────────────────────────────────────────────
+  /** Cria um novo cliente vinculado a uma oficina. */
   app.post<{
     Body: CreateCustomerRequest;
     Reply: ApiResponse<CustomerDTO>;
@@ -46,7 +46,7 @@ export function customerRoutes(app: FastifyInstance): void {
     return reply.status(201).send({ success: true, data: result });
   });
 
-  // ── GET / — Listar clientes (por workshopId) ───────────────────────────
+  /** Lista todos os clientes de uma oficina. Requer `workshopId` na query. */
   app.get<{
     Querystring: { workshopId: string };
     Reply: ApiResponse<CustomerDTO[]>;
@@ -69,7 +69,7 @@ export function customerRoutes(app: FastifyInstance): void {
     });
   });
 
-  // ── GET /:id — Buscar cliente por ID ────────────────────────────────────
+  /** Busca um cliente específico pelo ID. Retorna 404 se não encontrado. */
   app.get<{
     Params: { id: string };
     Reply: ApiResponse<CustomerDTO>;
@@ -87,7 +87,7 @@ export function customerRoutes(app: FastifyInstance): void {
     return reply.send({ success: true, data: customer });
   });
 
-  // ── PUT /:id — Atualizar cliente ────────────────────────────────────────
+  /** Atualiza dados de um cliente existente. Retorna 404 se não encontrado. */
   app.put<{
     Params: { id: string };
     Body: UpdateCustomerRequest;
@@ -117,7 +117,7 @@ export function customerRoutes(app: FastifyInstance): void {
     }
   });
 
-  // ── DELETE /:id — Deletar cliente ───────────────────────────────────────
+  /** Remove um cliente pelo ID. Retorna 404 se não encontrado. */
   app.delete<{
     Params: { id: string };
     Reply: ApiResponse<{ deleted: boolean }>;

@@ -32,6 +32,30 @@ const publicOrderSchema = {
     items: { type: 'array', items: orderItemSchema },
     totalAmount: { type: 'integer', description: 'Total em centavos' },
     publicToken: { type: 'string', nullable: true },
+    vehicle: {
+      type: 'object',
+      properties: {
+        plate: { type: 'string' },
+        brand: { type: 'string' },
+        model: { type: 'string' },
+        year: { type: 'integer', nullable: true },
+        color: { type: 'string', nullable: true },
+      },
+    },
+    customerName: { type: 'string' },
+    media: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', format: 'uuid' },
+          type: { type: 'string', enum: ['PHOTO', 'VIDEO'] },
+          url: { type: 'string' },
+          caption: { type: 'string', nullable: true },
+          createdAt: { type: 'string', format: 'date-time' },
+        },
+      },
+    },
     createdAt: { type: 'string', format: 'date-time' },
     updatedAt: { type: 'string', format: 'date-time' },
   },

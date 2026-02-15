@@ -32,6 +32,13 @@ export interface ServiceOrderWithItems {
   }[];
 }
 
+/** Service order with all relations (vehicle, customer, media) for public detail view. */
+export interface ServiceOrderWithRelations extends ServiceOrderWithItems {
+  vehicle: { plate: string; brand: string; model: string; year: number | null; color: string | null };
+  customer: { name: string };
+  media: { id: string; serviceOrderId: string; type: string; url: string; caption: string | null; createdAt: Date }[];
+}
+
 /** Prisma-backed repository for ServiceOrder persistence operations. */
 export class ServiceOrderRepository {
   constructor(private readonly db: PrismaClient) {}
@@ -98,6 +105,14 @@ export class ServiceOrderRepository {
     return this.db.serviceOrder.findUnique({
       where: { publicToken: token },
       include: { items: true },
+    });
+  }
+
+  /** Busca uma ordem pelo token público com veículo, cliente e mídias. */
+  async findByPublicTokenFull(token: string): Promise<ServiceOrderWithRelations | null> {
+    return this.db.serviceOrder.findUnique({
+      where: { publicToken: token },
+      include: { items: true, vehicle: true, customer: true, media: true },
     });
   }
 

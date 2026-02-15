@@ -160,6 +160,22 @@ export interface UploadMediaResponse {
   createdAt: string;
 }
 
+/** Summary of vehicle info exposed in the public order detail. */
+export interface PublicVehicleSummary {
+  plate: string;
+  brand: string;
+  model: string;
+  year: number | null;
+  color: string | null;
+}
+
+/** Enriched public-facing order detail with vehicle, customer, and media info. */
+export interface PublicOrderDetailDTO extends ServiceOrderDTO {
+  vehicle: PublicVehicleSummary;
+  customerName: string;
+  media: MediaDTO[];
+}
+
 // ─── Auth ──────────────────────────────────────────────────────
 
 /** Allowed user roles. */

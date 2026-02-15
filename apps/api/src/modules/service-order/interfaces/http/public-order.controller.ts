@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify';
-import type { ApiResponse, ServiceOrderDTO } from '@torquehub/contracts';
+import type { ApiResponse, PublicOrderDetailDTO, ServiceOrderDTO } from '@torquehub/contracts';
 import { prisma } from '../../../../shared/infrastructure/database/prisma.js';
 import { ServiceOrderRepository } from '../../infrastructure/repositories/service-order.repository.js';
 import {
@@ -17,7 +17,7 @@ export function publicOrderRoutes(app: FastifyInstance): void {
   /** Busca uma ordem de serviço pelo token público. */
   app.get<{
     Params: { token: string };
-    Reply: ApiResponse<ServiceOrderDTO>;
+    Reply: ApiResponse<PublicOrderDetailDTO>;
   }>('/:token', { schema: getOrderByTokenSchema }, async (request, reply) => {
     const order = await getByTokenUseCase.execute(request.params.token);
 

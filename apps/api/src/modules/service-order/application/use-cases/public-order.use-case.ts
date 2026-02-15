@@ -1,6 +1,9 @@
-import type { ServiceOrderDTO } from '@torquehub/contracts';
+import type { ServiceOrderDTO, PublicOrderDetailDTO, MediaDTO } from '@torquehub/contracts';
 import { ServiceOrderRepository } from '../../infrastructure/repositories/service-order.repository.js';
-import type { ServiceOrderWithItems } from '../../infrastructure/repositories/service-order.repository.js';
+import type {
+  ServiceOrderWithItems,
+  ServiceOrderWithRelations,
+} from '../../infrastructure/repositories/service-order.repository.js';
 
 /** Maps a raw ServiceOrderWithItems to the API-facing ServiceOrderDTO. */
 function toDTO(so: ServiceOrderWithItems): ServiceOrderDTO {
@@ -26,14 +29,37 @@ function toDTO(so: ServiceOrderWithItems): ServiceOrderDTO {
   };
 }
 
+/** Maps a full order record (with relations) to PublicOrderDetailDTO. */
+function toPublicDetailDTO(so: ServiceOrderWithRelations): PublicOrderDetailDTO {
+  return {
+    ...toDTO(so),
+    vehicle: {
+      plate: so.vehicle.plate,
+      brand: so.vehicle.brand,
+      model: so.vehicle.model,
+      year: so.vehicle.year,
+      color: so.vehicle.color,
+    },
+    customerName: so.customer.name,
+    media: so.media.map((m): MediaDTO => ({
+      id: m.id,
+      serviceOrderId: m.serviceOrderId,
+      type: m.type as MediaDTO['type'],
+      url: m.url,
+      caption: m.caption,
+      createdAt: m.createdAt.toISOString(),
+    })),
+  };
+}
+
 /** Use case: busca uma ordem de serviço pelo token público do cliente. */
 export class GetOrderByTokenUseCase {
   constructor(private readonly repo: ServiceOrderRepository) {}
 
-  async execute(token: string): Promise<ServiceOrderDTO | null> {
-    const order = await this.repo.findByPublicToken(token);
+  async execute(token: string): Promise<PublicOrderDetailDTO | null> {
+    const order = await this.repo.findByPublicTokenFull(token);
     if (!order) return null;
-    return toDTO(order);
+    return toPublicDetailDTO(order);
   }
 }
 

@@ -6,7 +6,9 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:share_plus/share_plus.dart';
 import '../services/api_service.dart';
+import '../services/app_config.dart';
 import 'media_section_widget.dart';
 
 const _statusConfig = <String, Map<String, dynamic>>{
@@ -220,14 +222,27 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     }
   }
 
-  void _copyPublicToken() {
+  /// Compartilha o link da ordem via share nativo (WhatsApp, etc).
+  void _shareOrderLink() {
     final token = _order?['publicToken'] as String?;
     if (token == null) return;
-    Clipboard.setData(ClipboardData(text: token));
+    final link = AppConfig.orderLink(token);
+    final description = _order?['description'] as String? ?? 'Serviço';
+    final message =
+        '🔧 *TorqueHub* — Acompanhe seu serviço\n\n'
+        '📋 $description\n\n'
+        '🔗 Acesse: $link';
+    SharePlus.instance.share(ShareParams(text: message));
+  }
+
+  /// Copia o link público da ordem para a área de transferência.
+  void _copyOrderLink() {
+    final token = _order?['publicToken'] as String?;
+    if (token == null) return;
+    final link = AppConfig.orderLink(token);
+    Clipboard.setData(ClipboardData(text: link));
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Token copiado! Envie ao cliente para acompanhamento.'),
-      ),
+      const SnackBar(content: Text('Link copiado!')),
     );
   }
 
@@ -336,35 +351,26 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           ),
 
           const SizedBox(height: 12),
-          InkWell(
-            onTap: _copyPublicToken,
-            borderRadius: BorderRadius.circular(8),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              decoration: BoxDecoration(
-                color: Colors.blue.shade50,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.blue.shade200),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.link, size: 18, color: Colors.blue.shade700),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Token: ${order['publicToken'] ?? '—'}',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontFamily: 'monospace',
-                        color: Colors.blue.shade700,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
+          Row(
+            children: [
+              Expanded(
+                child: FilledButton.icon(
+                  onPressed: _shareOrderLink,
+                  icon: const Icon(Icons.share, size: 18),
+                  label: const Text('Enviar ao cliente'),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: const Color(0xFF25D366),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
-                  Icon(Icons.copy, size: 16, color: Colors.blue.shade400),
-                ],
+                ),
               ),
-            ),
+              const SizedBox(width: 10),
+              IconButton.outlined(
+                onPressed: _copyOrderLink,
+                icon: const Icon(Icons.copy, size: 18),
+                tooltip: 'Copiar link',
+              ),
+            ],
           ),
 
           const SizedBox(height: 24),

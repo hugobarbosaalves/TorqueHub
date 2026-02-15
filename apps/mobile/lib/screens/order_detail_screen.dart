@@ -9,36 +9,9 @@ import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import '../services/api_service.dart';
 import '../services/app_config.dart';
+import '../theme/status_config.dart';
+import '../theme/app_tokens.dart';
 import 'media_section_widget.dart';
-
-const _statusConfig = <String, Map<String, dynamic>>{
-  'DRAFT': {'label': 'Rascunho', 'color': 0xFF94A3B8, 'icon': Icons.edit_note},
-  'PENDING_APPROVAL': {
-    'label': 'Aguardando Aprovação',
-    'color': 0xFFF59E0B,
-    'icon': Icons.hourglass_top,
-  },
-  'APPROVED': {
-    'label': 'Aprovada',
-    'color': 0xFF3B82F6,
-    'icon': Icons.thumb_up_outlined,
-  },
-  'IN_PROGRESS': {
-    'label': 'Em Andamento',
-    'color': 0xFF8B5CF6,
-    'icon': Icons.build_outlined,
-  },
-  'COMPLETED': {
-    'label': 'Concluída',
-    'color': 0xFF22C55E,
-    'icon': Icons.check_circle_outline,
-  },
-  'CANCELLED': {
-    'label': 'Cancelada',
-    'color': 0xFFEF4444,
-    'icon': Icons.cancel_outlined,
-  },
-};
 
 const _statusFlow = [
   'DRAFT',
@@ -122,7 +95,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Status atualizado para: ${_statusConfig[next]?['label'] ?? next}',
+            'Status atualizado para: ${getStatusInfo(next).label}',
           ),
           backgroundColor: Colors.green,
         ),
@@ -289,8 +262,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   Widget _buildContent() {
     final order = _order!;
     final status = order['status'] as String? ?? 'DRAFT';
-    final config = _statusConfig[status] ?? _statusConfig['DRAFT']!;
-    final color = Color(config['color'] as int);
+    final info = getStatusInfo(status);
+    final color = info.color;
     final items = List<Map<String, dynamic>>.from(order['items'] ?? []);
     final canAdvance =
         _statusFlow.contains(status) &&
@@ -312,10 +285,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             ),
             child: Column(
               children: [
-                Icon(config['icon'] as IconData, color: color, size: 36),
+                Icon(info.icon, color: color, size: 36),
                 const SizedBox(height: 6),
                 Text(
-                  config['label'] as String,
+                  info.label,
                   style: TextStyle(
                     color: color,
                     fontSize: 18,
@@ -359,7 +332,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   icon: const Icon(Icons.share, size: 18),
                   label: const Text('Enviar ao cliente'),
                   style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFF25D366),
+                    backgroundColor: TqTokens.whatsapp,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
                 ),
@@ -397,7 +370,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             decoration: BoxDecoration(
-              color: const Color(0xFF1A1A2E).withAlpha(8),
+              color: TqTokens.primary.withAlpha(8),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Row(
@@ -412,7 +385,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   style: const TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.w800,
-                    color: Color(0xFF1A1A2E),
+                    color: TqTokens.primary,
                   ),
                 ),
               ],
@@ -426,7 +399,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               onPressed: _advanceStatus,
               icon: const Icon(Icons.arrow_forward),
               label: Text(
-                'Avançar para: ${_statusConfig[_statusFlow[_statusFlow.indexOf(status) + 1]]?['label'] ?? 'Próximo'}',
+                'Avançar para: ${getStatusInfo(_statusFlow[_statusFlow.indexOf(status) + 1]).label}',
               ),
               style: FilledButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 14),

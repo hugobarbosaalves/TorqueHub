@@ -11,6 +11,7 @@ import 'screens/orders_screen.dart';
 import 'screens/customers_screen.dart';
 import 'screens/vehicles_screen.dart';
 import 'services/auth_service.dart';
+import 'theme/app_theme.dart';
 
 /// Entry point — initializes auth state and launches the app.
 Future<void> main() async {
@@ -28,11 +29,7 @@ class TorqueHubApp extends StatelessWidget {
     return MaterialApp(
       title: 'TorqueHub',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorSchemeSeed: const Color(0xFF1A1A2E),
-        useMaterial3: true,
-        brightness: Brightness.light,
-      ),
+      theme: AppTheme.light,
       initialRoute: AuthService.isAuthenticated ? '/home' : '/login',
       routes: {
         '/login': (_) => const LoginScreen(),

@@ -102,6 +102,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@torquehub/design-tokens':
+        specifier: workspace:*
+        version: link:../../packages/design-tokens
       react:
         specifier: 19.2.4
         version: 19.2.4
@@ -129,6 +132,12 @@ importers:
         version: 7.3.1(@types/node@24.0.4)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/contracts:
+    devDependencies:
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+
+  packages/design-tokens:
     devDependencies:
       typescript:
         specifier: 5.9.3

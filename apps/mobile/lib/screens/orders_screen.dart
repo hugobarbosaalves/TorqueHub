@@ -7,37 +7,10 @@ library;
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
+import '../theme/status_config.dart';
+import '../theme/app_tokens.dart';
 import 'create_order_screen.dart';
 import 'order_detail_screen.dart';
-
-const _statusConfig = {
-  'DRAFT': {'label': 'Rascunho', 'color': 0xFF94A3B8, 'icon': Icons.edit_note},
-  'PENDING_APPROVAL': {
-    'label': 'Aguardando',
-    'color': 0xFFF59E0B,
-    'icon': Icons.hourglass_top,
-  },
-  'APPROVED': {
-    'label': 'Aprovada',
-    'color': 0xFF3B82F6,
-    'icon': Icons.thumb_up_outlined,
-  },
-  'IN_PROGRESS': {
-    'label': 'Em Andamento',
-    'color': 0xFF8B5CF6,
-    'icon': Icons.build_outlined,
-  },
-  'COMPLETED': {
-    'label': 'Concluída',
-    'color': 0xFF22C55E,
-    'icon': Icons.check_circle_outline,
-  },
-  'CANCELLED': {
-    'label': 'Cancelada',
-    'color': 0xFFEF4444,
-    'icon': Icons.cancel_outlined,
-  },
-};
 
 class OrdersScreen extends StatefulWidget {
   const OrdersScreen({super.key});
@@ -216,8 +189,8 @@ class OrdersScreenState extends State<OrdersScreen> {
         itemBuilder: (context, index) {
           final order = _orders[index];
           final status = order['status'] as String? ?? 'DRAFT';
-          final config = _statusConfig[status] ?? _statusConfig['DRAFT']!;
-          final color = Color(config['color'] as int);
+          final info = getStatusInfo(status);
+          final color = info.color;
 
           return Card(
             margin: const EdgeInsets.only(bottom: 12),
@@ -247,7 +220,7 @@ class OrdersScreenState extends State<OrdersScreen> {
                     Row(
                       children: [
                         Icon(
-                          config['icon'] as IconData,
+                          info.icon,
                           color: color,
                           size: 20,
                         ),
@@ -279,7 +252,7 @@ class OrdersScreenState extends State<OrdersScreen> {
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
-                            config['label'] as String,
+                            info.label,
                             style: TextStyle(
                               color: color,
                               fontSize: 12,
@@ -291,9 +264,9 @@ class OrdersScreenState extends State<OrdersScreen> {
                         Text(
                           _formatCurrency(order['totalAmount']),
                           style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF1A1A2E),
+                            fontSize: TqTokens.fontSizeLg,
+                            fontWeight: TqTokens.fontWeightBold,
+                            color: TqTokens.primary,
                           ),
                         ),
                       ],

@@ -1,25 +1,17 @@
 /**
  * VehicleHistory — Shows past service orders for the same vehicle.
  * Provides a timeline-like view of all services.
+ * Uses design tokens from @torquehub/design-tokens.
  * @module VehicleHistory
  */
 
 import { useEffect, useState, type ReactNode } from 'react';
 import { getVehicleHistory, type ServiceOrder } from '../services/api';
-
-const STATUS_ICON: Record<string, string> = {
-  DRAFT: '📝', PENDING_APPROVAL: '⏳', APPROVED: '👍',
-  IN_PROGRESS: '🔧', COMPLETED: '✅', CANCELLED: '❌',
-};
-
-const STATUS_LABEL: Record<string, string> = {
-  DRAFT: 'Rascunho', PENDING_APPROVAL: 'Aguardando Aprovação', APPROVED: 'Aprovada',
-  IN_PROGRESS: 'Em Andamento', COMPLETED: 'Concluído', CANCELLED: 'Cancelada',
-};
+import { statusConfig } from '@torquehub/design-tokens';
 
 interface VehicleHistoryProps {
-  token: string;
-  currentOrderId: string;
+  readonly token: string;
+  readonly currentOrderId: string;
 }
 
 /** Formats centavos as BRL currency. */
@@ -46,29 +38,30 @@ export function VehicleHistory({ token, currentOrderId }: VehicleHistoryProps): 
     <div className="card">
       <div className="card-body">
         <p className="section-title">📜 Histórico do Veículo</p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
           {orders.map((order) => {
             const isCurrent = order.id === currentOrderId;
+            const info = statusConfig[order.status];
             return (
               <div
                 key={order.id}
                 style={{
-                  padding: '12px 16px', borderRadius: 8,
+                  padding: 'var(--space-6) var(--space-8)', borderRadius: 'var(--radius-md)',
                   border: isCurrent ? '2px solid var(--color-accent)' : '1px solid var(--color-border)',
                   background: isCurrent ? '#eff6ff' : 'var(--color-card)',
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
                   <div style={{ flex: 1 }}>
-                    <p style={{ fontWeight: 600, fontSize: 14 }}>
-                      {STATUS_ICON[order.status] ?? '❓'} {order.description}
-                      {isCurrent && <span style={{ color: 'var(--color-accent)', fontSize: 12, marginLeft: 8 }}>● atual</span>}
+                    <p style={{ fontWeight: 'var(--font-weight-semibold)', fontSize: 'var(--font-size-base)' }}>
+                      {info?.icon ?? '❓'} {order.description}
+                      {isCurrent && <span style={{ color: 'var(--color-accent)', fontSize: 'var(--font-size-xs)', marginLeft: 8 }}>● atual</span>}
                     </p>
-                    <p style={{ fontSize: 12, color: 'var(--color-muted)', marginTop: 2 }}>
-                      {new Date(order.createdAt).toLocaleDateString('pt-BR')} · {STATUS_LABEL[order.status] ?? order.status}
+                    <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-muted)', marginTop: 2 }}>
+                      {new Date(order.createdAt).toLocaleDateString('pt-BR')} · {info?.label ?? order.status}
                     </p>
                   </div>
-                  <span style={{ fontWeight: 700, fontSize: 14, whiteSpace: 'nowrap' }}>{currency(order.totalAmount)}</span>
+                  <span style={{ fontWeight: 'var(--font-weight-bold)', fontSize: 'var(--font-size-base)', whiteSpace: 'nowrap' }}>{currency(order.totalAmount)}</span>
                 </div>
               </div>
             );

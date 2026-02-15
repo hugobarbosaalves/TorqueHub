@@ -1,7 +1,8 @@
 # TorqueHub — Project Conventions & AI Internal Protocol
 
-> **OBRIGATÓRIO**: Qualquer agente IA ou desenvolvedor DEVE ler este arquivo E
-> `documentation/idea/TORQUEHUB_MASTER_DOCUMENTATION.md` ANTES de escrever qualquer código.
+> **OBRIGATÓRIO**: Qualquer agente IA ou desenvolvedor DEVE ler este arquivo,
+> `DESIGN_SYSTEM.md` E `documentation/idea/TORQUEHUB_MASTER_DOCUMENTATION.md`
+> ANTES de escrever qualquer código.
 
 ---
 
@@ -237,8 +238,10 @@ modules/<feature>/
 | `@torquehub/contracts` | DTOs, tipos de request/response, API shapes |
 | `@torquehub/entities`  | `BaseEntity`, `ValueObject`, `DomainError`  |
 | `@torquehub/utils`     | `formatCurrency`, `slugify`, `generateId`   |
+| `@torquehub/design-tokens` | Tokens de design (cores, fontes, espaçamento) |
 
 - Shared packages **nunca** importam de `apps/*`
+- Para UI: **Sempre** use tokens do design system (`DESIGN_SYSTEM.md`)
 
 ---
 

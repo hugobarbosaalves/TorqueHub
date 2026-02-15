@@ -34,7 +34,7 @@ class AppConfig {
         return 'http://localhost:5173';
       case Environment.prod:
         // Vercel (ou outro hosting) — altere para sua URL real
-        return 'https://torquehub-web.vercel.app';
+        return 'https://torque-hub-web.vercel.app';
     }
   }
 

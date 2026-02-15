@@ -10,7 +10,7 @@ services:
     runtime: docker
     dockerfilePath: apps/api/Dockerfile
     dockerContext: .
-    branch: develop
+    branch: main
     plan: free
     envVars:
       - key: DATABASE_URL

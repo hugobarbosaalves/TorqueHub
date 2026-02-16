@@ -24,13 +24,44 @@ class OrdersScreen extends StatefulWidget {
 
 class OrdersScreenState extends State<OrdersScreen> {
   List<Map<String, dynamic>> _orders = [];
+  List<Map<String, dynamic>> _filtered = [];
   bool _loading = true;
   String? _error;
+  final _searchCtrl = TextEditingController();
+  bool _showSearch = false;
 
   @override
   void initState() {
     super.initState();
+    _searchCtrl.addListener(_applyFilter);
     refresh();
+  }
+
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    super.dispose();
+  }
+
+  /// Filtra ordens por cliente, placa ou descrição.
+  void _applyFilter() {
+    final q = _searchCtrl.text.trim().toLowerCase();
+    if (q.isEmpty) {
+      setState(() => _filtered = _orders);
+      return;
+    }
+    setState(() {
+      _filtered = _orders.where((o) {
+        final desc = (o['description'] as String? ?? '').toLowerCase();
+        final customer = (o['customerName'] as String? ?? '').toLowerCase();
+        final plate = (o['vehiclePlate'] as String? ?? '').toLowerCase();
+        final vehicle = (o['vehicleSummary'] as String? ?? '').toLowerCase();
+        return desc.contains(q) ||
+            customer.contains(q) ||
+            plate.contains(q) ||
+            vehicle.contains(q);
+      }).toList();
+    });
   }
 
   /// Recarrega a lista de ordens.
@@ -47,6 +78,7 @@ class OrdersScreenState extends State<OrdersScreen> {
         _orders = orders;
         _loading = false;
       });
+      _applyFilter();
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -79,9 +111,32 @@ class OrdersScreenState extends State<OrdersScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('TorqueHub'),
-        centerTitle: true,
+        title: _showSearch
+            ? TextField(
+                controller: _searchCtrl,
+                autofocus: true,
+                style: const TextStyle(color: TqTokens.card),
+                decoration: const InputDecoration(
+                  hintText: 'Buscar cliente, placa...',
+                  hintStyle: TextStyle(color: TqTokens.neutral400),
+                  border: InputBorder.none,
+                ),
+              )
+            : const Text('TorqueHub'),
+        centerTitle: !_showSearch,
         actions: [
+          IconButton(
+            onPressed: () {
+              setState(() {
+                _showSearch = !_showSearch;
+                if (!_showSearch) {
+                  _searchCtrl.clear();
+                }
+              });
+            },
+            icon: Icon(_showSearch ? Icons.close : Icons.search),
+            tooltip: 'Buscar',
+          ),
           IconButton(
             onPressed: refresh,
             icon: const Icon(Icons.refresh),
@@ -114,18 +169,24 @@ class OrdersScreenState extends State<OrdersScreen> {
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _error != null
-              ? TqErrorState(
-                  message: 'Erro ao carregar ordens',
-                  detail: _error,
-                  onRetry: refresh,
-                )
-              : _orders.isEmpty
-                  ? const TqEmptyState(
-                      icon: Icons.inbox_outlined,
-                      title: 'Nenhuma ordem de serviço',
-                      subtitle: 'Toque em + para criar a primeira.',
-                    )
-                  : _buildList(),
+          ? TqErrorState(
+              message: 'Erro ao carregar ordens',
+              detail: _error,
+              onRetry: refresh,
+            )
+          : _orders.isEmpty
+          ? const TqEmptyState(
+              icon: Icons.inbox_outlined,
+              title: 'Nenhuma ordem de serviço',
+              subtitle: 'Toque em + para criar a primeira.',
+            )
+          : _filtered.isEmpty
+          ? const TqEmptyState(
+              icon: Icons.search_off,
+              title: 'Nenhum resultado',
+              subtitle: 'Nenhuma ordem corresponde à busca.',
+            )
+          : _buildList(),
     );
   }
 
@@ -137,8 +198,8 @@ class OrdersScreenState extends State<OrdersScreen> {
           horizontal: TqTokens.space8,
           vertical: TqTokens.space6,
         ),
-        itemCount: _orders.length,
-        itemBuilder: (context, index) => _buildCard(_orders[index]),
+        itemCount: _filtered.length,
+        itemBuilder: (context, index) => _buildCard(_filtered[index]),
       ),
     );
   }
@@ -156,8 +217,7 @@ class OrdersScreenState extends State<OrdersScreen> {
           await Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) =>
-                  OrderDetailScreen(orderId: order['id'] as String),
+              builder: (_) => OrderDetailScreen(orderId: order['id'] as String),
             ),
           );
           refresh();
@@ -194,8 +254,7 @@ class OrdersScreenState extends State<OrdersScreen> {
                     ),
                     decoration: BoxDecoration(
                       color: color.withAlpha(25),
-                      borderRadius:
-                          BorderRadius.circular(TqTokens.radiusPill),
+                      borderRadius: BorderRadius.circular(TqTokens.radiusPill),
                     ),
                     child: Text(
                       info.label,
@@ -218,10 +277,13 @@ class OrdersScreenState extends State<OrdersScreen> {
                 ],
               ),
               const SizedBox(height: TqTokens.space4),
+              // Cliente e veículo
+              _buildCustomerVehicleRow(order),
+              const SizedBox(height: TqTokens.space4),
               Row(
                 children: [
                   const Icon(
-                    Icons.receipt_long,
+                    Icons.list_alt,
                     size: 14,
                     color: TqTokens.neutral500,
                   ),
@@ -247,6 +309,35 @@ class OrdersScreenState extends State<OrdersScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildCustomerVehicleRow(Map<String, dynamic> order) {
+    final customer = order['customerName'] as String?;
+    final plate = order['vehiclePlate'] as String?;
+    final vehicle = order['vehicleSummary'] as String?;
+    final parts = <String>[
+      if (customer != null && customer.isNotEmpty) customer,
+      if (vehicle != null && vehicle.isNotEmpty) vehicle,
+      if (plate != null && plate.isNotEmpty) plate,
+    ];
+    if (parts.isEmpty) return const SizedBox.shrink();
+    return Row(
+      children: [
+        const Icon(Icons.person_outline, size: 14, color: TqTokens.neutral500),
+        const SizedBox(width: TqTokens.space2),
+        Expanded(
+          child: Text(
+            parts.join(' · '),
+            style: const TextStyle(
+              fontSize: TqTokens.fontSizeXs,
+              color: TqTokens.neutral600,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
     );
   }
 }

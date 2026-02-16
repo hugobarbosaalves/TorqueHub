@@ -203,8 +203,9 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                         child: Text(label),
                       );
                     }).toList(),
-                    onChanged:
-                        _selectedWorkshopId == null ? null : _onCustomerChanged,
+                    onChanged: _selectedWorkshopId == null
+                        ? null
+                        : _onCustomerChanged,
                   ),
                   const SizedBox(height: TqTokens.space8),
                   const TqSectionTitle('Veículo'),

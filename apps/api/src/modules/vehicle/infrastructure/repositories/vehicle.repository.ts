@@ -14,6 +14,7 @@ export interface VehicleRecord {
   mileage: number | null;
   createdAt: Date;
   updatedAt: Date;
+  customer?: { name: string };
 }
 
 /** Prisma-backed repository for Vehicle persistence operations. */
@@ -32,16 +33,18 @@ export class VehicleRepository {
         color: input.color ?? null,
         mileage: input.mileage ?? null,
       },
+      include: { customer: true },
     });
   }
 
   async findById(id: string): Promise<VehicleRecord | null> {
-    return this.db.vehicle.findUnique({ where: { id } });
+    return this.db.vehicle.findUnique({ where: { id }, include: { customer: true } });
   }
 
   async findByWorkshopId(workshopId: string): Promise<VehicleRecord[]> {
     return this.db.vehicle.findMany({
       where: { workshopId },
+      include: { customer: true },
       orderBy: { plate: 'asc' },
     });
   }
@@ -49,6 +52,7 @@ export class VehicleRepository {
   async findByCustomerId(customerId: string): Promise<VehicleRecord[]> {
     return this.db.vehicle.findMany({
       where: { customerId },
+      include: { customer: true },
       orderBy: { plate: 'asc' },
     });
   }
@@ -56,7 +60,9 @@ export class VehicleRepository {
   async update(id: string, input: UpdateVehicleRequest): Promise<VehicleRecord> {
     return this.db.vehicle.update({
       where: { id },
+      include: { customer: true },
       data: {
+        ...(input.customerId !== undefined && { customerId: input.customerId }),
         ...(input.plate !== undefined && { plate: input.plate }),
         ...(input.brand !== undefined && { brand: input.brand }),
         ...(input.model !== undefined && { model: input.model }),

@@ -163,10 +163,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _error != null
-              ? TqErrorState(detail: _error, onRetry: _loadOrder)
-              : _order == null
-                  ? const TqEmptyState(title: 'Ordem não encontrada')
-                  : _buildContent(),
+          ? TqErrorState(detail: _error, onRetry: _loadOrder)
+          : _order == null
+          ? const TqEmptyState(title: 'Ordem não encontrada')
+          : _buildContent(),
     );
   }
 
@@ -188,6 +188,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         children: [
           _buildStatusBanner(info, color),
           const SizedBox(height: TqTokens.space10),
+          _buildCustomerVehicleInfo(order),
+          const SizedBox(height: TqTokens.space6),
           _buildDescription(order),
           const SizedBox(height: TqTokens.space6),
           _buildShareRow(),
@@ -197,6 +199,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           MediaSectionWidget(
             serviceOrderId: widget.orderId,
             initialMedia: _media,
+            orderStatus: status,
           ),
           const SizedBox(height: TqTokens.space12),
           const Divider(),
@@ -233,6 +236,60 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               fontWeight: TqTokens.fontWeightBold,
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCustomerVehicleInfo(Map<String, dynamic> order) {
+    final customer = order['customerName'] as String?;
+    final plate = order['vehiclePlate'] as String?;
+    final vehicle = order['vehicleSummary'] as String?;
+    if (customer == null && vehicle == null) return const SizedBox.shrink();
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(TqTokens.space6),
+      decoration: BoxDecoration(
+        color: TqTokens.neutral50,
+        borderRadius: BorderRadius.circular(TqTokens.radiusMd),
+        border: Border.all(color: TqTokens.neutral200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (customer != null && customer.isNotEmpty)
+            Row(
+              children: [
+                const Icon(Icons.person_outline, size: 16, color: TqTokens.neutral600),
+                const SizedBox(width: TqTokens.space3),
+                Text(
+                  customer,
+                  style: const TextStyle(
+                    fontSize: TqTokens.fontSizeBase,
+                    fontWeight: TqTokens.fontWeightSemibold,
+                  ),
+                ),
+              ],
+            ),
+          if (vehicle != null || plate != null) ...[
+            if (customer != null) const SizedBox(height: TqTokens.space3),
+            Row(
+              children: [
+                const Icon(Icons.directions_car_outlined, size: 16, color: TqTokens.neutral600),
+                const SizedBox(width: TqTokens.space3),
+                Expanded(
+                  child: Text(
+                    [vehicle, plate].where((s) => s != null && s.isNotEmpty).join(' — '),
+                    style: const TextStyle(
+                      fontSize: TqTokens.fontSizeSm,
+                      color: TqTokens.neutral700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ],
       ),
     );
@@ -393,11 +450,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     );
   }
 
-  Widget _buildActionButtons(
-    String status,
-    bool canAdvance,
-    bool canCancel,
-  ) {
+  Widget _buildActionButtons(String status, bool canAdvance, bool canCancel) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -433,7 +486,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         if (canCancel) const SizedBox(height: TqTokens.space5),
         TextButton.icon(
           onPressed: _deleteOrder,
-          icon: Icon(Icons.delete_outline, color: TqTokens.danger.withAlpha(180)),
+          icon: Icon(
+            Icons.delete_outline,
+            color: TqTokens.danger.withAlpha(180),
+          ),
           label: Text(
             'Excluir Ordem',
             style: TextStyle(color: TqTokens.danger.withAlpha(180)),

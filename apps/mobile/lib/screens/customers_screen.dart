@@ -161,26 +161,22 @@ class _CustomersScreenState extends State<CustomersScreen> {
             child: _loading
                 ? const Center(child: CircularProgressIndicator())
                 : _error != null
-                    ? TqErrorState(
-                        message: _error!,
-                        onRetry: _loadCustomers,
-                      )
-                    : _customers.isEmpty
-                        ? const TqEmptyState(
-                            icon: Icons.people_outline,
-                            title: 'Nenhum cliente cadastrado',
-                          )
-                        : RefreshIndicator(
-                            onRefresh: _loadCustomers,
-                            child: ListView.separated(
-                              padding: const EdgeInsets.all(TqTokens.space8),
-                              itemCount: _customers.length,
-                              separatorBuilder: (_, _) =>
-                                  const SizedBox(height: TqTokens.space4),
-                              itemBuilder: (_, i) =>
-                                  _buildCard(_customers[i]),
-                            ),
-                          ),
+                ? TqErrorState(message: _error!, onRetry: _loadCustomers)
+                : _customers.isEmpty
+                ? const TqEmptyState(
+                    icon: Icons.people_outline,
+                    title: 'Nenhum cliente cadastrado',
+                  )
+                : RefreshIndicator(
+                    onRefresh: _loadCustomers,
+                    child: ListView.separated(
+                      padding: const EdgeInsets.all(TqTokens.space8),
+                      itemCount: _customers.length,
+                      separatorBuilder: (_, _) =>
+                          const SizedBox(height: TqTokens.space4),
+                      itemBuilder: (_, i) => _buildCard(_customers[i]),
+                    ),
+                  ),
           ),
         ],
       ),
@@ -227,10 +223,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
             const PopupMenuItem(value: 'edit', child: Text('Editar')),
             const PopupMenuItem(
               value: 'delete',
-              child: Text(
-                'Excluir',
-                style: TextStyle(color: TqTokens.danger),
-              ),
+              child: Text('Excluir', style: TextStyle(color: TqTokens.danger)),
             ),
           ],
         ),

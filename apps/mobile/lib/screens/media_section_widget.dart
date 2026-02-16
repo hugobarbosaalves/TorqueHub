@@ -20,10 +20,14 @@ class MediaSectionWidget extends StatefulWidget {
   /// Lista inicial de mídias já carregadas.
   final List<Map<String, dynamic>> initialMedia;
 
+  /// Status atual da ordem — bloqueia edição quando COMPLETED/CANCELLED.
+  final String orderStatus;
+
   const MediaSectionWidget({
     super.key,
     required this.serviceOrderId,
     required this.initialMedia,
+    this.orderStatus = 'DRAFT',
   });
 
   @override
@@ -34,6 +38,10 @@ class _MediaSectionWidgetState extends State<MediaSectionWidget> {
   late List<Map<String, dynamic>> _media;
   bool _uploading = false;
   final _picker = ImagePicker();
+
+  /// Retorna true se a ordem está em status final (sem edição).
+  bool get _isLocked =>
+      widget.orderStatus == 'COMPLETED' || widget.orderStatus == 'CANCELLED';
 
   @override
   void initState() {
@@ -134,11 +142,10 @@ class _MediaSectionWidgetState extends State<MediaSectionWidget> {
                     height: 24,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
+                : _isLocked
+                ? const SizedBox.shrink()
                 : IconButton(
-                    icon: const Icon(
-                      Icons.add_a_photo,
-                      color: TqTokens.accent,
-                    ),
+                    icon: const Icon(Icons.add_a_photo, color: TqTokens.accent),
                     onPressed: _pickAndUploadMedia,
                     tooltip: 'Adicionar foto',
                   ),
@@ -197,7 +204,7 @@ class _MediaSectionWidgetState extends State<MediaSectionWidget> {
 
   Widget _buildMediaThumbnail(Map<String, dynamic> item, String url) {
     return GestureDetector(
-      onLongPress: () => _deleteMedia(item['id'] as String),
+      onLongPress: _isLocked ? null : () => _deleteMedia(item['id'] as String),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(TqTokens.radiusMd),
         child: Stack(
@@ -217,22 +224,23 @@ class _MediaSectionWidgetState extends State<MediaSectionWidget> {
                 ),
               ),
             ),
-            Positioned(
-              top: TqTokens.space2,
-              right: TqTokens.space2,
-              child: Container(
-                padding: const EdgeInsets.all(TqTokens.space1),
-                decoration: BoxDecoration(
-                  color: TqTokens.neutral900.withAlpha(140),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.close,
-                  size: 14,
-                  color: TqTokens.card,
+            if (!_isLocked)
+              Positioned(
+                top: TqTokens.space2,
+                right: TqTokens.space2,
+                child: Container(
+                  padding: const EdgeInsets.all(TqTokens.space1),
+                  decoration: BoxDecoration(
+                    color: TqTokens.neutral900.withAlpha(140),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.close,
+                    size: 14,
+                    color: TqTokens.card,
+                  ),
                 ),
               ),
-            ),
           ],
         ),
       ),

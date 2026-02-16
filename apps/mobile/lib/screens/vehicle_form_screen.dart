@@ -48,9 +48,7 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
     _modelCtrl = TextEditingController(text: v?['model'] as String? ?? '');
     _yearCtrl = TextEditingController(text: v?['year']?.toString() ?? '');
     _colorCtrl = TextEditingController(text: v?['color'] as String? ?? '');
-    _mileageCtrl = TextEditingController(
-      text: v?['mileage']?.toString() ?? '',
-    );
+    _mileageCtrl = TextEditingController(text: v?['mileage']?.toString() ?? '');
     _selectedCustomerId = v?['customerId'] as String?;
     _loadCustomers();
   }
@@ -83,7 +81,7 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    if (!_isEditing && _selectedCustomerId == null) {
+    if (_selectedCustomerId == null) {
       showWarningSnack(context, 'Selecione um cliente');
       return;
     }
@@ -91,7 +89,7 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
     setState(() => _loading = true);
     try {
       if (_isEditing) {
-        await ApiService.updateVehicle(widget.vehicle!['id'] as String, {
+        final fields = <String, dynamic>{
           'plate': _plateCtrl.text.trim(),
           'brand': _brandCtrl.text.trim(),
           'model': _modelCtrl.text.trim(),
@@ -101,7 +99,16 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
             'color': _colorCtrl.text.trim(),
           if (_mileageCtrl.text.trim().isNotEmpty)
             'mileage': int.tryParse(_mileageCtrl.text.trim()),
-        });
+        };
+        // Envia customerId se foi alterado
+        if (_selectedCustomerId != null &&
+            _selectedCustomerId != widget.vehicle?['customerId']) {
+          fields['customerId'] = _selectedCustomerId;
+        }
+        await ApiService.updateVehicle(
+          widget.vehicle!['id'] as String,
+          fields,
+        );
       } else {
         await ApiService.createVehicle(
           workshopId: widget.workshopId,
@@ -143,41 +150,39 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              if (!_isEditing) ...[
-                const Text(
-                  'Cliente *',
-                  style: TextStyle(fontWeight: TqTokens.fontWeightSemibold),
-                ),
-                const SizedBox(height: TqTokens.space3),
-                _loadingCustomers
-                    ? const LinearProgressIndicator()
-                    : DropdownButtonFormField<String>(
-                        initialValue: _selectedCustomerId,
-                        hint: const Text('Selecione o cliente'),
-                        decoration: const InputDecoration(
-                          contentPadding: EdgeInsets.symmetric(
-                            horizontal: TqTokens.space6,
-                            vertical: TqTokens.space5,
-                          ),
+              const Text(
+                'Cliente *',
+                style: TextStyle(fontWeight: TqTokens.fontWeightSemibold),
+              ),
+              const SizedBox(height: TqTokens.space3),
+              _loadingCustomers
+                  ? const LinearProgressIndicator()
+                  : DropdownButtonFormField<String>(
+                      initialValue: _selectedCustomerId,
+                      hint: const Text('Selecione o cliente'),
+                      decoration: const InputDecoration(
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: TqTokens.space6,
+                          vertical: TqTokens.space5,
                         ),
-                        items: _customers.map((c) {
-                          final doc = c['document'] as String? ?? '';
-                          final label = doc.isNotEmpty
-                              ? '${c['name']} ($doc)'
-                              : c['name'] as String;
-                          return DropdownMenuItem(
-                            value: c['id'] as String,
-                            child: Text(label),
-                          );
-                        }).toList(),
-                        onChanged: (val) =>
-                            setState(() => _selectedCustomerId = val),
-                        validator: (v) =>
-                            v == null ? 'Selecione um cliente' : null,
-                        isExpanded: true,
                       ),
-                const SizedBox(height: TqTokens.space10),
-              ],
+                      items: _customers.map((c) {
+                        final doc = c['document'] as String? ?? '';
+                        final label = doc.isNotEmpty
+                            ? '${c['name']} ($doc)'
+                            : c['name'] as String;
+                        return DropdownMenuItem(
+                          value: c['id'] as String,
+                          child: Text(label),
+                        );
+                      }).toList(),
+                      onChanged: (val) =>
+                          setState(() => _selectedCustomerId = val),
+                      validator: (v) =>
+                          v == null ? 'Selecione um cliente' : null,
+                      isExpanded: true,
+                    ),
+              const SizedBox(height: TqTokens.space10),
               TextFormField(
                 controller: _plateCtrl,
                 decoration: const InputDecoration(

@@ -165,8 +165,7 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
                     : Icon(_isEditing ? Icons.save : Icons.person_add),
                 label: Text(_isEditing ? 'Salvar' : 'Cadastrar'),
                 style: FilledButton.styleFrom(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 14),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
                   textStyle: const TextStyle(
                     fontSize: TqTokens.fontSizeLg,
                     fontWeight: TqTokens.fontWeightSemibold,

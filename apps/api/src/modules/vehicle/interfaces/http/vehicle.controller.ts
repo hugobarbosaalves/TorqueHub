@@ -110,6 +110,7 @@ export function vehicleRoutes(app: FastifyInstance): void {
           year: updated.year,
           color: updated.color,
           mileage: updated.mileage,
+          customerName: updated.customer?.name ?? null,
           createdAt: updated.createdAt.toISOString(),
           updatedAt: updated.updatedAt.toISOString(),
         },

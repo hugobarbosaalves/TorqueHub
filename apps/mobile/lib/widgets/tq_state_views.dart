@@ -40,11 +40,7 @@ class TqErrorState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
-              Icons.error_outline,
-              size: 64,
-              color: TqTokens.danger,
-            ),
+            const Icon(Icons.error_outline, size: 64, color: TqTokens.danger),
             const SizedBox(height: TqTokens.space8),
             Text(
               message,
@@ -112,9 +108,9 @@ class TqEmptyState extends StatelessWidget {
             const SizedBox(height: TqTokens.space8),
             Text(
               title,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: TqTokens.neutral600,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(color: TqTokens.neutral600),
               textAlign: TextAlign.center,
             ),
             if (subtitle != null) ...[

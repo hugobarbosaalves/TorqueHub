@@ -30,6 +30,8 @@ export interface ServiceOrderWithItems {
     quantity: number;
     unitPrice: number;
   }[];
+  customer?: { name: string };
+  vehicle?: { plate: string; brand: string; model: string; year: number | null; color: string | null };
 }
 
 /** Service order with all relations (vehicle, customer, media) for public detail view. */
@@ -82,21 +84,21 @@ export class ServiceOrderRepository {
   async findById(id: string): Promise<ServiceOrderWithItems | null> {
     return this.db.serviceOrder.findUnique({
       where: { id },
-      include: { items: true },
+      include: { items: true, customer: true, vehicle: true },
     });
   }
 
   async findByWorkshopId(workshopId: string): Promise<ServiceOrderWithItems[]> {
     return this.db.serviceOrder.findMany({
       where: { workshopId },
-      include: { items: true },
+      include: { items: true, customer: true, vehicle: true },
       orderBy: { createdAt: 'desc' },
     });
   }
 
   async findAll(): Promise<ServiceOrderWithItems[]> {
     return this.db.serviceOrder.findMany({
-      include: { items: true },
+      include: { items: true, customer: true, vehicle: true },
       orderBy: { createdAt: 'desc' },
     });
   }

@@ -30,7 +30,5 @@ void showWarningSnack(BuildContext context, String message) {
 
 /// Shows a neutral/info snackbar (default theme colors).
 void showInfoSnack(BuildContext context, String message) {
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(content: Text(message)),
-  );
+  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
 }

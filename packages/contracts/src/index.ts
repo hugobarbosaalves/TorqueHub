@@ -33,6 +33,9 @@ export interface ServiceOrderDTO {
   items: ServiceOrderItemDTO[];
   totalAmount: number;
   publicToken: string | null;
+  customerName: string | null;
+  vehiclePlate: string | null;
+  vehicleSummary: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -112,6 +115,7 @@ export interface VehicleDTO {
   year: number | null;
   color: string | null;
   mileage: number | null;
+  customerName: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -130,6 +134,7 @@ export interface CreateVehicleRequest {
 
 /** Payload for updating an existing vehicle. */
 export interface UpdateVehicleRequest {
+  customerId?: string;
   plate?: string;
   brand?: string;
   model?: string;

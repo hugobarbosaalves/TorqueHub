@@ -14,6 +14,7 @@ function toDTO(v: VehicleRecord): VehicleDTO {
     year: v.year,
     color: v.color,
     mileage: v.mileage,
+    customerName: v.customer?.name ?? null,
     createdAt: v.createdAt.toISOString(),
     updatedAt: v.updatedAt.toISOString(),
   };

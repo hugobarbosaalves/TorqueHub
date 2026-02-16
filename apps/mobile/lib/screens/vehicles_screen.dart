@@ -160,26 +160,22 @@ class _VehiclesScreenState extends State<VehiclesScreen> {
             child: _loading
                 ? const Center(child: CircularProgressIndicator())
                 : _error != null
-                    ? TqErrorState(
-                        message: _error!,
-                        onRetry: _loadVehicles,
-                      )
-                    : _vehicles.isEmpty
-                        ? const TqEmptyState(
-                            icon: Icons.directions_car_outlined,
-                            title: 'Nenhum veículo cadastrado',
-                          )
-                        : RefreshIndicator(
-                            onRefresh: _loadVehicles,
-                            child: ListView.separated(
-                              padding: const EdgeInsets.all(TqTokens.space8),
-                              itemCount: _vehicles.length,
-                              separatorBuilder: (_, _) =>
-                                  const SizedBox(height: TqTokens.space4),
-                              itemBuilder: (_, i) =>
-                                  _buildCard(_vehicles[i]),
-                            ),
-                          ),
+                ? TqErrorState(message: _error!, onRetry: _loadVehicles)
+                : _vehicles.isEmpty
+                ? const TqEmptyState(
+                    icon: Icons.directions_car_outlined,
+                    title: 'Nenhum veículo cadastrado',
+                  )
+                : RefreshIndicator(
+                    onRefresh: _loadVehicles,
+                    child: ListView.separated(
+                      padding: const EdgeInsets.all(TqTokens.space8),
+                      itemCount: _vehicles.length,
+                      separatorBuilder: (_, _) =>
+                          const SizedBox(height: TqTokens.space4),
+                      itemBuilder: (_, i) => _buildCard(_vehicles[i]),
+                    ),
+                  ),
           ),
         ],
       ),
@@ -193,6 +189,7 @@ class _VehiclesScreenState extends State<VehiclesScreen> {
     final year = v['year'];
     final color = v['color'] as String? ?? '';
     final mileage = v['mileage'] as int? ?? 0;
+    final customerName = v['customerName'] as String? ?? '';
     final label = '$brand $model — $plate';
 
     return Card(
@@ -205,18 +202,45 @@ class _VehiclesScreenState extends State<VehiclesScreen> {
           label,
           style: const TextStyle(fontWeight: TqTokens.fontWeightSemibold),
         ),
-        subtitle: Text(
-          [
-            if (year != null) 'Ano: $year',
-            if (color.isNotEmpty) color,
-            if (mileage > 0) '${mileage}km',
-          ].join(' • '),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            fontSize: TqTokens.fontSizeXs,
-            color: TqTokens.neutral600,
-          ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (customerName.isNotEmpty)
+              Row(
+                children: [
+                  const Icon(
+                    Icons.person_outline,
+                    size: 14,
+                    color: TqTokens.neutral500,
+                  ),
+                  const SizedBox(width: TqTokens.space2),
+                  Expanded(
+                    child: Text(
+                      customerName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: TqTokens.fontSizeXs,
+                        color: TqTokens.neutral600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            Text(
+              [
+                if (year != null) 'Ano: $year',
+                if (color.isNotEmpty) color,
+                if (mileage > 0) '${mileage}km',
+              ].join(' • '),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: TqTokens.fontSizeXs,
+                color: TqTokens.neutral600,
+              ),
+            ),
+          ],
         ),
         trailing: PopupMenuButton<String>(
           onSelected: (action) {
@@ -227,10 +251,7 @@ class _VehiclesScreenState extends State<VehiclesScreen> {
             const PopupMenuItem(value: 'edit', child: Text('Editar')),
             const PopupMenuItem(
               value: 'delete',
-              child: Text(
-                'Excluir',
-                style: TextStyle(color: TqTokens.danger),
-              ),
+              child: Text('Excluir', style: TextStyle(color: TqTokens.danger)),
             ),
           ],
         ),

@@ -39,75 +39,74 @@ export function VehicleHistory({ token, currentOrderId }: VehicleHistoryProps): 
 
   return (
     <SectionCard icon="📜" title="Histórico do Veículo">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-          {orders.map((order) => {
-            const isCurrent = order.id === currentOrderId;
-            const info = statusConfig[order.status];
-            return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+        {orders.map((order) => {
+          const isCurrent = order.id === currentOrderId;
+          const info = statusConfig[order.status];
+          return (
+            <div
+              key={order.id}
+              style={{
+                padding: 'var(--space-6) var(--space-8)',
+                borderRadius: 'var(--radius-md)',
+                border: isCurrent
+                  ? '2px solid var(--color-accent)'
+                  : '1px solid var(--color-border)',
+                background: isCurrent ? 'var(--color-info-light, #eff6ff)' : 'var(--color-card)',
+              }}
+            >
               <div
-                key={order.id}
                 style={{
-                  padding: 'var(--space-6) var(--space-8)',
-                  borderRadius: 'var(--radius-md)',
-                  border: isCurrent
-                    ? '2px solid var(--color-accent)'
-                    : '1px solid var(--color-border)',
-                  background: isCurrent ? 'var(--color-info-light, #eff6ff)' : 'var(--color-card)',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  gap: 8,
                 }}
               >
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    gap: 8,
-                  }}
-                >
-                  <div style={{ flex: 1 }}>
-                    <p
-                      style={{
-                        fontWeight: 'var(--font-weight-semibold)',
-                        fontSize: 'var(--font-size-base)',
-                      }}
-                    >
-                      {info?.icon ?? '❓'} {order.description}
-                      {isCurrent && (
-                        <span
-                          style={{
-                            color: 'var(--color-accent)',
-                            fontSize: 'var(--font-size-xs)',
-                            marginLeft: 8,
-                          }}
-                        >
-                          ● atual
-                        </span>
-                      )}
-                    </p>
-                    <p
-                      style={{
-                        fontSize: 'var(--font-size-xs)',
-                        color: 'var(--color-muted)',
-                        marginTop: 2,
-                      }}
-                    >
-                      {formatDateBR(order.createdAt)} ·{' '}
-                      {info?.label ?? order.status}
-                    </p>
-                  </div>
-                  <span
+                <div style={{ flex: 1 }}>
+                  <p
                     style={{
-                      fontWeight: 'var(--font-weight-bold)',
+                      fontWeight: 'var(--font-weight-semibold)',
                       fontSize: 'var(--font-size-base)',
-                      whiteSpace: 'nowrap',
                     }}
                   >
-                    {currency(order.totalAmount)}
-                  </span>
+                    {info?.icon ?? '❓'} {order.description}
+                    {isCurrent && (
+                      <span
+                        style={{
+                          color: 'var(--color-accent)',
+                          fontSize: 'var(--font-size-xs)',
+                          marginLeft: 8,
+                        }}
+                      >
+                        ● atual
+                      </span>
+                    )}
+                  </p>
+                  <p
+                    style={{
+                      fontSize: 'var(--font-size-xs)',
+                      color: 'var(--color-muted)',
+                      marginTop: 2,
+                    }}
+                  >
+                    {formatDateBR(order.createdAt)} · {info?.label ?? order.status}
+                  </p>
                 </div>
+                <span
+                  style={{
+                    fontWeight: 'var(--font-weight-bold)',
+                    fontSize: 'var(--font-size-base)',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {currency(order.totalAmount)}
+                </span>
               </div>
-            );
-          })}
-        </div>
+            </div>
+          );
+        })}
+      </div>
     </SectionCard>
   );
 }

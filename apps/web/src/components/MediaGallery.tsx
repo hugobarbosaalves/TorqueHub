@@ -23,19 +23,19 @@ export function MediaGallery({ media }: MediaGalleryProps): ReactNode {
 
   return (
     <SectionCard icon="📸" title="Fotos do Serviço">
-        <div className="media-grid">
-          {photos.map((photo, idx) => (
-            <img
-              key={photo.id}
-              src={mediaUrl(photo.url)}
-              alt={photo.caption ?? `Foto ${String(idx + 1)}`}
-              loading="lazy"
-              onClick={() => {
-                setLightboxIdx(idx);
-              }}
-            />
-          ))}
-        </div>
+      <div className="media-grid">
+        {photos.map((photo, idx) => (
+          <img
+            key={photo.id}
+            src={mediaUrl(photo.url)}
+            alt={photo.caption ?? `Foto ${String(idx + 1)}`}
+            loading="lazy"
+            onClick={() => {
+              setLightboxIdx(idx);
+            }}
+          />
+        ))}
+      </div>
 
       {lightboxIdx !== null && photos[lightboxIdx] && (
         <div

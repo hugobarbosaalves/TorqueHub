@@ -7,6 +7,7 @@ import type {
 
 /** Maps a raw ServiceOrderWithItems to the API-facing ServiceOrderDTO. */
 function toDTO(so: ServiceOrderWithItems): ServiceOrderDTO {
+  const vehicle = so.vehicle;
   return {
     id: so.id,
     workshopId: so.workshopId,
@@ -17,6 +18,11 @@ function toDTO(so: ServiceOrderWithItems): ServiceOrderDTO {
     observations: so.observations,
     totalAmount: so.totalAmount,
     publicToken: so.publicToken,
+    customerName: so.customer?.name ?? null,
+    vehiclePlate: vehicle?.plate ?? null,
+    vehicleSummary: vehicle
+      ? `${String(vehicle.brand)} ${String(vehicle.model)}`
+      : null,
     items: so.items.map((item) => ({
       id: item.id,
       description: item.description,

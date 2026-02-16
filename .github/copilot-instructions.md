@@ -91,41 +91,41 @@ O tema global (AppTheme.light) já configura Card, Button, Input, etc.
 
 ## Proibições Absolutas
 
-| NUNCA faça isto                                    | Motivo                                       |
-| -------------------------------------------------- | -------------------------------------------- |
-| Editar `tokens.css` ou `app_tokens.dart`           | São GERADOS. Edite `tokens.json` e regenere  |
-| Usar `Color(0xFF...)` hardcoded no Flutter         | Use `TqTokens.*`                             |
-| Usar cor hex literal no CSS                        | Use `var(--color-*)`                          |
-| Criar mapa de status local                         | Use `statusConfig` centralizado              |
-| Exceder 200 linhas por arquivo                     | Dividir em módulos menores                   |
-| Usar `any` (TS) ou `dynamic` sem necessidade       | Tipagem obrigatória                          |
-| Usar `\|\|` para default values                    | Usar `??` (nullish coalescing)               |
-| Usar `!` (non-null assertion)                      | Usar type guards ou `??`                     |
-| Esquecer JSDoc/DartDoc em exports                  | Documentação obrigatória                     |
-| Hardcodar credenciais ou URLs de produção          | Usar variáveis de ambiente / AppConfig       |
-| Usar `console.log` em produção                     | Usar logger estruturado                      |
-| Criar comentários decorativos (`// ── ... ──`)     | Usar JSDoc descritivo                        |
+| NUNCA faça isto                                | Motivo                                      |
+| ---------------------------------------------- | ------------------------------------------- |
+| Editar `tokens.css` ou `app_tokens.dart`       | São GERADOS. Edite `tokens.json` e regenere |
+| Usar `Color(0xFF...)` hardcoded no Flutter     | Use `TqTokens.*`                            |
+| Usar cor hex literal no CSS                    | Use `var(--color-*)`                        |
+| Criar mapa de status local                     | Use `statusConfig` centralizado             |
+| Exceder 200 linhas por arquivo                 | Dividir em módulos menores                  |
+| Usar `any` (TS) ou `dynamic` sem necessidade   | Tipagem obrigatória                         |
+| Usar `\|\|` para default values                | Usar `??` (nullish coalescing)              |
+| Usar `!` (non-null assertion)                  | Usar type guards ou `??`                    |
+| Esquecer JSDoc/DartDoc em exports              | Documentação obrigatória                    |
+| Hardcodar credenciais ou URLs de produção      | Usar variáveis de ambiente / AppConfig      |
+| Usar `console.log` em produção                 | Usar logger estruturado                     |
+| Criar comentários decorativos (`// ── ... ──`) | Usar JSDoc descritivo                       |
 
 ---
 
 ## Arquivos-Chave por Responsabilidade
 
-| Responsabilidade               | Arquivo(s)                                           |
-| ------------------------------ | ---------------------------------------------------- |
-| Tokens visuais (fonte verdade) | `packages/design-tokens/tokens.json`                 |
-| Geração de tokens              | `packages/design-tokens/generate.mjs`                |
-| Tokens TS para import web      | `packages/design-tokens/src/*.ts`                    |
-| CSS custom properties (gerado) | `apps/web/src/styles/tokens.css`                     |
-| Estilos globais web            | `apps/web/src/styles/global.css`                     |
-| Tokens Dart (gerado)           | `apps/mobile/lib/theme/app_tokens.dart`              |
-| Tema Material 3                | `apps/mobile/lib/theme/app_theme.dart`               |
-| Config de status (Dart)        | `apps/mobile/lib/theme/status_config.dart`           |
-| Config de status (TS)          | `packages/design-tokens/src/status.ts`               |
-| DTOs compartilhados            | `packages/contracts/src/index.ts`                    |
-| Regras de código               | `PROJECT_CONVENTIONS.md`                             |
-| Design System completo         | `DESIGN_SYSTEM.md`                                   |
+| Responsabilidade               | Arquivo(s)                                             |
+| ------------------------------ | ------------------------------------------------------ |
+| Tokens visuais (fonte verdade) | `packages/design-tokens/tokens.json`                   |
+| Geração de tokens              | `packages/design-tokens/generate.mjs`                  |
+| Tokens TS para import web      | `packages/design-tokens/src/*.ts`                      |
+| CSS custom properties (gerado) | `apps/web/src/styles/tokens.css`                       |
+| Estilos globais web            | `apps/web/src/styles/global.css`                       |
+| Tokens Dart (gerado)           | `apps/mobile/lib/theme/app_tokens.dart`                |
+| Tema Material 3                | `apps/mobile/lib/theme/app_theme.dart`                 |
+| Config de status (Dart)        | `apps/mobile/lib/theme/status_config.dart`             |
+| Config de status (TS)          | `packages/design-tokens/src/status.ts`                 |
+| DTOs compartilhados            | `packages/contracts/src/index.ts`                      |
+| Regras de código               | `PROJECT_CONVENTIONS.md`                               |
+| Design System completo         | `DESIGN_SYSTEM.md`                                     |
 | Documentação do produto        | `documentation/idea/TORQUEHUB_MASTER_DOCUMENTATION.md` |
-| Configuração do app mobile     | `apps/mobile/lib/services/app_config.dart`           |
+| Configuração do app mobile     | `apps/mobile/lib/services/app_config.dart`             |
 
 ---
 

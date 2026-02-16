@@ -251,15 +251,53 @@ Container(
 ### 8.4 SnackBar Padrão
 
 ```dart
-// Sucesso
-ScaffoldMessenger.of(context).showSnackBar(
-  SnackBar(content: Text(msg), backgroundColor: TqTokens.success),
-);
+import '../widgets/tq_snackbar.dart';
 
-// Erro
-ScaffoldMessenger.of(context).showSnackBar(
-  SnackBar(content: Text(msg), backgroundColor: TqTokens.danger),
+showSuccessSnack(context, 'Operação realizada!');
+showErrorSnack(context, 'Algo deu errado');
+showWarningSnack(context, 'Atenção!');
+showInfoSnack(context, 'Informação');
+```
+
+> NUNCA crie SnackBars manuais. Use sempre os helpers de `tq_snackbar.dart`.
+
+### 8.5 Diálogo de Confirmação
+
+```dart
+import '../widgets/tq_confirm_dialog.dart';
+
+final confirmed = await showConfirmDialog(
+  context,
+  title: 'Excluir item?',
+  content: 'Esta ação não pode ser desfeita.',
 );
+if (confirmed) { /* ação */ }
+```
+
+### 8.6 Estados Vazios e de Erro
+
+```dart
+import '../widgets/tq_state_views.dart';
+
+// Estado de erro com retry
+TqErrorState(
+  message: 'Falha ao carregar',
+  onRetry: _reload,
+)
+
+// Estado vazio
+TqEmptyState(
+  icon: Icons.inbox,
+  title: 'Nenhum item encontrado',
+)
+```
+
+### 8.7 Título de Seção
+
+```dart
+import '../widgets/tq_section_title.dart';
+
+TqSectionTitle('Dados do Cliente')
 ```
 
 ---
@@ -280,14 +318,28 @@ packages/design-tokens/
     ├── surfaces.ts      ← Border radius + shadows
     └── status.ts        ← Config de status (label, icon, color)
 
-apps/web/src/styles/
-├── tokens.css           ← GERADO — CSS custom properties
-└── global.css           ← Estilos globais que importam tokens.css
+apps/web/src/
+├── styles/
+│   ├── tokens.css       ← GERADO — CSS custom properties
+│   └── global.css       ← Estilos globais que importam tokens.css
+├── components/
+│   └── SectionCard.tsx  ← Card reutilizável com icon + título
+└── utils/
+    └── format.ts        ← currency(), formatDateBR(), formatDateLong()
 
-apps/mobile/lib/theme/
-├── app_tokens.dart      ← GERADO — constantes Dart
-├── app_theme.dart       ← ThemeData Material 3
-└── status_config.dart   ← Mapa de status com labels e ícones
+apps/mobile/lib/
+├── theme/
+│   ├── app_tokens.dart      ← GERADO — constantes Dart
+│   ├── app_theme.dart       ← ThemeData Material 3
+│   └── status_config.dart   ← Mapa de status com labels e ícones
+├── widgets/
+│   ├── widgets.dart         ← Barrel export
+│   ├── tq_snackbar.dart     ← showSuccessSnack, showErrorSnack, etc.
+│   ├── tq_confirm_dialog.dart ← showConfirmDialog()
+│   ├── tq_state_views.dart  ← TqErrorState, TqEmptyState
+│   └── tq_section_title.dart ← TqSectionTitle
+└── utils/
+    └── formatters.dart      ← formatCurrency(), formatDate()
 ```
 
 ---

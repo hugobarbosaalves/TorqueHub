@@ -6,6 +6,8 @@ library;
 
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import '../theme/app_tokens.dart';
+import '../widgets/tq_snackbar.dart';
 
 /// Tela de login com email e senha.
 class LoginScreen extends StatefulWidget {
@@ -43,9 +45,7 @@ class _LoginScreenState extends State<LoginScreen> {
       Navigator.of(context).pushReplacementNamed('/home');
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('$e'), backgroundColor: Colors.red),
-      );
+      showErrorSnack(context, '$e');
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -57,7 +57,7 @@ class _LoginScreenState extends State<LoginScreen> {
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 32),
+            padding: const EdgeInsets.symmetric(horizontal: TqTokens.space16),
             child: Form(
               key: _formKey,
               child: Column(
@@ -68,21 +68,21 @@ class _LoginScreenState extends State<LoginScreen> {
                     size: 80,
                     color: Theme.of(context).colorScheme.primary,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: TqTokens.space8),
                   Text(
                     'TorqueHub',
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
+                      fontWeight: TqTokens.fontWeightBold,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: TqTokens.space4),
                   Text(
                     'Acesso do mecânico',
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: TqTokens.neutral400,
+                    ),
                   ),
-                  const SizedBox(height: 48),
+                  const SizedBox(height: TqTokens.space24),
                   TextFormField(
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
@@ -90,7 +90,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     decoration: const InputDecoration(
                       labelText: 'Email',
                       prefixIcon: Icon(Icons.email_outlined),
-                      border: OutlineInputBorder(),
                     ),
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
@@ -100,7 +99,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: TqTokens.space8),
                   TextFormField(
                     controller: _passwordController,
                     obscureText: _obscurePassword,
@@ -109,7 +108,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     decoration: InputDecoration(
                       labelText: 'Senha',
                       prefixIcon: const Icon(Icons.lock_outlined),
-                      border: const OutlineInputBorder(),
                       suffixIcon: IconButton(
                         icon: Icon(
                           _obscurePassword
@@ -129,7 +127,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: TqTokens.space16),
                   SizedBox(
                     width: double.infinity,
                     height: 48,
@@ -141,12 +139,12 @@ class _LoginScreenState extends State<LoginScreen> {
                               width: 20,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                color: Colors.white,
+                                color: TqTokens.card,
                               ),
                             )
                           : const Text(
                               'Entrar',
-                              style: TextStyle(fontSize: 16),
+                              style: TextStyle(fontSize: TqTokens.fontSizeLg),
                             ),
                     ),
                   ),

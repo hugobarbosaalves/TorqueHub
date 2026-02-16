@@ -8,15 +8,12 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { getVehicleHistory, type ServiceOrder } from '../services/api';
 import { statusConfig } from '@torquehub/design-tokens';
+import { SectionCard } from './SectionCard';
+import { currency, formatDateBR } from '../utils/format';
 
 interface VehicleHistoryProps {
   readonly token: string;
   readonly currentOrderId: string;
-}
-
-/** Formats centavos as BRL currency. */
-function currency(cents: number): string {
-  return (cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
 /** Renders the vehicle service history timeline. */
@@ -41,9 +38,7 @@ export function VehicleHistory({ token, currentOrderId }: VehicleHistoryProps): 
   if (orders.length <= 1) return null;
 
   return (
-    <div className="card">
-      <div className="card-body">
-        <p className="section-title">📜 Histórico do Veículo</p>
+    <SectionCard icon="📜" title="Histórico do Veículo">
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
           {orders.map((order) => {
             const isCurrent = order.id === currentOrderId;
@@ -57,7 +52,7 @@ export function VehicleHistory({ token, currentOrderId }: VehicleHistoryProps): 
                   border: isCurrent
                     ? '2px solid var(--color-accent)'
                     : '1px solid var(--color-border)',
-                  background: isCurrent ? '#eff6ff' : 'var(--color-card)',
+                  background: isCurrent ? 'var(--color-info-light, #eff6ff)' : 'var(--color-card)',
                 }}
               >
                 <div
@@ -95,7 +90,7 @@ export function VehicleHistory({ token, currentOrderId }: VehicleHistoryProps): 
                         marginTop: 2,
                       }}
                     >
-                      {new Date(order.createdAt).toLocaleDateString('pt-BR')} ·{' '}
+                      {formatDateBR(order.createdAt)} ·{' '}
                       {info?.label ?? order.status}
                     </p>
                   </div>
@@ -113,7 +108,6 @@ export function VehicleHistory({ token, currentOrderId }: VehicleHistoryProps): 
             );
           })}
         </div>
-      </div>
-    </div>
+    </SectionCard>
   );
 }

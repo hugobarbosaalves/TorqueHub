@@ -6,10 +6,13 @@ library;
 
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../theme/app_tokens.dart';
+import '../widgets/tq_snackbar.dart';
+import '../widgets/tq_section_title.dart';
 
 /// Tela para o mecânico criar uma nova ordem de serviço.
-/// Selects em cascata: Workshop → Cliente → Veículo.
 class CreateOrderScreen extends StatefulWidget {
+  /// Callback opcional chamado quando a ordem é criada com sucesso.
   final VoidCallback? onOrderCreated;
 
   const CreateOrderScreen({super.key, this.onOrderCreated});
@@ -49,7 +52,6 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
     super.dispose();
   }
 
-  /// Carrega as oficinas disponíveis na API.
   Future<void> _loadWorkshops() async {
     try {
       final data = await ApiService.getWorkshops();
@@ -61,7 +63,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _loadingData = false);
-      _showError('Erro ao carregar oficinas: $e');
+      showErrorSnack(context, 'Erro ao carregar oficinas: $e');
     }
   }
 
@@ -79,7 +81,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
       if (!mounted) return;
       setState(() => _customers = data);
     } catch (e) {
-      _showError('Erro ao carregar clientes: $e');
+      showErrorSnack(context, 'Erro ao carregar clientes: $e');
     }
   }
 
@@ -98,17 +100,16 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
       if (!mounted) return;
       setState(() => _vehicles = data);
     } catch (e) {
-      _showError('Erro ao carregar veículos: $e');
+      showErrorSnack(context, 'Erro ao carregar veículos: $e');
     }
   }
 
-  /// Envia a nova ordem de serviço para a API.
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedWorkshopId == null ||
         _selectedCustomerId == null ||
         _selectedVehicleId == null) {
-      _showError('Selecione oficina, cliente e veículo');
+      showErrorSnack(context, 'Selecione oficina, cliente e veículo');
       return;
     }
 
@@ -120,13 +121,13 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
           return {
             'description': i.descCtrl.text.trim(),
             'quantity': int.tryParse(i.qtyCtrl.text) ?? 1,
-            'unitPrice': (price * 100).round(), // BRL → centavos
+            'unitPrice': (price * 100).round(),
           };
         })
         .toList();
 
     if (validItems.isEmpty) {
-      _showError('Adicione pelo menos 1 item/serviço');
+      showErrorSnack(context, 'Adicione pelo menos 1 item/serviço');
       return;
     }
 
@@ -140,13 +141,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
         items: validItems,
       );
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Ordem de serviço criada com sucesso!'),
-          backgroundColor: Colors.green,
-        ),
-      );
-      // Limpa formulário
+      showSuccessSnack(context, 'Ordem de serviço criada com sucesso!');
       _descriptionCtrl.clear();
       for (final item in _items) {
         item.dispose();
@@ -157,17 +152,10 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
       });
       widget.onOrderCreated?.call();
     } catch (e) {
-      _showError('Erro ao criar ordem: $e');
+      showErrorSnack(context, 'Erro ao criar ordem: $e');
     } finally {
       if (mounted) setState(() => _loading = false);
     }
-  }
-
-  void _showError(String msg) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(msg), backgroundColor: Colors.red));
   }
 
   @override
@@ -182,9 +170,9 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
           : Form(
               key: _formKey,
               child: ListView(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(TqTokens.space8),
                 children: [
-                  _buildSectionTitle('Oficina'),
+                  const TqSectionTitle('Oficina'),
                   _buildDropdown(
                     currentValue: _selectedWorkshopId,
                     hint: 'Selecione a oficina',
@@ -198,10 +186,8 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                         .toList(),
                     onChanged: _onWorkshopChanged,
                   ),
-
-                  const SizedBox(height: 16),
-
-                  _buildSectionTitle('Cliente'),
+                  const SizedBox(height: TqTokens.space8),
+                  const TqSectionTitle('Cliente'),
                   _buildDropdown(
                     currentValue: _selectedCustomerId,
                     hint: _selectedWorkshopId == null
@@ -217,14 +203,11 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                         child: Text(label),
                       );
                     }).toList(),
-                    onChanged: _selectedWorkshopId == null
-                        ? null
-                        : _onCustomerChanged,
+                    onChanged:
+                        _selectedWorkshopId == null ? null : _onCustomerChanged,
                   ),
-
-                  const SizedBox(height: 16),
-
-                  _buildSectionTitle('Veículo'),
+                  const SizedBox(height: TqTokens.space8),
+                  const TqSectionTitle('Veículo'),
                   _buildDropdown(
                     currentValue: _selectedVehicleId,
                     hint: _selectedCustomerId == null
@@ -244,30 +227,25 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                         ? null
                         : (val) => setState(() => _selectedVehicleId = val),
                   ),
-
-                  const SizedBox(height: 24),
+                  const SizedBox(height: TqTokens.space12),
                   const Divider(),
-                  const SizedBox(height: 16),
-
-                  _buildSectionTitle('Descrição do Serviço'),
+                  const SizedBox(height: TqTokens.space8),
+                  const TqSectionTitle('Descrição do Serviço'),
                   TextFormField(
                     controller: _descriptionCtrl,
                     decoration: const InputDecoration(
                       hintText: 'Ex: Troca de óleo e filtros',
-                      border: OutlineInputBorder(),
                     ),
                     maxLines: 2,
                     validator: (v) => v == null || v.trim().isEmpty
                         ? 'Informe a descrição'
                         : null,
                   ),
-
-                  const SizedBox(height: 24),
-
+                  const SizedBox(height: TqTokens.space12),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      _buildSectionTitle('Itens / Serviços'),
+                      const TqSectionTitle('Itens / Serviços'),
                       TextButton.icon(
                         onPressed: () =>
                             setState(() => _items.add(_ItemEntry())),
@@ -276,15 +254,13 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: TqTokens.space4),
                   ..._items.asMap().entries.map((entry) {
                     final i = entry.key;
                     final item = entry.value;
                     return _buildItemCard(item, i);
                   }),
-
-                  const SizedBox(height: 32),
-
+                  const SizedBox(height: TqTokens.space16),
                   FilledButton.icon(
                     onPressed: _loading ? null : _submit,
                     icon: _loading
@@ -293,7 +269,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                             height: 18,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              color: Colors.white,
+                              color: TqTokens.card,
                             ),
                           )
                         : const Icon(Icons.check),
@@ -303,29 +279,15 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                     style: FilledButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       textStyle: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                        fontSize: TqTokens.fontSizeLg,
+                        fontWeight: TqTokens.fontWeightSemibold,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: TqTokens.space12),
                 ],
               ),
             ),
-    );
-  }
-
-  Widget _buildSectionTitle(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Text(
-        text,
-        style: const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-          color: Colors.black87,
-        ),
-      ),
     );
   }
 
@@ -341,8 +303,10 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
       items: items,
       onChanged: onChanged,
       decoration: const InputDecoration(
-        border: OutlineInputBorder(),
-        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: TqTokens.space6,
+          vertical: TqTokens.space5,
+        ),
       ),
       isExpanded: true,
     );
@@ -350,21 +314,19 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
 
   Widget _buildItemCard(_ItemEntry item, int index) {
     return Card(
-      margin: const EdgeInsets.only(bottom: 10),
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
-        side: BorderSide(color: Colors.grey.shade300),
-      ),
+      margin: const EdgeInsets.only(bottom: TqTokens.space5),
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(TqTokens.space6),
         child: Column(
           children: [
             Row(
               children: [
                 Text(
                   'Item ${index + 1}',
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                  style: const TextStyle(
+                    fontSize: TqTokens.fontSizeXs,
+                    color: TqTokens.neutral600,
+                  ),
                 ),
                 const Spacer(),
                 if (_items.length > 1)
@@ -375,21 +337,23 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                     }),
                     child: const Text(
                       'Remover',
-                      style: TextStyle(fontSize: 12, color: Colors.red),
+                      style: TextStyle(
+                        fontSize: TqTokens.fontSizeXs,
+                        color: TqTokens.danger,
+                      ),
                     ),
                   ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: TqTokens.space4),
             TextFormField(
               controller: item.descCtrl,
               decoration: const InputDecoration(
                 hintText: 'Descrição do item',
-                border: OutlineInputBorder(),
                 isDense: true,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: TqTokens.space4),
             Row(
               children: [
                 Expanded(
@@ -397,19 +361,17 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                     controller: item.qtyCtrl,
                     decoration: const InputDecoration(
                       labelText: 'Qtd',
-                      border: OutlineInputBorder(),
                       isDense: true,
                     ),
                     keyboardType: TextInputType.number,
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: TqTokens.space4),
                 Expanded(
                   child: TextFormField(
                     controller: item.priceCtrl,
                     decoration: const InputDecoration(
                       labelText: 'Valor (R\$)',
-                      border: OutlineInputBorder(),
                       isDense: true,
                     ),
                     keyboardType: const TextInputType.numberWithOptions(
@@ -426,7 +388,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
   }
 }
 
-/// Helper class para manter controllers de cada item
+/// Helper class para manter controllers de cada item.
 class _ItemEntry {
   final descCtrl = TextEditingController();
   final qtyCtrl = TextEditingController(text: '1');

@@ -6,11 +6,16 @@ library;
 
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../theme/app_tokens.dart';
+import '../widgets/tq_snackbar.dart';
 
 /// Formulário para criar ou editar um veículo.
 class VehicleFormScreen extends StatefulWidget {
+  /// ID da oficina.
   final String workshopId;
-  final Map<String, dynamic>? vehicle; // null = criar, preenchido = editar
+
+  /// Dados do veículo para edição (null = criar novo).
+  final Map<String, dynamic>? vehicle;
 
   const VehicleFormScreen({super.key, required this.workshopId, this.vehicle});
 
@@ -27,7 +32,6 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
   late final TextEditingController _colorCtrl;
   late final TextEditingController _mileageCtrl;
 
-  // Customer selection
   List<Map<String, dynamic>> _customers = [];
   String? _selectedCustomerId;
   bool _loadingCustomers = true;
@@ -44,7 +48,9 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
     _modelCtrl = TextEditingController(text: v?['model'] as String? ?? '');
     _yearCtrl = TextEditingController(text: v?['year']?.toString() ?? '');
     _colorCtrl = TextEditingController(text: v?['color'] as String? ?? '');
-    _mileageCtrl = TextEditingController(text: v?['mileage']?.toString() ?? '');
+    _mileageCtrl = TextEditingController(
+      text: v?['mileage']?.toString() ?? '',
+    );
     _selectedCustomerId = v?['customerId'] as String?;
     _loadCustomers();
   }
@@ -71,24 +77,14 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _loadingCustomers = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Erro ao carregar clientes: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      showErrorSnack(context, 'Erro ao carregar clientes: $e');
     }
   }
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     if (!_isEditing && _selectedCustomerId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Selecione um cliente'),
-          backgroundColor: Colors.orange,
-        ),
-      );
+      showWarningSnack(context, 'Selecione um cliente');
       return;
     }
 
@@ -120,20 +116,14 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
       }
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            _isEditing ? 'Veículo atualizado!' : 'Veículo cadastrado!',
-          ),
-          backgroundColor: Colors.green,
-        ),
+      showSuccessSnack(
+        context,
+        _isEditing ? 'Veículo atualizado!' : 'Veículo cadastrado!',
       );
       Navigator.pop(context, true);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro: $e'), backgroundColor: Colors.red),
-      );
+      showErrorSnack(context, 'Erro: $e');
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -147,29 +137,27 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
         centerTitle: true,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(TqTokens.space10),
         child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Cliente (somente na criação)
               if (!_isEditing) ...[
                 const Text(
                   'Cliente *',
-                  style: TextStyle(fontWeight: FontWeight.w600),
+                  style: TextStyle(fontWeight: TqTokens.fontWeightSemibold),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: TqTokens.space3),
                 _loadingCustomers
                     ? const LinearProgressIndicator()
                     : DropdownButtonFormField<String>(
                         initialValue: _selectedCustomerId,
                         hint: const Text('Selecione o cliente'),
                         decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
                           contentPadding: EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 10,
+                            horizontal: TqTokens.space6,
+                            vertical: TqTokens.space5,
                           ),
                         ),
                         items: _customers.map((c) {
@@ -188,81 +176,70 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
                             v == null ? 'Selecione um cliente' : null,
                         isExpanded: true,
                       ),
-                const SizedBox(height: 20),
+                const SizedBox(height: TqTokens.space10),
               ],
-
               TextFormField(
                 controller: _plateCtrl,
                 decoration: const InputDecoration(
                   labelText: 'Placa *',
-                  border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.pin),
                 ),
                 textCapitalization: TextCapitalization.characters,
                 validator: (v) =>
                     v == null || v.trim().isEmpty ? 'Placa obrigatória' : null,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: TqTokens.space8),
               TextFormField(
                 controller: _brandCtrl,
                 decoration: const InputDecoration(
                   labelText: 'Marca *',
-                  border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.branding_watermark),
                 ),
                 textCapitalization: TextCapitalization.words,
                 validator: (v) =>
                     v == null || v.trim().isEmpty ? 'Marca obrigatória' : null,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: TqTokens.space8),
               TextFormField(
                 controller: _modelCtrl,
                 decoration: const InputDecoration(
                   labelText: 'Modelo *',
-                  border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.directions_car),
                 ),
                 textCapitalization: TextCapitalization.words,
                 validator: (v) =>
                     v == null || v.trim().isEmpty ? 'Modelo obrigatório' : null,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: TqTokens.space8),
               Row(
                 children: [
                   Expanded(
                     child: TextFormField(
                       controller: _yearCtrl,
-                      decoration: const InputDecoration(
-                        labelText: 'Ano',
-                        border: OutlineInputBorder(),
-                      ),
+                      decoration: const InputDecoration(labelText: 'Ano'),
                       keyboardType: TextInputType.number,
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: TqTokens.space6),
                   Expanded(
                     child: TextFormField(
                       controller: _colorCtrl,
-                      decoration: const InputDecoration(
-                        labelText: 'Cor',
-                        border: OutlineInputBorder(),
-                      ),
+                      decoration: const InputDecoration(labelText: 'Cor'),
                       textCapitalization: TextCapitalization.words,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: TqTokens.space8),
               TextFormField(
                 controller: _mileageCtrl,
                 decoration: const InputDecoration(
                   labelText: 'Quilometragem (km)',
-                  border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.speed),
                 ),
                 keyboardType: TextInputType.number,
               ),
-              const SizedBox(height: 28),
+              const SizedBox(height: TqTokens.space14),
               FilledButton.icon(
                 onPressed: _loading ? null : _submit,
                 icon: _loading
@@ -271,7 +248,7 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
                         height: 18,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: Colors.white,
+                          color: TqTokens.card,
                         ),
                       )
                     : Icon(_isEditing ? Icons.save : Icons.directions_car),
@@ -279,8 +256,8 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
                 style: FilledButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   textStyle: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
+                    fontSize: TqTokens.fontSizeLg,
+                    fontWeight: TqTokens.fontWeightSemibold,
                   ),
                 ),
               ),

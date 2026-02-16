@@ -11,6 +11,10 @@ import '../services/api_service.dart';
 import '../services/app_config.dart';
 import '../theme/status_config.dart';
 import '../theme/app_tokens.dart';
+import '../utils/formatters.dart';
+import '../widgets/tq_snackbar.dart';
+import '../widgets/tq_confirm_dialog.dart';
+import '../widgets/tq_state_views.dart';
 import 'media_section_widget.dart';
 
 const _statusFlow = [
@@ -21,9 +25,9 @@ const _statusFlow = [
   'COMPLETED',
 ];
 
-/// Tela de detalhe de uma ordem de serviço.
-/// O mecânico pode ver os itens, avançar status, cancelar ou excluir.
+/// Tela de detalhe de ordem — itens, status, ações, mídia.
 class OrderDetailScreen extends StatefulWidget {
+  /// ID da ordem de serviço a exibir.
   final String orderId;
 
   const OrderDetailScreen({super.key, required this.orderId});
@@ -67,20 +71,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     }
   }
 
-  String _formatCurrency(dynamic cents) {
-    final value =
-        (cents is int ? cents : int.tryParse(cents.toString()) ?? 0) / 100;
-    return 'R\$ ${value.toStringAsFixed(2).replaceAll('.', ',')}';
-  }
-
-  String _formatDate(String? iso) {
-    if (iso == null) return '';
-    final dt = DateTime.tryParse(iso);
-    if (dt == null) return iso;
-    final local = dt.toLocal();
-    return '${local.day.toString().padLeft(2, '0')}/${local.month.toString().padLeft(2, '0')}/${local.year} ${local.hour.toString().padLeft(2, '0')}:${local.minute.toString().padLeft(2, '0')}';
-  }
-
   /// Avança o status da ordem para o próximo passo do fluxo.
   Future<void> _advanceStatus() async {
     final status = _order?['status'] as String?;
@@ -92,104 +82,55 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     try {
       await ApiService.updateOrderStatus(widget.orderId, next);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Status atualizado para: ${getStatusInfo(next).label}'),
-          backgroundColor: Colors.green,
-        ),
+      showSuccessSnack(
+        context,
+        'Status atualizado para: ${getStatusInfo(next).label}',
       );
       _loadOrder();
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro: $e'), backgroundColor: Colors.red),
-      );
+      showErrorSnack(context, 'Erro: $e');
     }
   }
 
   Future<void> _cancelOrder() async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Cancelar Ordem'),
-        content: const Text(
-          'Tem certeza que deseja cancelar esta ordem de serviço?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Não'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text(
-              'Sim, cancelar',
-              style: TextStyle(color: Colors.red),
-            ),
-          ),
-        ],
-      ),
+    final confirmed = await showConfirmDialog(
+      context,
+      title: 'Cancelar Ordem',
+      content: 'Tem certeza que deseja cancelar esta ordem de serviço?',
+      confirmText: 'Sim, cancelar',
     );
-    if (confirmed != true) return;
+    if (!confirmed) return;
 
     try {
       await ApiService.updateOrderStatus(widget.orderId, 'CANCELLED');
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Ordem cancelada'),
-          backgroundColor: Colors.orange,
-        ),
-      );
+      showWarningSnack(context, 'Ordem cancelada');
       _loadOrder();
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro: $e'), backgroundColor: Colors.red),
-      );
+      showErrorSnack(context, 'Erro: $e');
     }
   }
 
   Future<void> _deleteOrder() async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Excluir Ordem'),
-        content: const Text(
+    final confirmed = await showConfirmDialog(
+      context,
+      title: 'Excluir Ordem',
+      content:
           'Tem certeza que deseja EXCLUIR esta ordem?\nEsta ação não pode ser desfeita.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Não'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text(
-              'Sim, excluir',
-              style: TextStyle(color: Colors.red),
-            ),
-          ),
-        ],
-      ),
+      confirmText: 'Sim, excluir',
     );
-    if (confirmed != true) return;
+    if (!confirmed) return;
 
     try {
       await ApiService.deleteServiceOrder(widget.orderId);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Ordem excluída'),
-          backgroundColor: Colors.green,
-        ),
-      );
-      Navigator.pop(context); // volta pra lista
+      showSuccessSnack(context, 'Ordem excluída');
+      Navigator.pop(context);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro: $e'), backgroundColor: Colors.red),
-      );
+      showErrorSnack(context, 'Erro: $e');
     }
   }
 
@@ -212,9 +153,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     if (token == null) return;
     final link = AppConfig.orderLink(token);
     Clipboard.setData(ClipboardData(text: link));
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Link copiado!')));
+    showInfoSnack(context, 'Link copiado!');
   }
 
   @override
@@ -224,36 +163,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _error != null
-          ? _buildError()
-          : _order == null
-          ? const Center(child: Text('Ordem não encontrada'))
-          : _buildContent(),
-    );
-  }
-
-  Widget _buildError() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.error_outline, size: 64, color: Colors.red),
-            const SizedBox(height: 16),
-            Text(
-              _error!,
-              style: const TextStyle(color: Colors.grey),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            FilledButton.icon(
-              onPressed: _loadOrder,
-              icon: const Icon(Icons.refresh),
-              label: const Text('Tentar novamente'),
-            ),
-          ],
-        ),
-      ),
+              ? TqErrorState(detail: _error, onRetry: _loadOrder)
+              : _order == null
+                  ? const TqEmptyState(title: 'Ordem não encontrada')
+                  : _buildContent(),
     );
   }
 
@@ -271,182 +184,144 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     return RefreshIndicator(
       onRefresh: _loadOrder,
       child: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(TqTokens.space8),
         children: [
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            decoration: BoxDecoration(
-              color: color.withAlpha(20),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: color.withAlpha(60)),
-            ),
-            child: Column(
-              children: [
-                Icon(info.icon, color: color, size: 36),
-                const SizedBox(height: 6),
-                Text(
-                  info.label,
-                  style: TextStyle(
-                    color: color,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 20),
-
-          Text(
-            order['description'] as String? ?? 'Sem descrição',
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
-          ),
-          if (order['observations'] != null &&
-              (order['observations'] as String).isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Text(
-              order['observations'] as String,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey.shade600,
-                fontStyle: FontStyle.italic,
-              ),
-            ),
-          ],
-          const SizedBox(height: 8),
-          Text(
-            'Criada em: ${_formatDate(order['createdAt'] as String?)}',
-            style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
-          ),
-
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: FilledButton.icon(
-                  onPressed: _shareOrderLink,
-                  icon: const Icon(Icons.share, size: 18),
-                  label: const Text('Enviar ao cliente'),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: TqTokens.whatsapp,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 10),
-              IconButton.outlined(
-                onPressed: _copyOrderLink,
-                icon: const Icon(Icons.copy, size: 18),
-                tooltip: 'Copiar link',
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 24),
+          _buildStatusBanner(info, color),
+          const SizedBox(height: TqTokens.space10),
+          _buildDescription(order),
+          const SizedBox(height: TqTokens.space6),
+          _buildShareRow(),
+          const SizedBox(height: TqTokens.space12),
           const Divider(),
-          const SizedBox(height: 16),
-
+          const SizedBox(height: TqTokens.space8),
           MediaSectionWidget(
             serviceOrderId: widget.orderId,
             initialMedia: _media,
           ),
-
-          const SizedBox(height: 24),
+          const SizedBox(height: TqTokens.space12),
           const Divider(),
-          const SizedBox(height: 16),
-
-          const Text(
-            'Itens / Serviços',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(height: 12),
-          ...items.map((item) => _buildItemRow(item)),
-
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            decoration: BoxDecoration(
-              color: TqTokens.primary.withAlpha(8),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'Total',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                ),
-                Text(
-                  _formatCurrency(order['totalAmount']),
-                  style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w800,
-                    color: TqTokens.primary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 28),
-
-          if (canAdvance)
-            FilledButton.icon(
-              onPressed: _advanceStatus,
-              icon: const Icon(Icons.arrow_forward),
-              label: Text(
-                'Avançar para: ${getStatusInfo(_statusFlow[_statusFlow.indexOf(status) + 1]).label}',
-              ),
-              style: FilledButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                textStyle: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          if (canAdvance) const SizedBox(height: 10),
-
-          if (canCancel)
-            OutlinedButton.icon(
-              onPressed: _cancelOrder,
-              icon: const Icon(Icons.cancel_outlined, color: Colors.orange),
-              label: const Text(
-                'Cancelar Ordem',
-                style: TextStyle(color: Colors.orange),
-              ),
-              style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: Colors.orange),
-                padding: const EdgeInsets.symmetric(vertical: 14),
-              ),
-            ),
-          if (canCancel) const SizedBox(height: 10),
-
-          TextButton.icon(
-            onPressed: _deleteOrder,
-            icon: Icon(Icons.delete_outline, color: Colors.red.shade300),
-            label: Text(
-              'Excluir Ordem',
-              style: TextStyle(color: Colors.red.shade300),
-            ),
-          ),
-
-          const SizedBox(height: 24),
+          const SizedBox(height: TqTokens.space8),
+          _buildItemsSection(items),
+          const SizedBox(height: TqTokens.space6),
+          _buildTotalRow(order),
+          const SizedBox(height: TqTokens.space14),
+          _buildActionButtons(status, canAdvance, canCancel),
+          const SizedBox(height: TqTokens.space12),
         ],
       ),
     );
   }
 
+  Widget _buildStatusBanner(StatusInfo info, Color color) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: TqTokens.space8),
+      decoration: BoxDecoration(
+        color: color.withAlpha(20),
+        borderRadius: BorderRadius.circular(TqTokens.radiusXl),
+        border: Border.all(color: color.withAlpha(60)),
+      ),
+      child: Column(
+        children: [
+          Icon(info.icon, color: color, size: 36),
+          const SizedBox(height: TqTokens.space3),
+          Text(
+            info.label,
+            style: TextStyle(
+              color: color,
+              fontSize: TqTokens.fontSizeXl,
+              fontWeight: TqTokens.fontWeightBold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDescription(Map<String, dynamic> order) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          order['description'] as String? ?? 'Sem descrição',
+          style: const TextStyle(
+            fontSize: TqTokens.fontSize2xl,
+            fontWeight: TqTokens.fontWeightBold,
+          ),
+        ),
+        if (order['observations'] != null &&
+            (order['observations'] as String).isNotEmpty) ...[
+          const SizedBox(height: TqTokens.space4),
+          Text(
+            order['observations'] as String,
+            style: const TextStyle(
+              fontSize: TqTokens.fontSizeBase,
+              color: TqTokens.neutral600,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+        ],
+        const SizedBox(height: TqTokens.space4),
+        Text(
+          'Criada em: ${formatDate(order['createdAt'] as String?)}',
+          style: const TextStyle(
+            fontSize: TqTokens.fontSizeXs,
+            color: TqTokens.neutral500,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildShareRow() {
+    return Row(
+      children: [
+        Expanded(
+          child: FilledButton.icon(
+            onPressed: _shareOrderLink,
+            icon: const Icon(Icons.share, size: 18),
+            label: const Text('Enviar ao cliente'),
+            style: FilledButton.styleFrom(
+              backgroundColor: TqTokens.whatsapp,
+              padding: const EdgeInsets.symmetric(vertical: TqTokens.space6),
+            ),
+          ),
+        ),
+        const SizedBox(width: TqTokens.space5),
+        IconButton.outlined(
+          onPressed: _copyOrderLink,
+          icon: const Icon(Icons.copy, size: 18),
+          tooltip: 'Copiar link',
+        ),
+      ],
+    );
+  }
+
+  Widget _buildItemsSection(List<Map<String, dynamic>> items) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Itens / Serviços',
+          style: TextStyle(
+            fontSize: TqTokens.fontSizeLg,
+            fontWeight: TqTokens.fontWeightSemibold,
+          ),
+        ),
+        const SizedBox(height: TqTokens.space6),
+        ...items.map((item) => _buildItemRow(item)),
+      ],
+    );
+  }
+
   Widget _buildItemRow(Map<String, dynamic> item) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.only(bottom: TqTokens.space4),
+      padding: const EdgeInsets.all(TqTokens.space6),
       decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey.shade200),
+        color: TqTokens.neutral50,
+        borderRadius: BorderRadius.circular(TqTokens.radiusMd),
+        border: Border.all(color: TqTokens.neutral200),
       ),
       child: Row(
         children: [
@@ -458,24 +333,113 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 Text(
                   item['description'] as String? ?? '',
                   style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
+                    fontSize: TqTokens.fontSizeBase,
+                    fontWeight: TqTokens.fontWeightMedium,
                   ),
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: TqTokens.space1),
                 Text(
-                  '${item['quantity']}x  ${_formatCurrency(item['unitPrice'])}',
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                  '${item['quantity']}x  ${formatCurrency(item['unitPrice'])}',
+                  style: const TextStyle(
+                    fontSize: TqTokens.fontSizeXs,
+                    color: TqTokens.neutral600,
+                  ),
                 ),
               ],
             ),
           ),
           Text(
-            _formatCurrency(item['totalPrice']),
-            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+            formatCurrency(item['totalPrice']),
+            style: const TextStyle(
+              fontSize: TqTokens.fontSizeMd,
+              fontWeight: TqTokens.fontWeightBold,
+            ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildTotalRow(Map<String, dynamic> order) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: TqTokens.space8,
+        vertical: 14,
+      ),
+      decoration: BoxDecoration(
+        color: TqTokens.primary.withAlpha(8),
+        borderRadius: BorderRadius.circular(TqTokens.radiusLg),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Text(
+            'Total',
+            style: TextStyle(
+              fontSize: TqTokens.fontSizeLg,
+              fontWeight: TqTokens.fontWeightSemibold,
+            ),
+          ),
+          Text(
+            formatCurrency(order['totalAmount']),
+            style: const TextStyle(
+              fontSize: TqTokens.fontSize3xl,
+              fontWeight: TqTokens.fontWeightExtrabold,
+              color: TqTokens.primary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionButtons(
+    String status,
+    bool canAdvance,
+    bool canCancel,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (canAdvance)
+          FilledButton.icon(
+            onPressed: _advanceStatus,
+            icon: const Icon(Icons.arrow_forward),
+            label: Text(
+              'Avançar para: ${getStatusInfo(_statusFlow[_statusFlow.indexOf(status) + 1]).label}',
+            ),
+            style: FilledButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              textStyle: const TextStyle(
+                fontSize: TqTokens.fontSizeMd,
+                fontWeight: TqTokens.fontWeightSemibold,
+              ),
+            ),
+          ),
+        if (canAdvance) const SizedBox(height: TqTokens.space5),
+        if (canCancel)
+          OutlinedButton.icon(
+            onPressed: _cancelOrder,
+            icon: const Icon(Icons.cancel_outlined, color: TqTokens.warning),
+            label: const Text(
+              'Cancelar Ordem',
+              style: TextStyle(color: TqTokens.warning),
+            ),
+            style: OutlinedButton.styleFrom(
+              side: const BorderSide(color: TqTokens.warning),
+              padding: const EdgeInsets.symmetric(vertical: 14),
+            ),
+          ),
+        if (canCancel) const SizedBox(height: TqTokens.space5),
+        TextButton.icon(
+          onPressed: _deleteOrder,
+          icon: Icon(Icons.delete_outline, color: TqTokens.danger.withAlpha(180)),
+          label: Text(
+            'Excluir Ordem',
+            style: TextStyle(color: TqTokens.danger.withAlpha(180)),
+          ),
+        ),
+      ],
     );
   }
 }

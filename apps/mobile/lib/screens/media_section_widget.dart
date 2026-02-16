@@ -8,6 +8,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../services/api_service.dart';
+import '../theme/app_tokens.dart';
+import '../widgets/tq_snackbar.dart';
+import '../widgets/tq_confirm_dialog.dart';
 
 /// Galeria de fotos/vídeos vinculada a uma ordem de serviço.
 class MediaSectionWidget extends StatefulWidget {
@@ -81,61 +84,32 @@ class _MediaSectionWidgetState extends State<MediaSectionWidget> {
         _media = media;
         _uploading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Foto enviada com sucesso!'),
-          backgroundColor: Colors.green,
-        ),
-      );
+      showSuccessSnack(context, 'Foto enviada com sucesso!');
     } catch (e) {
       if (!mounted) return;
       setState(() => _uploading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Erro no upload: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      showErrorSnack(context, 'Erro no upload: $e');
     }
   }
 
   /// Exclui uma mídia com confirmação.
   Future<void> _deleteMedia(String mediaId) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Excluir Foto'),
-        content: const Text('Deseja remover esta foto?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Não'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Sim', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
+    final confirmed = await showConfirmDialog(
+      context,
+      title: 'Excluir Foto',
+      content: 'Deseja remover esta foto?',
     );
-    if (confirmed != true) return;
+    if (!confirmed) return;
 
     try {
       await ApiService.deleteMedia(widget.serviceOrderId, mediaId);
       final media = await ApiService.getMedia(widget.serviceOrderId);
       if (!mounted) return;
       setState(() => _media = media);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Foto removida'),
-          backgroundColor: Colors.green,
-        ),
-      );
+      showSuccessSnack(context, 'Foto removida');
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro: $e'), backgroundColor: Colors.red),
-      );
+      showErrorSnack(context, 'Erro: $e');
     }
   }
 
@@ -149,7 +123,10 @@ class _MediaSectionWidgetState extends State<MediaSectionWidget> {
           children: [
             const Text(
               'Fotos / Mídias',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                fontSize: TqTokens.fontSizeLg,
+                fontWeight: TqTokens.fontWeightSemibold,
+              ),
             ),
             _uploading
                 ? const SizedBox(
@@ -158,13 +135,16 @@ class _MediaSectionWidgetState extends State<MediaSectionWidget> {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 : IconButton(
-                    icon: const Icon(Icons.add_a_photo, color: Colors.blue),
+                    icon: const Icon(
+                      Icons.add_a_photo,
+                      color: TqTokens.accent,
+                    ),
                     onPressed: _pickAndUploadMedia,
                     tooltip: 'Adicionar foto',
                   ),
           ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: TqTokens.space4),
         if (_media.isEmpty) _buildEmptyState() else _buildGallery(),
       ],
     );
@@ -173,23 +153,26 @@ class _MediaSectionWidgetState extends State<MediaSectionWidget> {
   Widget _buildEmptyState() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 24),
+      padding: const EdgeInsets.symmetric(vertical: TqTokens.space12),
       decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey.shade200),
+        color: TqTokens.neutral50,
+        borderRadius: BorderRadius.circular(TqTokens.radiusMd),
+        border: Border.all(color: TqTokens.neutral200),
       ),
-      child: Column(
+      child: const Column(
         children: [
           Icon(
             Icons.photo_library_outlined,
             size: 40,
-            color: Colors.grey.shade400,
+            color: TqTokens.neutral400,
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: TqTokens.space4),
           Text(
             'Nenhuma foto adicionada',
-            style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+            style: TextStyle(
+              color: TqTokens.neutral500,
+              fontSize: TqTokens.fontSizeSm,
+            ),
           ),
         ],
       ),
@@ -202,7 +185,7 @@ class _MediaSectionWidgetState extends State<MediaSectionWidget> {
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: _media.length,
-        separatorBuilder: (_, _) => const SizedBox(width: 8),
+        separatorBuilder: (_, _) => const SizedBox(width: TqTokens.space4),
         itemBuilder: (context, index) {
           final item = _media[index];
           final url = '${ApiService.baseUrl}${item['url']}';
@@ -216,7 +199,7 @@ class _MediaSectionWidgetState extends State<MediaSectionWidget> {
     return GestureDetector(
       onLongPress: () => _deleteMedia(item['id'] as String),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(TqTokens.radiusMd),
         child: Stack(
           children: [
             Image.network(
@@ -227,22 +210,26 @@ class _MediaSectionWidgetState extends State<MediaSectionWidget> {
               errorBuilder: (_, _, _) => Container(
                 width: 120,
                 height: 120,
-                color: Colors.grey.shade200,
-                child: const Icon(Icons.broken_image),
+                color: TqTokens.neutral200,
+                child: const Icon(
+                  Icons.broken_image,
+                  color: TqTokens.neutral400,
+                ),
               ),
             ),
             Positioned(
-              top: 4,
-              right: 4,
-              child: GestureDetector(
-                onTap: () => _deleteMedia(item['id'] as String),
-                child: Container(
-                  padding: const EdgeInsets.all(2),
-                  decoration: const BoxDecoration(
-                    color: Colors.black54,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.close, size: 16, color: Colors.white),
+              top: TqTokens.space2,
+              right: TqTokens.space2,
+              child: Container(
+                padding: const EdgeInsets.all(TqTokens.space1),
+                decoration: BoxDecoration(
+                  color: TqTokens.neutral900.withAlpha(140),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.close,
+                  size: 14,
+                  color: TqTokens.card,
                 ),
               ),
             ),

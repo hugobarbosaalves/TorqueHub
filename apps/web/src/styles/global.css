@@ -62,7 +62,7 @@ a:hover {
 /* ── Header ── */
 .header {
   background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
-  color: #fff;
+  color: var(--color-card);
   padding: var(--space-10) var(--space-12);
   text-align: center;
 }
@@ -106,7 +106,21 @@ a:hover {
 }
 .btn-primary {
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-card);
+}
+
+/* ── Input ── */
+.input {
+  flex: 1;
+  padding: var(--space-5) var(--space-6);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-md);
+  outline: none;
+}
+.input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px var(--color-brand-primaryLight);
 }
 
 /* ── Section title ── */

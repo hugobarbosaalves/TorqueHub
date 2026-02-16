@@ -12,6 +12,7 @@ import { VehicleInfo } from '../components/VehicleInfo';
 import { OrderItems } from '../components/OrderItems';
 import { MediaGallery } from '../components/MediaGallery';
 import { VehicleHistory } from '../components/VehicleHistory';
+import { formatDateLong } from '../utils/format';
 
 /** Renders the full order detail page for the public client portal. */
 export function OrderPage(): ReactNode {
@@ -83,12 +84,7 @@ export function OrderPage(): ReactNode {
             </p>
           )}
           <p style={{ fontSize: 12, color: 'var(--color-muted)', marginTop: 8 }}>
-            Criada em{' '}
-            {new Date(order.createdAt).toLocaleDateString('pt-BR', {
-              day: '2-digit',
-              month: 'long',
-              year: 'numeric',
-            })}
+            Criada em {formatDateLong(order.createdAt)}
           </p>
         </div>
       </div>

@@ -6,11 +6,16 @@ library;
 
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../theme/app_tokens.dart';
+import '../widgets/tq_snackbar.dart';
 
 /// Formulário para criar ou editar um cliente.
 class CustomerFormScreen extends StatefulWidget {
+  /// ID da oficina à qual o cliente será vinculado.
   final String workshopId;
-  final Map<String, dynamic>? customer; // null = criar, preenchido = editar
+
+  /// Dados do cliente para edição (null = criar novo).
+  final Map<String, dynamic>? customer;
 
   const CustomerFormScreen({
     super.key,
@@ -81,18 +86,14 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
       }
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(_isEditing ? 'Cliente atualizado!' : 'Cliente criado!'),
-          backgroundColor: Colors.green,
-        ),
+      showSuccessSnack(
+        context,
+        _isEditing ? 'Cliente atualizado!' : 'Cliente criado!',
       );
       Navigator.pop(context, true);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro: $e'), backgroundColor: Colors.red),
-      );
+      showErrorSnack(context, 'Erro: $e');
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -106,7 +107,7 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
         centerTitle: true,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(TqTokens.space10),
         child: Form(
           key: _formKey,
           child: Column(
@@ -116,44 +117,40 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
                 controller: _nameCtrl,
                 decoration: const InputDecoration(
                   labelText: 'Nome *',
-                  border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.person),
                 ),
                 validator: (v) =>
                     v == null || v.trim().isEmpty ? 'Nome obrigatório' : null,
                 textCapitalization: TextCapitalization.words,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: TqTokens.space8),
               TextFormField(
                 controller: _docCtrl,
                 decoration: const InputDecoration(
                   labelText: 'CPF / CNPJ',
-                  border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.badge),
                 ),
                 keyboardType: TextInputType.number,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: TqTokens.space8),
               TextFormField(
                 controller: _phoneCtrl,
                 decoration: const InputDecoration(
                   labelText: 'Telefone',
-                  border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.phone),
                 ),
                 keyboardType: TextInputType.phone,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: TqTokens.space8),
               TextFormField(
                 controller: _emailCtrl,
                 decoration: const InputDecoration(
                   labelText: 'E-mail',
-                  border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.email),
                 ),
                 keyboardType: TextInputType.emailAddress,
               ),
-              const SizedBox(height: 28),
+              const SizedBox(height: TqTokens.space14),
               FilledButton.icon(
                 onPressed: _loading ? null : _submit,
                 icon: _loading
@@ -162,16 +159,17 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
                         height: 18,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: Colors.white,
+                          color: TqTokens.card,
                         ),
                       )
                     : Icon(_isEditing ? Icons.save : Icons.person_add),
                 label: Text(_isEditing ? 'Salvar' : 'Cadastrar'),
                 style: FilledButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 14),
                   textStyle: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
+                    fontSize: TqTokens.fontSizeLg,
+                    fontWeight: TqTokens.fontWeightSemibold,
                   ),
                 ),
               ),

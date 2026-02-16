@@ -5,23 +5,18 @@
 
 import type { ReactNode } from 'react';
 import type { ServiceOrderItem } from '../services/api';
+import { SectionCard } from './SectionCard';
+import { currency } from '../utils/format';
 
 interface OrderItemsProps {
-  items: ServiceOrderItem[];
-  totalAmount: number;
-}
-
-/** Formats centavos as BRL currency. */
-function currency(cents: number): string {
-  return (cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  readonly items: ServiceOrderItem[];
+  readonly totalAmount: number;
 }
 
 /** Renders the items table and total amount. */
 export function OrderItems({ items, totalAmount }: OrderItemsProps): ReactNode {
   return (
-    <div className="card">
-      <div className="card-body">
-        <p className="section-title">📋 Itens do Serviço</p>
+    <SectionCard icon="📋" title="Itens do Serviço">
 
         <table style={{ width: '100%', fontSize: 14, borderCollapse: 'collapse' }}>
           <thead>
@@ -46,7 +41,7 @@ export function OrderItems({ items, totalAmount }: OrderItemsProps): ReactNode {
           </thead>
           <tbody>
             {items.map((item) => (
-              <tr key={item.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+              <tr key={item.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
                 <td style={{ padding: '10px 0' }}>{item.description}</td>
                 <td style={{ padding: '10px 0', textAlign: 'center' }}>{item.quantity}</td>
                 <td style={{ padding: '10px 0', textAlign: 'right' }}>
@@ -78,7 +73,6 @@ export function OrderItems({ items, totalAmount }: OrderItemsProps): ReactNode {
             {currency(totalAmount)}
           </span>
         </div>
-      </div>
-    </div>
+    </SectionCard>
   );
 }

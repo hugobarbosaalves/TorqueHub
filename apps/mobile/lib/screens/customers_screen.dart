@@ -1,14 +1,18 @@
 /// Customer management screen — CRUD operations for workshop customers.
 ///
-/// Lists customers filtered by workshop, with swipe-to-delete and
+/// Lists customers filtered by workshop, with delete confirmation and
 /// navigation to [CustomerFormScreen] for create/edit.
 library;
 
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../theme/app_tokens.dart';
+import '../widgets/tq_snackbar.dart';
+import '../widgets/tq_confirm_dialog.dart';
+import '../widgets/tq_state_views.dart';
 import 'customer_form_screen.dart';
 
-/// Lista de clientes da oficina. O mecânico pode ver, criar, editar e excluir.
+/// Lista de clientes da oficina com CRUD.
 class CustomersScreen extends StatefulWidget {
   const CustomersScreen({super.key});
 
@@ -78,42 +82,21 @@ class _CustomersScreenState extends State<CustomersScreen> {
   }
 
   Future<void> _deleteCustomer(String id, String name) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Excluir Cliente'),
-        content: Text(
-          'Excluir "$name"? Isso pode falhar se houver ordens vinculadas.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Não'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Sim', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
+    final confirmed = await showConfirmDialog(
+      context,
+      title: 'Excluir Cliente',
+      content: 'Excluir "$name"? Isso pode falhar se houver ordens vinculadas.',
     );
-    if (confirmed != true) return;
+    if (!confirmed) return;
 
     try {
       await ApiService.deleteCustomer(id);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Cliente excluído'),
-          backgroundColor: Colors.green,
-        ),
-      );
+      showSuccessSnack(context, 'Cliente excluído');
       _loadCustomers();
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro: $e'), backgroundColor: Colors.red),
-      );
+      showErrorSnack(context, 'Erro: $e');
     }
   }
 
@@ -143,18 +126,21 @@ class _CustomersScreenState extends State<CustomersScreen> {
             ),
       body: Column(
         children: [
-          // Workshop selector
           if (_workshops.length > 1)
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+              padding: const EdgeInsets.fromLTRB(
+                TqTokens.space8,
+                TqTokens.space6,
+                TqTokens.space8,
+                0,
+              ),
               child: DropdownButtonFormField<String>(
                 initialValue: _selectedWorkshopId,
                 decoration: const InputDecoration(
                   labelText: 'Oficina',
-                  border: OutlineInputBorder(),
                   contentPadding: EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 10,
+                    horizontal: TqTokens.space6,
+                    vertical: TqTokens.space5,
                   ),
                 ),
                 items: _workshops
@@ -171,39 +157,30 @@ class _CustomersScreenState extends State<CustomersScreen> {
                 },
               ),
             ),
-
-          // Content
           Expanded(
             child: _loading
                 ? const Center(child: CircularProgressIndicator())
                 : _error != null
-                ? Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          _error!,
-                          style: const TextStyle(color: Colors.red),
-                        ),
-                        const SizedBox(height: 8),
-                        FilledButton(
-                          onPressed: _loadCustomers,
-                          child: const Text('Retry'),
-                        ),
-                      ],
-                    ),
-                  )
-                : _customers.isEmpty
-                ? const Center(child: Text('Nenhum cliente cadastrado'))
-                : RefreshIndicator(
-                    onRefresh: _loadCustomers,
-                    child: ListView.separated(
-                      padding: const EdgeInsets.all(16),
-                      itemCount: _customers.length,
-                      separatorBuilder: (_, _) => const SizedBox(height: 8),
-                      itemBuilder: (_, i) => _buildCard(_customers[i]),
-                    ),
-                  ),
+                    ? TqErrorState(
+                        message: _error!,
+                        onRetry: _loadCustomers,
+                      )
+                    : _customers.isEmpty
+                        ? const TqEmptyState(
+                            icon: Icons.people_outline,
+                            title: 'Nenhum cliente cadastrado',
+                          )
+                        : RefreshIndicator(
+                            onRefresh: _loadCustomers,
+                            child: ListView.separated(
+                              padding: const EdgeInsets.all(TqTokens.space8),
+                              itemCount: _customers.length,
+                              separatorBuilder: (_, _) =>
+                                  const SizedBox(height: TqTokens.space4),
+                              itemBuilder: (_, i) =>
+                                  _buildCard(_customers[i]),
+                            ),
+                          ),
           ),
         ],
       ),
@@ -219,21 +196,27 @@ class _CustomersScreenState extends State<CustomersScreen> {
     return Card(
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: Colors.blue.shade100,
+          backgroundColor: TqTokens.accent.withAlpha(25),
           child: Text(
             name.isNotEmpty ? name[0].toUpperCase() : '?',
-            style: TextStyle(
-              color: Colors.blue.shade700,
-              fontWeight: FontWeight.bold,
+            style: const TextStyle(
+              color: TqTokens.accent,
+              fontWeight: TqTokens.fontWeightBold,
             ),
           ),
         ),
-        title: Text(name, style: const TextStyle(fontWeight: FontWeight.w600)),
+        title: Text(
+          name,
+          style: const TextStyle(fontWeight: TqTokens.fontWeightSemibold),
+        ),
         subtitle: Text(
           [doc, phone, email].where((s) => s.isNotEmpty).join(' • '),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+          style: const TextStyle(
+            fontSize: TqTokens.fontSizeXs,
+            color: TqTokens.neutral600,
+          ),
         ),
         trailing: PopupMenuButton<String>(
           onSelected: (action) {
@@ -244,7 +227,10 @@ class _CustomersScreenState extends State<CustomersScreen> {
             const PopupMenuItem(value: 'edit', child: Text('Editar')),
             const PopupMenuItem(
               value: 'delete',
-              child: Text('Excluir', style: TextStyle(color: Colors.red)),
+              child: Text(
+                'Excluir',
+                style: TextStyle(color: TqTokens.danger),
+              ),
             ),
           ],
         ),

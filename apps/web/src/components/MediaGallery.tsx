@@ -7,9 +7,10 @@
 import { useState, type ReactNode } from 'react';
 import type { MediaRecord } from '../services/api';
 import { mediaUrl } from '../services/api';
+import { SectionCard } from './SectionCard';
 
 interface MediaGalleryProps {
-  media: MediaRecord[];
+  readonly media: MediaRecord[];
 }
 
 /** Renders a responsive photo grid with lightbox overlay. */
@@ -21,9 +22,7 @@ export function MediaGallery({ media }: MediaGalleryProps): ReactNode {
   if (photos.length === 0) return null;
 
   return (
-    <div className="card">
-      <div className="card-body">
-        <p className="section-title">📸 Fotos do Serviço</p>
+    <SectionCard icon="📸" title="Fotos do Serviço">
         <div className="media-grid">
           {photos.map((photo, idx) => (
             <img
@@ -37,7 +36,6 @@ export function MediaGallery({ media }: MediaGalleryProps): ReactNode {
             />
           ))}
         </div>
-      </div>
 
       {lightboxIdx !== null && photos[lightboxIdx] && (
         <div
@@ -52,6 +50,6 @@ export function MediaGallery({ media }: MediaGalleryProps): ReactNode {
           />
         </div>
       )}
-    </div>
+    </SectionCard>
   );
 }

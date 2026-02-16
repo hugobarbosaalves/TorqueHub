@@ -12,7 +12,7 @@ import { OrderPage } from './pages/OrderPage';
 function Header(): ReactNode {
   return (
     <header className="header">
-      <Link to="/" style={{ color: '#fff', textDecoration: 'none' }}>
+      <Link to="/" style={{ color: 'var(--color-card)', textDecoration: 'none' }}>
         <h1>🔧 TorqueHub</h1>
       </Link>
       <p>Portal do Cliente — Acompanhe seu serviço</p>

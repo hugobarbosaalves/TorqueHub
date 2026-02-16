@@ -154,7 +154,9 @@ function generateDart() {
   lines.push('');
   lines.push('  // ── Font Weights ──');
   for (const [k, v] of Object.entries(tokens.typography.fontWeight)) {
-    lines.push(`  static const FontWeight fontWeight${k[0].toUpperCase()}${k.slice(1)} = FontWeight.w${v};`);
+    lines.push(
+      `  static const FontWeight fontWeight${k[0].toUpperCase()}${k.slice(1)} = FontWeight.w${v};`,
+    );
   }
 
   lines.push('');
@@ -166,7 +168,9 @@ function generateDart() {
   lines.push('');
   lines.push('  // ── Border Radius ──');
   for (const [k, v] of Object.entries(tokens.radius)) {
-    lines.push(`  static const double radius${k[0].toUpperCase()}${k.slice(1)} = ${Number(v).toFixed(1)};`);
+    lines.push(
+      `  static const double radius${k[0].toUpperCase()}${k.slice(1)} = ${Number(v).toFixed(1)};`,
+    );
   }
 
   lines.push('}');

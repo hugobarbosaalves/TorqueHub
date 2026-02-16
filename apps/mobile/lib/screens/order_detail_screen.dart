@@ -94,9 +94,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            'Status atualizado para: ${getStatusInfo(next).label}',
-          ),
+          content: Text('Status atualizado para: ${getStatusInfo(next).label}'),
           backgroundColor: Colors.green,
         ),
       );
@@ -214,9 +212,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     if (token == null) return;
     final link = AppConfig.orderLink(token);
     Clipboard.setData(ClipboardData(text: link));
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Link copiado!')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Link copiado!')));
   }
 
   @override

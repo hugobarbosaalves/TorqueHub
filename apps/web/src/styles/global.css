@@ -32,11 +32,20 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-a { color: var(--color-accent); text-decoration: none; }
-a:hover { text-decoration: underline; }
+a {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
 
 /* ── Layout ── */
-.container { max-width: 720px; margin: 0 auto; padding: var(--space-12) var(--space-8); }
+.container {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: var(--space-12) var(--space-8);
+}
 
 /* ── Card ── */
 .card {
@@ -46,7 +55,9 @@ a:hover { text-decoration: underline; }
   overflow: hidden;
   margin-bottom: var(--space-10);
 }
-.card-body { padding: var(--space-10) var(--space-12); }
+.card-body {
+  padding: var(--space-10) var(--space-12);
+}
 
 /* ── Header ── */
 .header {
@@ -55,8 +66,15 @@ a:hover { text-decoration: underline; }
   padding: var(--space-10) var(--space-12);
   text-align: center;
 }
-.header h1 { font-size: var(--font-size-4xl); font-weight: var(--font-weight-bold); }
-.header p { font-size: var(--font-size-sm); opacity: 0.8; margin-top: var(--space-2); }
+.header h1 {
+  font-size: var(--font-size-4xl);
+  font-weight: var(--font-weight-bold);
+}
+.header p {
+  font-size: var(--font-size-sm);
+  opacity: 0.8;
+  margin-top: var(--space-2);
+}
 
 /* ── Footer ── */
 .footer {
@@ -79,9 +97,17 @@ a:hover { text-decoration: underline; }
   cursor: pointer;
   transition: opacity 0.2s;
 }
-.btn:hover { opacity: 0.9; }
-.btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.btn-primary { background: var(--color-primary); color: #fff; }
+.btn:hover {
+  opacity: 0.9;
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.btn-primary {
+  background: var(--color-primary);
+  color: #fff;
+}
 
 /* ── Section title ── */
 .section-title {
@@ -108,7 +134,9 @@ a:hover { text-decoration: underline; }
   cursor: pointer;
   transition: transform 0.2s;
 }
-.media-grid img:hover { transform: scale(1.03); }
+.media-grid img:hover {
+  transform: scale(1.03);
+}
 
 /* ── Lightbox ── */
 .lightbox {
@@ -138,4 +166,8 @@ a:hover { text-decoration: underline; }
   animation: spin 0.8s linear infinite;
   margin: var(--space-20) auto;
 }
-@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

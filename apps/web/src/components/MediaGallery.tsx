@@ -31,14 +31,21 @@ export function MediaGallery({ media }: MediaGalleryProps): ReactNode {
               src={mediaUrl(photo.url)}
               alt={photo.caption ?? `Foto ${String(idx + 1)}`}
               loading="lazy"
-              onClick={() => { setLightboxIdx(idx); }}
+              onClick={() => {
+                setLightboxIdx(idx);
+              }}
             />
           ))}
         </div>
       </div>
 
       {lightboxIdx !== null && photos[lightboxIdx] && (
-        <div className="lightbox" onClick={() => { setLightboxIdx(null); }}>
+        <div
+          className="lightbox"
+          onClick={() => {
+            setLightboxIdx(null);
+          }}
+        >
           <img
             src={mediaUrl(photos[lightboxIdx].url)}
             alt={photos[lightboxIdx].caption ?? 'Foto em tamanho real'}

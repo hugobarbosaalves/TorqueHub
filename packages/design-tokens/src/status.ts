@@ -16,7 +16,11 @@ export interface StatusInfo {
 /** Status display configuration map — derived from tokens.json. */
 export const statusConfig: Record<string, StatusInfo> = {
   DRAFT: { label: 'Rascunho', icon: '📝', color: colors.status['DRAFT'] ?? '' },
-  PENDING_APPROVAL: { label: 'Aguardando Aprovação', icon: '⏳', color: colors.status['PENDING_APPROVAL'] ?? '' },
+  PENDING_APPROVAL: {
+    label: 'Aguardando Aprovação',
+    icon: '⏳',
+    color: colors.status['PENDING_APPROVAL'] ?? '',
+  },
   APPROVED: { label: 'Aprovada', icon: '👍', color: colors.status['APPROVED'] ?? '' },
   IN_PROGRESS: { label: 'Em Andamento', icon: '🔧', color: colors.status['IN_PROGRESS'] ?? '' },
   COMPLETED: { label: 'Concluído', icon: '✅', color: colors.status['COMPLETED'] ?? '' },

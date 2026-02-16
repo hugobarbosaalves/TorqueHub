@@ -26,8 +26,12 @@ export function OrderPage(): ReactNode {
     setError('');
     getOrderByToken(token)
       .then(setOrder)
-      .catch((e: unknown) => { setError(e instanceof Error ? e.message : 'Ordem não encontrada'); })
-      .finally(() => { setLoading(false); });
+      .catch((e: unknown) => {
+        setError(e instanceof Error ? e.message : 'Ordem não encontrada');
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, [token]);
 
   if (loading) {
@@ -45,13 +49,19 @@ export function OrderPage(): ReactNode {
         <div className="card" style={{ borderLeft: '4px solid var(--color-danger)' }}>
           <div className="card-body" style={{ textAlign: 'center' }}>
             <span style={{ fontSize: 48 }}>😕</span>
-            <p style={{ fontSize: 16, fontWeight: 600, marginTop: 12, color: 'var(--color-danger)' }}>
+            <p
+              style={{ fontSize: 16, fontWeight: 600, marginTop: 12, color: 'var(--color-danger)' }}
+            >
               {error || 'Ordem não encontrada'}
             </p>
             <p style={{ fontSize: 14, color: 'var(--color-muted)', marginTop: 8 }}>
               Verifique o link e tente novamente.
             </p>
-            <Link to="/" className="btn btn-primary" style={{ marginTop: 16, display: 'inline-flex' }}>
+            <Link
+              to="/"
+              className="btn btn-primary"
+              style={{ marginTop: 16, display: 'inline-flex' }}
+            >
               Buscar pelo código
             </Link>
           </div>
@@ -73,8 +83,11 @@ export function OrderPage(): ReactNode {
             </p>
           )}
           <p style={{ fontSize: 12, color: 'var(--color-muted)', marginTop: 8 }}>
-            Criada em {new Date(order.createdAt).toLocaleDateString('pt-BR', {
-              day: '2-digit', month: 'long', year: 'numeric',
+            Criada em{' '}
+            {new Date(order.createdAt).toLocaleDateString('pt-BR', {
+              day: '2-digit',
+              month: 'long',
+              year: 'numeric',
             })}
           </p>
         </div>

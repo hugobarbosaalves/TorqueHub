@@ -41,14 +41,16 @@ function toPublicDetailDTO(so: ServiceOrderWithRelations): PublicOrderDetailDTO 
       color: so.vehicle.color,
     },
     customerName: so.customer.name,
-    media: so.media.map((m): MediaDTO => ({
-      id: m.id,
-      serviceOrderId: m.serviceOrderId,
-      type: m.type as MediaDTO['type'],
-      url: m.url,
-      caption: m.caption,
-      createdAt: m.createdAt.toISOString(),
-    })),
+    media: so.media.map(
+      (m): MediaDTO => ({
+        id: m.id,
+        serviceOrderId: m.serviceOrderId,
+        type: m.type as MediaDTO['type'],
+        url: m.url,
+        caption: m.caption,
+        createdAt: m.createdAt.toISOString(),
+      }),
+    ),
   };
 }
 

@@ -49,7 +49,12 @@ export async function buildApp(): Promise<FastifyInstance> {
         contact: { name: 'TorqueHub Team' },
       },
       servers: IS_PRODUCTION
-        ? [{ url: process.env['RENDER_EXTERNAL_URL'] ?? 'https://torquehub-api.onrender.com', description: 'Production' }]
+        ? [
+            {
+              url: process.env['RENDER_EXTERNAL_URL'] ?? 'https://torquehub-api.onrender.com',
+              description: 'Production',
+            },
+          ]
         : [{ url: 'http://localhost:3333', description: 'Development' }],
       tags: [
         { name: 'Health', description: 'Health check endpoint' },

@@ -233,11 +233,11 @@ modules/<feature>/
 
 ## 10. Shared Packages
 
-| Package                | Propósito                                   |
-| ---------------------- | ------------------------------------------- |
-| `@torquehub/contracts` | DTOs, tipos de request/response, API shapes |
-| `@torquehub/entities`  | `BaseEntity`, `ValueObject`, `DomainError`  |
-| `@torquehub/utils`     | `formatCurrency`, `slugify`, `generateId`   |
+| Package                    | Propósito                                     |
+| -------------------------- | --------------------------------------------- |
+| `@torquehub/contracts`     | DTOs, tipos de request/response, API shapes   |
+| `@torquehub/entities`      | `BaseEntity`, `ValueObject`, `DomainError`    |
+| `@torquehub/utils`         | `formatCurrency`, `slugify`, `generateId`     |
 | `@torquehub/design-tokens` | Tokens de design (cores, fontes, espaçamento) |
 
 - Shared packages **nunca** importam de `apps/*`
@@ -311,9 +311,12 @@ cd apps/mobile && flutter run
 
 ## 15. Instruções para Agentes IA
 
+> **Leia também**: `.github/copilot-instructions.md` contém o mapa de decisão
+> detalhado sobre **quando mexer, onde mexer e o que mexer**.
+
 Ao trabalhar neste projeto como assistente de código IA:
 
-1. **Ler** este arquivo E a documentação master ANTES de qualquer ação
+1. **Ler** este arquivo, `DESIGN_SYSTEM.md` E a documentação master ANTES de qualquer ação
 2. **Consultar** padrões existentes no código antes de criar novos arquivos
 3. **Nunca** exceder 200 linhas por arquivo
 4. **Seguir** a estrutura de módulos exatamente
@@ -327,3 +330,15 @@ Ao trabalhar neste projeto como assistente de código IA:
 12. **Sempre** responder em português brasileiro
 13. **Sempre** usar JSDoc descritivo, não comentários de linha decorativos
 14. **Nunca** criar arquivos desnecessários — só o essencial para a task
+
+### 15.1 Design System — Regras para UI
+
+15. **Nunca** editar `tokens.css` ou `app_tokens.dart` — são gerados automaticamente
+16. **Sempre** alterar cores/fontes/espaçamento em `packages/design-tokens/tokens.json`
+17. **Sempre** rodar `pnpm --filter @torquehub/design-tokens generate` após alterar tokens
+18. **Web**: usar `var(--color-*)`, `var(--space-*)`, `var(--font-*)` para valores visuais
+19. **Mobile**: usar `TqTokens.*` para cores, fontes, espaçamento e border radius
+20. **Status**: usar `statusConfig` centralizado (`@torquehub/design-tokens` ou `status_config.dart`)
+21. **Nunca** criar mapas de status locais duplicados
+22. **Nunca** usar `Color(0xFF...)` hardcoded no Flutter — usar `TqTokens.*`
+23. **Nunca** usar cor hex literal no CSS — usar `var(--color-*)`

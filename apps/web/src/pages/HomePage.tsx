@@ -32,11 +32,17 @@ export function HomePage(): ReactNode {
           <form onSubmit={handleSubmit} style={{ display: 'flex', gap: 8 }}>
             <input
               value={token}
-              onChange={(e) => { setToken(e.target.value); }}
+              onChange={(e) => {
+                setToken(e.target.value);
+              }}
               placeholder="Código da ordem..."
               style={{
-                flex: 1, padding: '10px 14px', border: '1px solid var(--color-border)',
-                borderRadius: 8, fontSize: 15, outline: 'none',
+                flex: 1,
+                padding: '10px 14px',
+                border: '1px solid var(--color-border)',
+                borderRadius: 8,
+                fontSize: 15,
+                outline: 'none',
               }}
             />
             <button type="submit" className="btn btn-primary" disabled={!token.trim()}>

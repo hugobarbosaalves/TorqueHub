@@ -219,11 +219,7 @@ class OrdersScreenState extends State<OrdersScreen> {
                     // Header
                     Row(
                       children: [
-                        Icon(
-                          info.icon,
-                          color: color,
-                          size: 20,
-                        ),
+                        Icon(info.icon, color: color, size: 20),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(

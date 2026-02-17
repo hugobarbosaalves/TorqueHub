@@ -3,6 +3,7 @@
  * Endpoints acessíveis pelo cliente via token público.
  * @module public-order-schemas
  */
+import { ORDER_STATUS_VALUES, MEDIA_TYPE_VALUES } from '@torquehub/contracts';
 import { successResponse, errorResponse } from '../../../../shared/interfaces/schemas.js';
 
 const orderItemSchema = {
@@ -26,7 +27,7 @@ const publicOrderSchema = {
     description: { type: 'string' },
     status: {
       type: 'string',
-      enum: ['DRAFT', 'PENDING_APPROVAL', 'APPROVED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'],
+      enum: ORDER_STATUS_VALUES,
     },
     observations: { type: 'string', nullable: true },
     items: { type: 'array', items: orderItemSchema },
@@ -49,7 +50,7 @@ const publicOrderSchema = {
         type: 'object',
         properties: {
           id: { type: 'string', format: 'uuid' },
-          type: { type: 'string', enum: ['PHOTO', 'VIDEO'] },
+          type: { type: 'string', enum: MEDIA_TYPE_VALUES },
           url: { type: 'string' },
           caption: { type: 'string', nullable: true },
           createdAt: { type: 'string', format: 'date-time' },

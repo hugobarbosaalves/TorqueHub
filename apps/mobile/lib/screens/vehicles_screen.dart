@@ -10,6 +10,7 @@ import '../theme/app_tokens.dart';
 import '../widgets/tq_snackbar.dart';
 import '../widgets/tq_confirm_dialog.dart';
 import '../widgets/tq_state_views.dart';
+import '../utils/constants.dart';
 import 'vehicle_form_screen.dart';
 
 /// Lista de veículos da oficina com CRUD.
@@ -134,7 +135,7 @@ class _VehiclesScreenState extends State<VehiclesScreen> {
                 0,
               ),
               child: DropdownButtonFormField<String>(
-                initialValue: _selectedWorkshopId,
+                value: _selectedWorkshopId,
                 decoration: const InputDecoration(
                   labelText: 'Oficina',
                   contentPadding: EdgeInsets.symmetric(
@@ -144,9 +145,9 @@ class _VehiclesScreenState extends State<VehiclesScreen> {
                 ),
                 items: _workshops
                     .map(
-                      (w) => DropdownMenuItem(
-                        value: w['id'] as String,
-                        child: Text(w['name'] as String),
+                      (workshop) => DropdownMenuItem(
+                        value: workshop['id'] as String,
+                        child: Text(workshop['name'] as String),
                       ),
                     )
                     .toList(),
@@ -173,7 +174,7 @@ class _VehiclesScreenState extends State<VehiclesScreen> {
                       itemCount: _vehicles.length,
                       separatorBuilder: (_, _) =>
                           const SizedBox(height: TqTokens.space4),
-                      itemBuilder: (_, i) => _buildCard(_vehicles[i]),
+                      itemBuilder: (_, index) => _buildCard(_vehicles[index]),
                     ),
                   ),
           ),
@@ -182,14 +183,14 @@ class _VehiclesScreenState extends State<VehiclesScreen> {
     );
   }
 
-  Widget _buildCard(Map<String, dynamic> v) {
-    final plate = v['plate'] as String;
-    final brand = v['brand'] as String;
-    final model = v['model'] as String;
-    final year = v['year'];
-    final color = v['color'] as String? ?? '';
-    final mileage = v['mileage'] as int? ?? 0;
-    final customerName = v['customerName'] as String? ?? '';
+  Widget _buildCard(Map<String, dynamic> vehicle) {
+    final plate = vehicle['plate'] as String;
+    final brand = vehicle['brand'] as String;
+    final model = vehicle['model'] as String;
+    final year = vehicle['year'];
+    final color = vehicle['color'] as String? ?? '';
+    final mileage = vehicle['mileage'] as int? ?? 0;
+    final customerName = vehicle['customerName'] as String? ?? '';
     final label = '$brand $model — $plate';
 
     return Card(
@@ -244,18 +245,19 @@ class _VehiclesScreenState extends State<VehiclesScreen> {
         ),
         trailing: PopupMenuButton<String>(
           onSelected: (action) {
-            if (action == 'edit') _openForm(vehicle: v);
-            if (action == 'delete') _deleteVehicle(v['id'] as String, label);
+            if (action == MenuAction.edit) _openForm(vehicle: vehicle);
+            if (action == MenuAction.delete)
+              _deleteVehicle(vehicle['id'] as String, label);
           },
           itemBuilder: (_) => [
-            const PopupMenuItem(value: 'edit', child: Text('Editar')),
+            const PopupMenuItem(value: MenuAction.edit, child: Text('Editar')),
             const PopupMenuItem(
-              value: 'delete',
+              value: MenuAction.delete,
               child: Text('Excluir', style: TextStyle(color: TqTokens.danger)),
             ),
           ],
         ),
-        onTap: () => _openForm(vehicle: v),
+        onTap: () => _openForm(vehicle: vehicle),
       ),
     );
   }

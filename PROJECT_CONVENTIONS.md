@@ -58,7 +58,65 @@ Estas regras são **invioláveis** em qualquer stack do projeto.
 | **NUNCA** deixar `console.log` em prod                             | Usar logger estruturado                                  |
 | **NUNCA** ignorar erros silenciosamente                            | Sempre tratar ou relançar                                |
 
-### 3.2 Obrigações Universais
+### 3.2 Proibição de Magic Strings e Abreviações
+
+#### Magic strings / números mágicos
+
+Todo valor literal que represente um tipo, status, configuração ou classificação
+**DEVE** ser extraído para uma constante nomeada em arquivo auxiliar ou global.
+
+```typescript
+// ❌ PROIBIDO — magic string inline
+const photos = order.media.filter((m) => m.type === 'PHOTO');
+if (status === 'IN_PROGRESS') { ... }
+const maxRetries = 3;
+
+// ✅ CORRETO — constantes nomeadas
+import { MEDIA_TYPE } from '../domain/constants.js';
+import { ORDER_STATUS } from '../domain/constants.js';
+const MAX_RETRIES = 3;
+
+const photos = order.media.filter((media) => media.type === MEDIA_TYPE.PHOTO);
+if (status === ORDER_STATUS.IN_PROGRESS) { ... }
+```
+
+**Onde colocar as constantes:**
+
+| Escopo              | Localização                                       |
+| ------------------- | ------------------------------------------------- |
+| Global (todas apps) | `packages/contracts/src/constants.ts`             |
+| Módulo (API)        | `modules/<feature>/domain/constants.ts`           |
+| Mobile (Dart)       | `lib/utils/constants.dart` ou no módulo relevante |
+| Web                 | `src/utils/constants.ts`                          |
+
+#### Nomes abreviados em callbacks
+
+Variáveis de callback, arrow functions e lambdas **DEVEM** ter nomes descritivos.
+Letras soltas (`m`, `x`, `e`, `v`, `o`) são **proibidas**.
+
+```typescript
+// ❌ PROIBIDO
+orders.filter((o) => o.status === 'OPEN');
+media.map((m) => m.url);
+items.forEach((x) => process(x));
+
+// ✅ CORRETO
+orders.filter((order) => order.status === ORDER_STATUS.OPEN);
+media.map((mediaItem) => mediaItem.url);
+items.forEach((item) => process(item));
+```
+
+```dart
+// ❌ PROIBIDO
+media.where((m) => m.type == 'PHOTO');
+items.map((e) => e.name);
+
+// ✅ CORRETO
+media.where((mediaItem) => mediaItem.type == MediaType.photo);
+items.map((item) => item.name);
+```
+
+### 3.3 Obrigações Universais
 
 | Regra                                    | Aplicação                                  |
 | ---------------------------------------- | ------------------------------------------ |
@@ -330,6 +388,8 @@ Ao trabalhar neste projeto como assistente de código IA:
 12. **Sempre** responder em português brasileiro
 13. **Sempre** usar JSDoc descritivo, não comentários de linha decorativos
 14. **Nunca** criar arquivos desnecessários — só o essencial para a task
+15. **Nunca** usar magic strings/números hardcodados — extrair para constantes nomeadas
+16. **Nunca** usar nomes abreviados em callbacks (`m`, `x`, `e`) — usar nomes descritivos
 
 ### 15.1 Design System — Regras para UI
 

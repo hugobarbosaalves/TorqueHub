@@ -7,6 +7,7 @@
 import { join } from 'node:path';
 import { existsSync, readFileSync } from 'node:fs';
 import type { ServiceOrderForQuote } from '../repositories/service-order.repository.js';
+import { MEDIA_TYPE } from '@torquehub/contracts';
 import { BRAND_PRIMARY, COLOR_MUTED, drawSeparator } from './pdf-constants.js';
 
 /** Carrega o buffer de uma imagem (local ou remota). */
@@ -30,7 +31,7 @@ export async function renderMediaSection(
   doc: PDFKit.PDFDocument,
   order: ServiceOrderForQuote,
 ): Promise<void> {
-  const photos = order.media.filter((m) => m.type === 'PHOTO');
+  const photos = order.media.filter((mediaItem) => mediaItem.type === MEDIA_TYPE.PHOTO);
   if (photos.length === 0) return;
 
   if (doc.y > 600) doc.addPage();

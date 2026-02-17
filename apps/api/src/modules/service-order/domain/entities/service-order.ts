@@ -1,5 +1,6 @@
 import type { ID } from '@torquehub/entities';
 import type { ServiceOrderStatus } from '@torquehub/contracts';
+import { ORDER_STATUS } from '@torquehub/contracts';
 
 export interface ServiceOrderProps {
   id: ID;
@@ -38,7 +39,7 @@ export class ServiceOrder {
     const now = new Date();
     return new ServiceOrder({
       ...input,
-      status: 'draft',
+      status: ORDER_STATUS.DRAFT.toLowerCase() as ServiceOrderStatus,
       createdAt: now,
       updatedAt: now,
     });

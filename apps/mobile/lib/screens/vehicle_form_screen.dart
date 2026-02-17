@@ -7,6 +7,7 @@ library;
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../theme/app_tokens.dart';
+import '../widgets/tq_plate_field.dart';
 import '../widgets/tq_snackbar.dart';
 
 /// Formulário para criar ou editar um veículo.
@@ -36,8 +37,12 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
   String? _selectedCustomerId;
   bool _loadingCustomers = true;
   bool _loading = false;
+  bool _manualMode = false;
 
   bool get _isEditing => widget.vehicle != null;
+
+  /// Se os campos de detalhe devem ser editáveis (modo manual ou edição).
+  bool get _fieldsEnabled => _manualMode || _isEditing;
 
   @override
   void initState() {
@@ -50,6 +55,7 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
     _colorCtrl = TextEditingController(text: v?['color'] as String? ?? '');
     _mileageCtrl = TextEditingController(text: v?['mileage']?.toString() ?? '');
     _selectedCustomerId = v?['customerId'] as String?;
+    _manualMode = _isEditing;
     _loadCustomers();
   }
 
@@ -77,6 +83,30 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
       setState(() => _loadingCustomers = false);
       showErrorSnack(context, 'Erro ao carregar clientes: $e');
     }
+  }
+
+  /// Consulta dados do veículo pela placa via API.
+  Future<PlateLookupData?> _lookupPlate(String plate) async {
+    final raw = plate.replaceAll(RegExp(r'[^A-Za-z0-9]'), '');
+    final result = await ApiService.lookupPlate(raw);
+    if (result == null) return null;
+    return PlateLookupData(
+      brand: result['brand'] as String? ?? '',
+      model: result['model'] as String? ?? '',
+      year: result['year'] as int?,
+      color: result['color'] as String?,
+    );
+  }
+
+  /// Preenche os campos com os dados retornados pelo lookup.
+  void _onDataFound(PlateLookupData data) {
+    _brandCtrl.text = data.brand;
+    _modelCtrl.text = data.model;
+    if (data.year != null) _yearCtrl.text = data.year.toString();
+    if (data.color != null && data.color!.isNotEmpty) {
+      _colorCtrl.text = data.color!;
+    }
+    setState(() => _manualMode = false);
   }
 
   Future<void> _submit() async {
@@ -155,7 +185,7 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
               _loadingCustomers
                   ? const LinearProgressIndicator()
                   : DropdownButtonFormField<String>(
-                      initialValue: _selectedCustomerId,
+                      value: _selectedCustomerId,
                       hint: const Text('Selecione o cliente'),
                       decoration: const InputDecoration(
                         contentPadding: EdgeInsets.symmetric(
@@ -163,32 +193,30 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
                           vertical: TqTokens.space5,
                         ),
                       ),
-                      items: _customers.map((c) {
-                        final doc = c['document'] as String? ?? '';
+                      items: _customers.map((customer) {
+                        final doc = customer['document'] as String? ?? '';
                         final label = doc.isNotEmpty
-                            ? '${c['name']} ($doc)'
-                            : c['name'] as String;
+                            ? '${customer['name']} ($doc)'
+                            : customer['name'] as String;
                         return DropdownMenuItem(
-                          value: c['id'] as String,
+                          value: customer['id'] as String,
                           child: Text(label),
                         );
                       }).toList(),
                       onChanged: (val) =>
                           setState(() => _selectedCustomerId = val),
-                      validator: (v) =>
-                          v == null ? 'Selecione um cliente' : null,
+                      validator: (value) =>
+                          value == null ? 'Selecione um cliente' : null,
                       isExpanded: true,
                     ),
               const SizedBox(height: TqTokens.space10),
-              TextFormField(
+              TqPlateField(
                 controller: _plateCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Placa *',
-                  prefixIcon: Icon(Icons.pin),
-                ),
-                textCapitalization: TextCapitalization.characters,
-                validator: (v) =>
-                    v == null || v.trim().isEmpty ? 'Placa obrigatória' : null,
+                onLookup: _lookupPlate,
+                onDataFound: _onDataFound,
+                onManualModeChanged: (manual) =>
+                    setState(() => _manualMode = manual),
+                isEditing: _isEditing,
               ),
               const SizedBox(height: TqTokens.space8),
               TextFormField(
@@ -198,8 +226,10 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
                   prefixIcon: Icon(Icons.branding_watermark),
                 ),
                 textCapitalization: TextCapitalization.words,
-                validator: (v) =>
-                    v == null || v.trim().isEmpty ? 'Marca obrigatória' : null,
+                enabled: _fieldsEnabled,
+                validator: (value) => value == null || value.trim().isEmpty
+                    ? 'Marca obrigatória'
+                    : null,
               ),
               const SizedBox(height: TqTokens.space8),
               TextFormField(
@@ -209,8 +239,10 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
                   prefixIcon: Icon(Icons.directions_car),
                 ),
                 textCapitalization: TextCapitalization.words,
-                validator: (v) =>
-                    v == null || v.trim().isEmpty ? 'Modelo obrigatório' : null,
+                enabled: _fieldsEnabled,
+                validator: (value) => value == null || value.trim().isEmpty
+                    ? 'Modelo obrigatório'
+                    : null,
               ),
               const SizedBox(height: TqTokens.space8),
               Row(
@@ -220,6 +252,7 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
                       controller: _yearCtrl,
                       decoration: const InputDecoration(labelText: 'Ano'),
                       keyboardType: TextInputType.number,
+                      enabled: _fieldsEnabled,
                     ),
                   ),
                   const SizedBox(width: TqTokens.space6),
@@ -228,6 +261,7 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
                       controller: _colorCtrl,
                       decoration: const InputDecoration(labelText: 'Cor'),
                       textCapitalization: TextCapitalization.words,
+                      enabled: _fieldsEnabled,
                     ),
                   ),
                 ],

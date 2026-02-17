@@ -1,5 +1,6 @@
 import type { PrismaClient } from '@prisma/client';
 import type { CreateServiceOrderRequest } from '@torquehub/contracts';
+import { ORDER_STATUS } from '@torquehub/contracts';
 
 /** Gera um token público alfanumérico de 12 caracteres. */
 function generatePublicToken(): string {
@@ -179,10 +180,10 @@ export class ServiceOrderRepository {
   async expireStaleQuotes(): Promise<number> {
     const result = await this.db.serviceOrder.updateMany({
       where: {
-        status: 'DRAFT',
+        status: ORDER_STATUS.DRAFT,
         quoteExpiresAt: { lte: new Date() },
       },
-      data: { status: 'CANCELLED' as never },
+      data: { status: ORDER_STATUS.CANCELLED as never },
     });
     return result.count;
   }

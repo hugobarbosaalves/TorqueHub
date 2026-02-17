@@ -3,6 +3,7 @@
  * @module media-schemas
  */
 
+import { MEDIA_TYPE_VALUES } from '@torquehub/contracts';
 import { successResponse, errorResponse } from '../../../../shared/interfaces/schemas.js';
 
 const mediaSchema = {
@@ -10,7 +11,7 @@ const mediaSchema = {
   properties: {
     id: { type: 'string', format: 'uuid' },
     serviceOrderId: { type: 'string', format: 'uuid' },
-    type: { type: 'string', enum: ['PHOTO', 'VIDEO'] },
+    type: { type: 'string', enum: MEDIA_TYPE_VALUES },
     url: { type: 'string' },
     caption: { type: 'string', nullable: true },
     createdAt: { type: 'string', format: 'date-time' },
@@ -34,7 +35,7 @@ export const uploadMediaSchema = {
       type: 'object' as const,
       properties: {
         id: { type: 'string', format: 'uuid' },
-        type: { type: 'string', enum: ['PHOTO', 'VIDEO'] },
+        type: { type: 'string', enum: MEDIA_TYPE_VALUES },
         url: { type: 'string' },
         caption: { type: 'string', nullable: true },
         createdAt: { type: 'string', format: 'date-time' },

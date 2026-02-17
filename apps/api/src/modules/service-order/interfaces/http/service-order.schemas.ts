@@ -2,6 +2,7 @@
  * Service Order JSON Schema definitions for Swagger/OpenAPI.
  * @module service-order-schemas
  */
+import { ORDER_STATUS_VALUES } from '@torquehub/contracts';
 import { successResponse, errorResponse } from '../../../../shared/interfaces/schemas.js';
 
 const orderItemSchema = {
@@ -25,7 +26,7 @@ const orderSchema = {
     description: { type: 'string' },
     status: {
       type: 'string',
-      enum: ['DRAFT', 'PENDING_APPROVAL', 'APPROVED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'],
+      enum: ORDER_STATUS_VALUES,
     },
     observations: { type: 'string', nullable: true },
     items: { type: 'array', items: orderItemSchema },
@@ -116,7 +117,7 @@ export const updateStatusSchema = {
     properties: {
       status: {
         type: 'string',
-        enum: ['DRAFT', 'PENDING_APPROVAL', 'APPROVED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'],
+        enum: ORDER_STATUS_VALUES,
       },
     },
   },

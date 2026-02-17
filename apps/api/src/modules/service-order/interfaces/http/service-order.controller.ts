@@ -5,6 +5,7 @@ import type {
   CreateServiceOrderResponse,
   ServiceOrderDTO,
 } from '@torquehub/contracts';
+import { ORDER_STATUS_VALUES } from '@torquehub/contracts';
 import { prisma } from '../../../../shared/infrastructure/database/prisma.js';
 import { ServiceOrderRepository } from '../../infrastructure/repositories/service-order.repository.js';
 import { CreateServiceOrderUseCase } from '../../application/use-cases/create-service-order.use-case.js';
@@ -103,19 +104,11 @@ export function serviceOrderRoutes(app: FastifyInstance): void {
     const { id } = request.params;
     const { status } = request.body;
 
-    const validStatuses = [
-      'DRAFT',
-      'PENDING_APPROVAL',
-      'APPROVED',
-      'IN_PROGRESS',
-      'COMPLETED',
-      'CANCELLED',
-    ];
-    if (!validStatuses.includes(status)) {
+    if (!ORDER_STATUS_VALUES.includes(status as (typeof ORDER_STATUS_VALUES)[number])) {
       return reply.status(400).send({
         success: false,
         data: undefined as never,
-        meta: { error: `Invalid status. Must be one of: ${validStatuses.join(', ')}` },
+        meta: { error: `Invalid status. Must be one of: ${ORDER_STATUS_VALUES.join(', ')}` },
       });
     }
 

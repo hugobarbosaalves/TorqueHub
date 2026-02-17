@@ -11,6 +11,7 @@ import '../theme/status_config.dart';
 import '../theme/app_tokens.dart';
 import '../utils/formatters.dart';
 import '../widgets/tq_state_views.dart';
+import '../utils/constants.dart';
 import 'create_order_screen.dart';
 import 'order_detail_screen.dart';
 
@@ -51,11 +52,12 @@ class OrdersScreenState extends State<OrdersScreen> {
       return;
     }
     setState(() {
-      _filtered = _orders.where((o) {
-        final desc = (o['description'] as String? ?? '').toLowerCase();
-        final customer = (o['customerName'] as String? ?? '').toLowerCase();
-        final plate = (o['vehiclePlate'] as String? ?? '').toLowerCase();
-        final vehicle = (o['vehicleSummary'] as String? ?? '').toLowerCase();
+      _filtered = _orders.where((order) {
+        final desc = (order['description'] as String? ?? '').toLowerCase();
+        final customer = (order['customerName'] as String? ?? '').toLowerCase();
+        final plate = (order['vehiclePlate'] as String? ?? '').toLowerCase();
+        final vehicle = (order['vehicleSummary'] as String? ?? '')
+            .toLowerCase();
         return desc.contains(q) ||
             customer.contains(q) ||
             plate.contains(q) ||
@@ -144,11 +146,11 @@ class OrdersScreenState extends State<OrdersScreen> {
           ),
           PopupMenuButton<String>(
             onSelected: (value) {
-              if (value == 'logout') _handleLogout();
+              if (value == MenuAction.logout) _handleLogout();
             },
             itemBuilder: (_) => [
               const PopupMenuItem(
-                value: 'logout',
+                value: MenuAction.logout,
                 child: Row(
                   children: [
                     Icon(Icons.logout, size: 20),
@@ -205,7 +207,7 @@ class OrdersScreenState extends State<OrdersScreen> {
   }
 
   Widget _buildCard(Map<String, dynamic> order) {
-    final status = order['status'] as String? ?? 'DRAFT';
+    final status = order['status'] as String? ?? OrderStatus.draft;
     final info = getStatusInfo(status);
     final color = info.color;
 

@@ -8,6 +8,7 @@ import { useState, type ReactNode } from 'react';
 import type { MediaRecord } from '../services/api';
 import { mediaUrl } from '../services/api';
 import { SectionCard } from './SectionCard';
+import { MEDIA_TYPE } from '../utils/constants';
 
 interface MediaGalleryProps {
   readonly media: MediaRecord[];
@@ -17,7 +18,7 @@ interface MediaGalleryProps {
 export function MediaGallery({ media }: MediaGalleryProps): ReactNode {
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
 
-  const photos = media.filter((m) => m.type === 'PHOTO');
+  const photos = media.filter((mediaItem) => mediaItem.type === MEDIA_TYPE.PHOTO);
 
   if (photos.length === 0) return null;
 
@@ -25,20 +26,26 @@ export function MediaGallery({ media }: MediaGalleryProps): ReactNode {
     <SectionCard icon="📸" title="Fotos do Serviço">
       <div className="media-grid">
         {photos.map((photo, idx) => (
-          <img
+          <button
             key={photo.id}
-            src={mediaUrl(photo.url)}
-            alt={photo.caption ?? `Foto ${String(idx + 1)}`}
-            loading="lazy"
+            type="button"
+            className="media-grid-btn"
             onClick={() => {
               setLightboxIdx(idx);
             }}
-          />
+          >
+            <img
+              src={mediaUrl(photo.url)}
+              alt={photo.caption ?? `Foto ${String(idx + 1)}`}
+              loading="lazy"
+            />
+          </button>
         ))}
       </div>
 
       {lightboxIdx !== null && photos[lightboxIdx] && (
-        <div
+        <button
+          type="button"
           className="lightbox"
           onClick={() => {
             setLightboxIdx(null);
@@ -48,7 +55,7 @@ export function MediaGallery({ media }: MediaGalleryProps): ReactNode {
             src={mediaUrl(photos[lightboxIdx].url)}
             alt={photos[lightboxIdx].caption ?? 'Foto em tamanho real'}
           />
-        </div>
+        </button>
       )}
     </SectionCard>
   );

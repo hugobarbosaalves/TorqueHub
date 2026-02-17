@@ -119,8 +119,9 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
                   labelText: 'Nome *',
                   prefixIcon: Icon(Icons.person),
                 ),
-                validator: (v) =>
-                    v == null || v.trim().isEmpty ? 'Nome obrigatório' : null,
+                validator: (value) => value == null || value.trim().isEmpty
+                    ? 'Nome obrigatório'
+                    : null,
                 textCapitalization: TextCapitalization.words,
               ),
               const SizedBox(height: TqTokens.space8),

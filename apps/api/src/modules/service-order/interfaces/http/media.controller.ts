@@ -17,6 +17,7 @@ import {
   deleteFromR2,
   extractR2Key,
 } from '../../../../shared/infrastructure/storage/r2-storage.service.js';
+import { MEDIA_TYPE } from '@torquehub/contracts';
 import { ServiceOrderRepository } from '../../infrastructure/repositories/service-order.repository.js';
 import { MediaRepository } from '../../infrastructure/repositories/media.repository.js';
 import {
@@ -48,7 +49,7 @@ function ensureUploadsDir(): void {
 
 /** Resolves media type from file extension. */
 function resolveMediaType(ext: string): 'PHOTO' | 'VIDEO' {
-  return VIDEO_EXTENSIONS.has(ext.toLowerCase()) ? 'VIDEO' : 'PHOTO';
+  return VIDEO_EXTENSIONS.has(ext.toLowerCase()) ? MEDIA_TYPE.VIDEO : MEDIA_TYPE.PHOTO;
 }
 
 /** Registers media routes for a service order. */
@@ -105,7 +106,8 @@ export function mediaRoutes(app: FastifyInstance): void {
       let url: string;
 
       if (isR2Configured) {
-        const contentType = type === 'VIDEO' ? `video/${ext.slice(1)}` : `image/${ext.slice(1)}`;
+        const contentType =
+          type === MEDIA_TYPE.VIDEO ? `video/${ext.slice(1)}` : `image/${ext.slice(1)}`;
         url = await uploadToR2(filename, buffer, contentType);
       } else {
         const filepath = join(UPLOADS_DIR, filename);

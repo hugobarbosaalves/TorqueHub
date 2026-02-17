@@ -5,6 +5,7 @@ import type {
   ApiResponse,
   VehicleDTO,
 } from '@torquehub/contracts';
+import type { PlateLookupResult } from '../../domain/types.js';
 import { prisma } from '../../../../shared/infrastructure/database/prisma.js';
 import { VehicleRepository } from '../../infrastructure/repositories/vehicle.repository.js';
 import {
@@ -18,15 +19,47 @@ import {
   getVehicleSchema,
   updateVehicleSchema,
   deleteVehicleSchema,
+  plateLookupSchema,
 } from './vehicle.schemas.js';
+import { PlateLookupUseCase } from '../../application/use-cases/plate-lookup.use-case.js';
+import { lookupPlate } from '../../infrastructure/services/plate-lookup.service.js';
+import { isValidBrazilianPlate } from '../../domain/constants.js';
 
 const repo = new VehicleRepository(prisma);
 const createUseCase = new CreateVehicleUseCase(repo);
 const listUseCase = new ListVehiclesUseCase(repo);
 const getUseCase = new GetVehicleUseCase(repo);
+const plateLookupUseCase = new PlateLookupUseCase({ lookup: lookupPlate });
 
 /** Registers all vehicle CRUD HTTP routes. */
 export function vehicleRoutes(app: FastifyInstance): void {
+  /** Consulta dados de um veículo pela placa brasileira (API externa). */
+  app.get<{
+    Params: { plate: string };
+    Reply: ApiResponse<PlateLookupResult>;
+  }>('/lookup/:plate', { schema: plateLookupSchema }, async (request, reply) => {
+    const { plate } = request.params;
+
+    if (!isValidBrazilianPlate(plate)) {
+      return reply.status(400).send({
+        success: false,
+        data: undefined as never,
+        meta: { error: 'Placa inválida. Use o formato ABC1D23 ou ABC-1234.' },
+      });
+    }
+
+    const result = await plateLookupUseCase.execute(plate);
+    if (!result) {
+      return reply.status(404).send({
+        success: false,
+        data: undefined as never,
+        meta: { error: 'Veículo não encontrado para esta placa.' },
+      });
+    }
+
+    return reply.send({ success: true, data: result });
+  });
+
   /** Cadastra um novo veículo vinculado a uma oficina e cliente. */
   app.post<{
     Body: CreateVehicleRequest;

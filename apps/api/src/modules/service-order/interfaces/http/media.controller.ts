@@ -11,6 +11,12 @@ import { randomUUID } from 'node:crypto';
 import type { FastifyInstance } from 'fastify';
 import type { ApiResponse, MediaDTO, UploadMediaResponse } from '@torquehub/contracts';
 import { prisma } from '../../../../shared/infrastructure/database/prisma.js';
+import {
+  isR2Configured,
+  uploadToR2,
+  deleteFromR2,
+  extractR2Key,
+} from '../../../../shared/infrastructure/storage/r2-storage.service.js';
 import { ServiceOrderRepository } from '../../infrastructure/repositories/service-order.repository.js';
 import { MediaRepository } from '../../infrastructure/repositories/media.repository.js';
 import {
@@ -95,11 +101,17 @@ export function mediaRoutes(app: FastifyInstance): void {
       }
 
       const filename = `${randomUUID()}${ext}`;
-      const filepath = join(UPLOADS_DIR, filename);
-      await writeFile(filepath, buffer);
-
       const type = resolveMediaType(ext);
-      const url = `/uploads/${filename}`;
+      let url: string;
+
+      if (isR2Configured) {
+        const contentType = type === 'VIDEO' ? `video/${ext.slice(1)}` : `image/${ext.slice(1)}`;
+        url = await uploadToR2(filename, buffer, contentType);
+      } else {
+        const filepath = join(UPLOADS_DIR, filename);
+        await writeFile(filepath, buffer);
+        url = `/uploads/${filename}`;
+      }
       const captionValue = data.fields['caption']
         ? ((data.fields['caption'] as { value?: string }).value ?? '')
         : null;
@@ -150,12 +162,17 @@ export function mediaRoutes(app: FastifyInstance): void {
         });
       }
 
-      const filename = record.url.replaceAll('/uploads/', '');
-      const filepath = join(UPLOADS_DIR, filename);
-      try {
-        await unlink(filepath);
-      } catch {
-        // File may already be deleted from disk — continue with DB cleanup.
+      const r2Key = extractR2Key(record.url);
+      if (r2Key) {
+        await deleteFromR2(r2Key);
+      } else {
+        const filename = record.url.replaceAll('/uploads/', '');
+        const filepath = join(UPLOADS_DIR, filename);
+        try {
+          await unlink(filepath);
+        } catch {
+          // File may already be deleted from disk — continue with DB cleanup.
+        }
       }
 
       await deleteUseCase.execute(mediaId);

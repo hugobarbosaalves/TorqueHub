@@ -12,6 +12,7 @@ services:
     dockerContext: .
     branch: main
     plan: free
+    healthCheckPath: /health
     envVars:
       - key: DATABASE_URL
         sync: false # Preencher manualmente com a URL do Neon
@@ -23,3 +24,17 @@ services:
         value: "3333"
       - key: HOST
         value: "0.0.0.0"
+      - key: R2_ACCOUNT_ID
+        sync: false
+      - key: R2_ACCESS_KEY_ID
+        sync: false
+      - key: R2_SECRET_ACCESS_KEY
+        sync: false
+      - key: R2_BUCKET_NAME
+        value: torquehub-uploads
+      - key: R2_PUBLIC_URL
+        sync: false
+      - key: SENTRY_DSN
+        sync: false
+      - key: WEB_URL
+        value: https://torque-hub-web.vercel.app

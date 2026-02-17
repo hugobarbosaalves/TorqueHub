@@ -1,6 +1,7 @@
 /**
  * Seção de mídia (fotos) do PDF de orçamento.
  * Renderiza thumbnails das fotos anexadas ao serviço.
+ * Suporta imagens locais (filesystem) e remotas (R2/HTTP).
  * @module pdf-media-section
  */
 import { join } from 'node:path';
@@ -8,8 +9,27 @@ import { existsSync, readFileSync } from 'node:fs';
 import type { ServiceOrderForQuote } from '../repositories/service-order.repository.js';
 import { BRAND_PRIMARY, COLOR_MUTED, drawSeparator } from './pdf-constants.js';
 
+/** Carrega o buffer de uma imagem (local ou remota). */
+async function loadImageBuffer(url: string): Promise<Buffer | null> {
+  if (url.startsWith('http')) {
+    try {
+      const res = await fetch(url);
+      if (!res.ok) return null;
+      return Buffer.from(await res.arrayBuffer());
+    } catch {
+      return null;
+    }
+  }
+  const imgPath = join(process.cwd(), url);
+  if (!existsSync(imgPath)) return null;
+  return readFileSync(imgPath);
+}
+
 /** Renderiza thumbnails das fotos do serviço no PDF. */
-export function renderMediaSection(doc: PDFKit.PDFDocument, order: ServiceOrderForQuote): void {
+export async function renderMediaSection(
+  doc: PDFKit.PDFDocument,
+  order: ServiceOrderForQuote,
+): Promise<void> {
   const photos = order.media.filter((m) => m.type === 'PHOTO');
   if (photos.length === 0) return;
 
@@ -32,13 +52,11 @@ export function renderMediaSection(doc: PDFKit.PDFDocument, order: ServiceOrderF
   let rowStartY = doc.y;
 
   for (const photo of photos) {
-    const imgPath = join(process.cwd(), photo.url);
-    if (!existsSync(imgPath)) continue;
+    const imgBuffer = await loadImageBuffer(photo.url);
+    if (!imgBuffer) continue;
 
     try {
-      const imgBuffer = readFileSync(imgPath);
       const x = 65 + col * (imgSize + gap);
-
       doc.image(imgBuffer, x, rowStartY, {
         width: imgSize,
         height: imgSize,

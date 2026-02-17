@@ -2,10 +2,10 @@
     <!-- Permissão de acesso à internet -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <application
-        android:label="torquehub_mobile"
+        android:label="TorqueHub"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
-        android:usesCleartextTraffic="true">
+        android:usesCleartextTraffic="false">
         <activity
             android:name=".MainActivity"
             android:exported="true"

@@ -1,5 +1,8 @@
 import 'dotenv/config';
+import { initSentry } from './shared/infrastructure/monitoring/sentry.js';
 import { buildApp } from './app.js';
+
+initSentry();
 import { prisma } from './shared/infrastructure/database/prisma.js';
 
 const PORT = Number(process.env['PORT'] ?? 3333);

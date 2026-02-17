@@ -19,34 +19,35 @@ export async function generateQuotePdf(
   order: ServiceOrderForQuote,
   issuedByName: string | null,
 ): Promise<Buffer> {
-  return new Promise((resolve, reject) => {
-    const chunks: Buffer[] = [];
-    const doc = new PDFDocument({
-      size: 'A4',
-      margin: 50,
-      info: {
-        Title: `Orçamento - ${String(order.description)}`,
-        Author: String(order.workshop.name),
-        Subject: 'Orçamento de Serviço Automotivo',
-        Creator: 'TorqueHub',
-      },
-    });
+  const chunks: Buffer[] = [];
+  const doc = new PDFDocument({
+    size: 'A4',
+    margin: 50,
+    info: {
+      Title: `Orçamento - ${String(order.description)}`,
+      Author: String(order.workshop.name),
+      Subject: 'Orçamento de Serviço Automotivo',
+      Creator: 'TorqueHub',
+    },
+  });
 
+  const finished = new Promise<Buffer>((resolve, reject) => {
     doc.on('data', (chunk: Buffer) => chunks.push(chunk));
     doc.on('end', () => {
       resolve(Buffer.concat(chunks));
     });
     doc.on('error', reject);
-
-    renderHeader(doc, order);
-    renderQuoteInfo(doc, order, issuedByName);
-    renderVehicleSection(doc, order);
-    renderCustomerSection(doc, order);
-    renderItemsTable(doc, order);
-    renderMediaSection(doc, order);
-    renderObservations(doc, order);
-    renderFooter(doc, order);
-
-    doc.end();
   });
+
+  renderHeader(doc, order);
+  renderQuoteInfo(doc, order, issuedByName);
+  renderVehicleSection(doc, order);
+  renderCustomerSection(doc, order);
+  renderItemsTable(doc, order);
+  await renderMediaSection(doc, order);
+  renderObservations(doc, order);
+  renderFooter(doc, order);
+
+  doc.end();
+  return finished;
 }

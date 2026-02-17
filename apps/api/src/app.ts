@@ -2,6 +2,8 @@ import { join } from 'node:path';
 import { existsSync, mkdirSync } from 'node:fs';
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
+import helmet from '@fastify/helmet';
+import rateLimit from '@fastify/rate-limit';
 import multipart from '@fastify/multipart';
 import fastifyStatic from '@fastify/static';
 import swagger from '@fastify/swagger';
@@ -20,6 +22,14 @@ import { startQuoteExpiryScheduler } from './modules/service-order/application/q
 
 const IS_PRODUCTION = process.env['NODE_ENV'] === 'production';
 
+/** Origens permitidas para CORS (produção e dev). */
+const ALLOWED_ORIGINS = IS_PRODUCTION
+  ? [
+      'https://torque-hub-web.vercel.app',
+      process.env['WEB_URL'] ?? '',
+    ].filter(Boolean)
+  : true;
+
 /** Builds and configures the Fastify application instance. */
 export async function buildApp(): Promise<FastifyInstance> {
   const app = Fastify({
@@ -28,7 +38,17 @@ export async function buildApp(): Promise<FastifyInstance> {
       : { level: 'info', transport: { target: 'pino-pretty', options: { colorize: true } } },
   });
 
-  await app.register(cors, { origin: true });
+  await app.register(cors, { origin: ALLOWED_ORIGINS, credentials: true });
+
+  await app.register(helmet, {
+    contentSecurityPolicy: false,
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+  });
+
+  await app.register(rateLimit, {
+    max: IS_PRODUCTION ? 100 : 1000,
+    timeWindow: '1 minute',
+  });
 
   await app.register(multipart, { limits: { fileSize: 20 * 1024 * 1024 } });
 

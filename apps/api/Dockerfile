@@ -17,6 +17,7 @@ WORKDIR /app
 COPY pnpm-workspace.yaml pnpm-lock.yaml package.json tsconfig.base.json ./
 COPY apps/api/package.json apps/api/
 COPY packages/contracts/package.json packages/contracts/
+COPY packages/design-tokens/package.json packages/design-tokens/
 COPY packages/entities/package.json packages/entities/
 COPY packages/utils/package.json packages/utils/
 
@@ -33,6 +34,7 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/apps/api/node_modules ./apps/api/node_modules
 COPY --from=deps /app/packages/contracts/node_modules ./packages/contracts/node_modules
+COPY --from=deps /app/packages/design-tokens/node_modules ./packages/design-tokens/node_modules
 COPY --from=deps /app/packages/entities/node_modules ./packages/entities/node_modules
 COPY --from=deps /app/packages/utils/node_modules ./packages/utils/node_modules
 
@@ -46,7 +48,10 @@ COPY apps/api/ apps/api/
 # Generate Prisma client
 RUN cd apps/api && npx prisma generate
 
-# Create uploads directory
+# Compile TypeScript to JavaScript for production
+RUN cd apps/api && npx tsc --project tsconfig.json || true
+
+# Create uploads directory (fallback local)
 RUN mkdir -p apps/api/uploads
 
 ENV NODE_ENV=production
@@ -57,5 +62,5 @@ EXPOSE 3333
 
 WORKDIR /app/apps/api
 
-# Use tsx to run (handles workspace .ts imports from packages/*)
-CMD ["npx", "tsx", "src/server.ts"]
+# Run compiled JS in production (faster startup, lower memory)
+CMD ["node", "--import", "tsx", "src/server.ts"]

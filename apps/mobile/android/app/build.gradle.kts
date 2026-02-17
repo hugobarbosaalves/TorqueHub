@@ -32,9 +32,13 @@ android {
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
+            // Para publicar na Play Store, gere um keystore:
+            // keytool -genkey -v -keystore torquehub-release.jks -keyalg RSA -keysize 2048 -validity 10000 -alias torquehub
+            // Em seguida, configure key.properties e signingConfigs.release aqui.
             signingConfig = signingConfigs.getByName("debug")
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))
         }
     }
 }

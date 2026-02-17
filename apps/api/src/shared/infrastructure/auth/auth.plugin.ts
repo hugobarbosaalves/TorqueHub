@@ -12,7 +12,12 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import fastifyJwt from '@fastify/jwt';
 import fp from 'fastify-plugin';
 
-const JWT_SECRET = process.env['JWT_SECRET'] ?? 'torquehub-dev-secret-change-in-production';
+const IS_PRODUCTION = process.env['NODE_ENV'] === 'production';
+const JWT_SECRET = process.env['JWT_SECRET'] ?? (IS_PRODUCTION ? '' : 'torquehub-dev-secret-change-in-production');
+
+if (IS_PRODUCTION && JWT_SECRET.length === 0) {
+  throw new Error('JWT_SECRET é obrigatório em produção. Defina a variável de ambiente.');
+}
 
 async function authPlugin(app: FastifyInstance): Promise<void> {
   await app.register(fastifyJwt, { secret: JWT_SECRET });

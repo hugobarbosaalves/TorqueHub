@@ -66,5 +66,11 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>TorqueHub precisa acessar a câmera para fotografar serviços e veículos.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>TorqueHub precisa acessar a galeria para anexar fotos aos serviços.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>TorqueHub precisa salvar fotos na galeria.</string>
 </dict>
 </plist>

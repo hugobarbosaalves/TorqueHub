@@ -6,6 +6,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'screens/login_screen.dart';
 import 'screens/orders_screen.dart';
 import 'screens/customers_screen.dart';
@@ -15,8 +16,10 @@ import 'theme/app_theme.dart';
 
 /// Entry point — initializes auth state and launches the app.
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   await AuthService.init();
+  FlutterNativeSplash.remove();
   runApp(const TorqueHubApp());
 }
 

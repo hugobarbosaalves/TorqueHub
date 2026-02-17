@@ -3,11 +3,7 @@
  * Compatível com S3 API. Fallback para filesystem local em dev.
  * @module r2-storage-service
  */
-import {
-  S3Client,
-  PutObjectCommand,
-  DeleteObjectCommand,
-} from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 
 const R2_ACCOUNT_ID = process.env['R2_ACCOUNT_ID'] ?? '';
 const R2_ACCESS_KEY_ID = process.env['R2_ACCESS_KEY_ID'] ?? '';
@@ -35,13 +31,11 @@ const s3Client = isR2Configured
   : null;
 
 /** Faz upload de um buffer para o R2. Retorna a URL pública. */
-export async function uploadToR2(
-  key: string,
-  body: Buffer,
-  contentType: string,
-): Promise<string> {
+export async function uploadToR2(key: string, body: Buffer, contentType: string): Promise<string> {
   if (!s3Client) {
-    throw new Error('R2 não configurado. Defina R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY e R2_PUBLIC_URL.');
+    throw new Error(
+      'R2 não configurado. Defina R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY e R2_PUBLIC_URL.',
+    );
   }
 
   await s3Client.send(

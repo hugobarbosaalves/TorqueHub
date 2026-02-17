@@ -38,6 +38,7 @@ dependencies:
   image_picker: ^1.2.1
   shared_preferences: ^2.5.4
   share_plus: ^12.0.1
+  flutter_native_splash: ^2.4.6
 
 dev_dependencies:
   flutter_test:
@@ -49,6 +50,35 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.3
+
+# ── App Icon Configuration ──────────────────────────────────
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/icon.png"
+  adaptive_icon_background: "#1A1A2E"
+  adaptive_icon_foreground: "assets/icon/icon_foreground.png"
+  min_sdk_android: 21
+  remove_alpha_ios: true
+  web:
+    generate: false
+
+# ── Splash Screen Configuration ─────────────────────────────
+flutter_native_splash:
+  color: "#1A1A2E"
+  image: "assets/icon/icon.png"
+  image_dark: "assets/icon/icon.png"
+  color_dark: "#0F0F1A"
+  android_12:
+    color: "#1A1A2E"
+    icon_background_color: "#1A1A2E"
+    image: "assets/icon/icon_foreground.png"
+    color_dark: "#0F0F1A"
+    icon_background_color_dark: "#0F0F1A"
+    image_dark: "assets/icon/icon_foreground.png"
+  ios: true
+  android: true
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

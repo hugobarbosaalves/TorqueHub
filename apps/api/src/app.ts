@@ -24,10 +24,7 @@ const IS_PRODUCTION = process.env['NODE_ENV'] === 'production';
 
 /** Origens permitidas para CORS (produção e dev). */
 const ALLOWED_ORIGINS = IS_PRODUCTION
-  ? [
-      'https://torque-hub-web.vercel.app',
-      process.env['WEB_URL'] ?? '',
-    ].filter(Boolean)
+  ? ['https://torque-hub-web.vercel.app', process.env['WEB_URL'] ?? ''].filter(Boolean)
   : true;
 
 /** Builds and configures the Fastify application instance. */

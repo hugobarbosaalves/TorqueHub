@@ -6,12 +6,13 @@
 
 import { useEffect, useState, type ReactNode } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { getOrderByToken, type PublicOrderDetail } from '../services/api';
+import { getOrderByToken, getQuotePdfUrl, type PublicOrderDetail } from '../services/api';
 import { StatusBanner } from '../components/StatusBanner';
 import { VehicleInfo } from '../components/VehicleInfo';
 import { OrderItems } from '../components/OrderItems';
 import { MediaGallery } from '../components/MediaGallery';
 import { VehicleHistory } from '../components/VehicleHistory';
+import { QuoteDownload } from '../components/QuoteDownload';
 import { formatDateLong } from '../utils/format';
 
 /** Renders the full order detail page for the public client portal. */
@@ -97,6 +98,9 @@ export function OrderPage(): ReactNode {
 
       {/* Media Gallery */}
       <MediaGallery media={order.media} />
+
+      {/* Download PDF */}
+      {token && <QuoteDownload pdfUrl={getQuotePdfUrl(token)} />}
 
       {/* Vehicle Service History */}
       {token && <VehicleHistory token={token} currentOrderId={order.id} />}

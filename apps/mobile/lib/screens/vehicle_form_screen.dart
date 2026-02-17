@@ -105,10 +105,7 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
             _selectedCustomerId != widget.vehicle?['customerId']) {
           fields['customerId'] = _selectedCustomerId;
         }
-        await ApiService.updateVehicle(
-          widget.vehicle!['id'] as String,
-          fields,
-        );
+        await ApiService.updateVehicle(widget.vehicle!['id'] as String, fields);
       } else {
         await ApiService.createVehicle(
           workshopId: widget.workshopId,

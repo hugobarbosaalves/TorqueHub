@@ -15,6 +15,8 @@ import { customerRoutes } from './modules/customer/interfaces/http/customer.cont
 import { vehicleRoutes } from './modules/vehicle/interfaces/http/vehicle.controller.js';
 import { publicOrderRoutes } from './modules/service-order/interfaces/http/public-order.controller.js';
 import { mediaRoutes } from './modules/service-order/interfaces/http/media.controller.js';
+import { quotePdfRoutes } from './modules/service-order/interfaces/http/quote-pdf.controller.js';
+import { startQuoteExpiryScheduler } from './modules/service-order/application/quote-expiry.scheduler.js';
 
 const IS_PRODUCTION = process.env['NODE_ENV'] === 'production';
 
@@ -126,7 +128,10 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(customerRoutes, { prefix: '/customers' });
   await app.register(vehicleRoutes, { prefix: '/vehicles' });
   await app.register(publicOrderRoutes, { prefix: '/public/orders' });
+  await app.register(quotePdfRoutes, { prefix: '/public/orders' });
   await app.register(mediaRoutes, { prefix: '/service-orders' });
+
+  startQuoteExpiryScheduler(app.log);
 
   return app;
 }

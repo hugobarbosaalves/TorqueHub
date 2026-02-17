@@ -80,3 +80,8 @@ export function mediaUrl(path: string): string {
   if (path.startsWith('http')) return path;
   return `${API_URL}${path.startsWith('/') ? '' : '/'}${path}`;
 }
+
+/** Returns the full URL for downloading the quote PDF. */
+export function getQuotePdfUrl(token: string): string {
+  return `${API_URL}/public/orders/${token}/pdf`;
+}

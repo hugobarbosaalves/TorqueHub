@@ -16,6 +16,30 @@
       "skipFiles": ["<node_internals>/**", "node_modules/**"]
     },
     {
+      "name": "Web: Debug (Chrome)",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}/apps/web/src",
+      "sourceMaps": true,
+      "sourceMapPathOverrides": {
+        "webpack:///./src/*": "${webRoot}/*",
+        "webpack:///src/*": "${webRoot}/*"
+      },
+      "preLaunchTask": "Web: Dev Server",
+      "runtimeArgs": ["--remote-debugging-port=9222"],
+      "timeout": 15000
+    },
+    {
+      "name": "Web: Attach (Chrome)",
+      "type": "chrome",
+      "request": "attach",
+      "port": 9222,
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}/apps/web/src",
+      "sourceMaps": true
+    },
+    {
       "name": "Mobile: Debug (Flutter)",
       "type": "dart",
       "request": "launch",
@@ -35,6 +59,14 @@
     {
       "name": "Full Stack: API + Mobile",
       "configurations": ["API: Debug (Fastify)", "Mobile: Debug (Flutter)"]
+    },
+    {
+      "name": "Full Stack: API + Web",
+      "configurations": ["API: Debug (Fastify)", "Web: Debug (Chrome)"]
+    },
+    {
+      "name": "Full Stack: API + Web + Mobile",
+      "configurations": ["API: Debug (Fastify)", "Web: Debug (Chrome)", "Mobile: Debug (Flutter)"]
     }
   ]
 }

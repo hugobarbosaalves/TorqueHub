@@ -69,17 +69,18 @@ model Vehicle {
 
 /// Ordem de serviço com itens, status e token público.
 model ServiceOrder {
-  id          String             @id @default(uuid())
-  workshopId  String             @map("workshop_id")
-  customerId  String             @map("customer_id")
-  vehicleId   String             @map("vehicle_id")
-  description String
-  status      ServiceOrderStatus @default(DRAFT)
-  observations String?
-  totalAmount  Int               @default(0) // valor em centavos
-  publicToken  String?           @unique @map("public_token") // link público para o cliente
-  createdAt    DateTime          @default(now()) @map("created_at")
-  updatedAt    DateTime          @updatedAt @map("updated_at")
+  id              String             @id @default(uuid())
+  workshopId      String             @map("workshop_id")
+  customerId      String             @map("customer_id")
+  vehicleId       String             @map("vehicle_id")
+  description     String
+  status          ServiceOrderStatus @default(DRAFT)
+  observations    String?
+  totalAmount     Int                @default(0) // valor em centavos
+  publicToken     String?            @unique @map("public_token") // link público para o cliente
+  quoteExpiresAt  DateTime?          @map("quote_expires_at") // validade do orçamento (30 dias)
+  createdAt       DateTime           @default(now()) @map("created_at")
+  updatedAt       DateTime           @updatedAt @map("updated_at")
 
   workshop Workshop           @relation(fields: [workshopId], references: [id])
   customer Customer           @relation(fields: [customerId], references: [id])

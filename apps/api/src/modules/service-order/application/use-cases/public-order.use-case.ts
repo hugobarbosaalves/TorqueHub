@@ -20,9 +20,7 @@ function toDTO(so: ServiceOrderWithItems): ServiceOrderDTO {
     publicToken: so.publicToken,
     customerName: so.customer?.name ?? null,
     vehiclePlate: vehicle?.plate ?? null,
-    vehicleSummary: vehicle
-      ? `${String(vehicle.brand)} ${String(vehicle.model)}`
-      : null,
+    vehicleSummary: vehicle ? `${vehicle.brand} ${vehicle.model}` : null,
     items: so.items.map((item) => ({
       id: item.id,
       description: item.description,

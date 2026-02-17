@@ -5,9 +5,7 @@ import type { ServiceOrderWithItems } from '../../infrastructure/repositories/se
 /** Maps a raw ServiceOrderWithItems to the API-facing ServiceOrderDTO. */
 function toDTO(so: ServiceOrderWithItems): ServiceOrderDTO {
   const vehicle = so.vehicle;
-  const vehicleSummary = vehicle
-    ? `${vehicle.brand} ${vehicle.model}`
-    : null;
+  const vehicleSummary = vehicle ? `${vehicle.brand} ${vehicle.model}` : null;
 
   return {
     id: so.id,

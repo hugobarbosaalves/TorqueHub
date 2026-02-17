@@ -261,7 +261,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           if (customer != null && customer.isNotEmpty)
             Row(
               children: [
-                const Icon(Icons.person_outline, size: 16, color: TqTokens.neutral600),
+                const Icon(
+                  Icons.person_outline,
+                  size: 16,
+                  color: TqTokens.neutral600,
+                ),
                 const SizedBox(width: TqTokens.space3),
                 Text(
                   customer,
@@ -276,11 +280,18 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             if (customer != null) const SizedBox(height: TqTokens.space3),
             Row(
               children: [
-                const Icon(Icons.directions_car_outlined, size: 16, color: TqTokens.neutral600),
+                const Icon(
+                  Icons.directions_car_outlined,
+                  size: 16,
+                  color: TqTokens.neutral600,
+                ),
                 const SizedBox(width: TqTokens.space3),
                 Expanded(
                   child: Text(
-                    [vehicle, plate].where((s) => s != null && s.isNotEmpty).join(' — '),
+                    [
+                      vehicle,
+                      plate,
+                    ].where((s) => s != null && s.isNotEmpty).join(' — '),
                     style: const TextStyle(
                       fontSize: TqTokens.fontSizeSm,
                       color: TqTokens.neutral700,

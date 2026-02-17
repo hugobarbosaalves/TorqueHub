@@ -181,6 +181,22 @@ export interface PublicOrderDetailDTO extends ServiceOrderDTO {
   media: MediaDTO[];
 }
 
+/** Workshop info exposed in quote PDF. */
+export interface QuoteWorkshopInfo {
+  name: string;
+  document: string;
+  phone: string | null;
+  email: string | null;
+  address: string | null;
+}
+
+/** Data needed to generate a quote PDF. */
+export interface QuotePdfDataDTO extends PublicOrderDetailDTO {
+  workshop: QuoteWorkshopInfo;
+  quoteExpiresAt: string | null;
+  issuedByUser: string | null;
+}
+
 // ─── Auth ──────────────────────────────────────────────────────
 
 /** Allowed user roles. */

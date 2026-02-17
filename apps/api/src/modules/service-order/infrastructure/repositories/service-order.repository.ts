@@ -31,7 +31,13 @@ export interface ServiceOrderWithItems {
     unitPrice: number;
   }[];
   customer?: { name: string };
-  vehicle?: { plate: string; brand: string; model: string; year: number | null; color: string | null };
+  vehicle?: {
+    plate: string;
+    brand: string;
+    model: string;
+    year: number | null;
+    color: string | null;
+  };
 }
 
 /** Service order with all relations (vehicle, customer, media) for public detail view. */
@@ -54,12 +60,26 @@ export interface ServiceOrderWithRelations extends ServiceOrderWithItems {
   }[];
 }
 
+/** Service order with workshop data for PDF quote generation. */
+export interface ServiceOrderForQuote extends ServiceOrderWithRelations {
+  quoteExpiresAt: Date | null;
+  workshop: {
+    name: string;
+    document: string;
+    phone: string | null;
+    email: string | null;
+    address: string | null;
+  };
+}
+
 /** Prisma-backed repository for ServiceOrder persistence operations. */
 export class ServiceOrderRepository {
   constructor(private readonly db: PrismaClient) {}
 
   async create(input: CreateServiceOrderRequest): Promise<ServiceOrderWithItems> {
     const totalAmount = input.items.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0);
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 30);
 
     return this.db.serviceOrder.create({
       data: {
@@ -69,6 +89,7 @@ export class ServiceOrderRepository {
         description: input.description,
         totalAmount,
         publicToken: generatePublicToken(),
+        quoteExpiresAt: expiresAt,
         items: {
           create: input.items.map((item) => ({
             description: item.description,
@@ -138,5 +159,31 @@ export class ServiceOrderRepository {
       include: { items: true },
       orderBy: { createdAt: 'desc' },
     });
+  }
+
+  /** Busca ordem com workshop completo para geração de PDF. */
+  async findByPublicTokenForQuote(token: string): Promise<ServiceOrderForQuote | null> {
+    return this.db.serviceOrder.findUnique({
+      where: { publicToken: token },
+      include: {
+        items: true,
+        vehicle: true,
+        customer: true,
+        media: true,
+        workshop: true,
+      },
+    }) as Promise<ServiceOrderForQuote | null>;
+  }
+
+  /** Expira orçamentos DRAFT não iniciados após 30 dias. */
+  async expireStaleQuotes(): Promise<number> {
+    const result = await this.db.serviceOrder.updateMany({
+      where: {
+        status: 'DRAFT',
+        quoteExpiresAt: { lte: new Date() },
+      },
+      data: { status: 'CANCELLED' as never },
+    });
+    return result.count;
   }
 }

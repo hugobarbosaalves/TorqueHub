@@ -1,0 +1,39 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Web: Dev Server",
+      "type": "shell",
+      "command": "pnpm --filter torquehub-web dev",
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "vite",
+        "pattern": {
+          "regexp": "^x]$"
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "^>.*vite",
+          "endsPattern": "Local:.*http"
+        }
+      },
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "silent",
+        "panel": "dedicated",
+        "group": "dev-servers"
+      }
+    },
+    {
+      "type": "dart",
+      "command": "dart",
+      "cwd": "apps\\mobile",
+      "args": ["doc", "."],
+      "problemMatcher": [],
+      "label": "dart: dart doc .",
+      "detail": "apps\\mobile"
+    }
+  ]
+}

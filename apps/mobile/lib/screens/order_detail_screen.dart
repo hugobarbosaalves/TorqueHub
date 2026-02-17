@@ -15,15 +15,10 @@ import '../utils/formatters.dart';
 import '../widgets/tq_snackbar.dart';
 import '../widgets/tq_confirm_dialog.dart';
 import '../widgets/tq_state_views.dart';
+import '../utils/constants.dart';
 import 'media_section_widget.dart';
 
-const _statusFlow = [
-  'DRAFT',
-  'PENDING_APPROVAL',
-  'APPROVED',
-  'IN_PROGRESS',
-  'COMPLETED',
-];
+const _statusFlow = OrderStatus.flow;
 
 /// Tela de detalhe de ordem — itens, status, ações, mídia.
 class OrderDetailScreen extends StatefulWidget {
@@ -103,7 +98,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     if (!confirmed) return;
 
     try {
-      await ApiService.updateOrderStatus(widget.orderId, 'CANCELLED');
+      await ApiService.updateOrderStatus(widget.orderId, OrderStatus.cancelled);
       if (!mounted) return;
       showWarningSnack(context, 'Ordem cancelada');
       _loadOrder();
@@ -172,14 +167,15 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
 
   Widget _buildContent() {
     final order = _order!;
-    final status = order['status'] as String? ?? 'DRAFT';
+    final status = order['status'] as String? ?? OrderStatus.draft;
     final info = getStatusInfo(status);
     final color = info.color;
     final items = List<Map<String, dynamic>>.from(order['items'] ?? []);
     final canAdvance =
         _statusFlow.contains(status) &&
         _statusFlow.indexOf(status) < _statusFlow.length - 1;
-    final canCancel = status != 'CANCELLED' && status != 'COMPLETED';
+    final canCancel =
+        status != OrderStatus.cancelled && status != OrderStatus.completed;
 
     return RefreshIndicator(
       onRefresh: _loadOrder,
@@ -288,10 +284,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 const SizedBox(width: TqTokens.space3),
                 Expanded(
                   child: Text(
-                    [
-                      vehicle,
-                      plate,
-                    ].where((s) => s != null && s.isNotEmpty).join(' — '),
+                    [vehicle, plate]
+                        .where(
+                          (segment) => segment != null && segment.isNotEmpty,
+                        )
+                        .join(' — '),
                     style: const TextStyle(
                       fontSize: TqTokens.fontSizeSm,
                       color: TqTokens.neutral700,

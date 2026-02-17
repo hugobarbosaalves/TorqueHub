@@ -4,6 +4,17 @@
  * @module contracts
  */
 
+export {
+  ORDER_STATUS,
+  ORDER_STATUS_VALUES,
+  ORDER_STATUS_FLOW,
+  MEDIA_TYPE,
+  MEDIA_TYPE_VALUES,
+  MENU_ACTION,
+} from './constants.js';
+
+export type { PlateLookupResult } from './plate-lookup.js';
+
 /** Standard API success response envelope. */
 export interface ApiResponse<T> {
   success: boolean;

@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../services/api_service.dart';
 import '../theme/app_tokens.dart';
+import '../utils/constants.dart';
 import '../widgets/tq_snackbar.dart';
 import '../widgets/tq_confirm_dialog.dart';
 
@@ -27,7 +28,7 @@ class MediaSectionWidget extends StatefulWidget {
     super.key,
     required this.serviceOrderId,
     required this.initialMedia,
-    this.orderStatus = 'DRAFT',
+    this.orderStatus = OrderStatus.draft,
   });
 
   @override
@@ -41,7 +42,8 @@ class _MediaSectionWidgetState extends State<MediaSectionWidget> {
 
   /// Retorna true se a ordem está em status final (sem edição).
   bool get _isLocked =>
-      widget.orderStatus == 'COMPLETED' || widget.orderStatus == 'CANCELLED';
+      widget.orderStatus == OrderStatus.completed ||
+      widget.orderStatus == OrderStatus.cancelled;
 
   @override
   void initState() {

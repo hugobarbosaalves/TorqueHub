@@ -91,20 +91,95 @@ O tema global (AppTheme.light) já configura Card, Button, Input, etc.
 
 ## Proibições Absolutas
 
-| NUNCA faça isto                                | Motivo                                      |
-| ---------------------------------------------- | ------------------------------------------- |
-| Editar `tokens.css` ou `app_tokens.dart`       | São GERADOS. Edite `tokens.json` e regenere |
-| Usar `Color(0xFF...)` hardcoded no Flutter     | Use `TqTokens.*`                            |
-| Usar cor hex literal no CSS                    | Use `var(--color-*)`                        |
-| Criar mapa de status local                     | Use `statusConfig` centralizado             |
-| Exceder 200 linhas por arquivo                 | Dividir em módulos menores                  |
-| Usar `any` (TS) ou `dynamic` sem necessidade   | Tipagem obrigatória                         |
-| Usar `\|\|` para default values                | Usar `??` (nullish coalescing)              |
-| Usar `!` (non-null assertion)                  | Usar type guards ou `??`                    |
-| Esquecer JSDoc/DartDoc em exports              | Documentação obrigatória                    |
-| Hardcodar credenciais ou URLs de produção      | Usar variáveis de ambiente / AppConfig      |
-| Usar `console.log` em produção                 | Usar logger estruturado                     |
-| Criar comentários decorativos (`// ── ... ──`) | Usar JSDoc descritivo                       |
+| NUNCA faça isto                                | Motivo                                        |
+| ---------------------------------------------- | --------------------------------------------- |
+| Editar `tokens.css` ou `app_tokens.dart`       | São GERADOS. Edite `tokens.json` e regenere   |
+| Usar `Color(0xFF...)` hardcoded no Flutter     | Use `TqTokens.*`                              |
+| Usar cor hex literal no CSS                    | Use `var(--color-*)`                          |
+| Criar mapa de status local                     | Use `statusConfig` centralizado               |
+| Exceder 200 linhas por arquivo                 | Dividir em módulos menores                    |
+| Usar `any` (TS) ou `dynamic` sem necessidade   | Tipagem obrigatória                           |
+| Usar `\|\|` para default values                | Usar `??` (nullish coalescing)                |
+| Usar `!` (non-null assertion)                  | Usar type guards ou `??`                      |
+| Esquecer JSDoc/DartDoc em exports              | Documentação obrigatória                      |
+| Hardcodar credenciais ou URLs de produção      | Usar variáveis de ambiente / AppConfig        |
+| Usar `console.log` em produção                 | Usar logger estruturado                       |
+| Criar comentários decorativos (`// ── ... ──`) | Usar JSDoc descritivo                         |
+| Usar magic strings/números hardcodados         | Extrair para constantes em arquivos dedicados |
+| Usar nomes abreviados em callbacks (`m`, `x`)  | Usar nomes descritivos (`media`, `order`)     |
+
+---
+
+## Magic Strings e Nomes Descritivos — Regras Obrigatórias
+
+### NUNCA hardcodar strings ou valores mágicos inline
+
+Todo valor literal que represente um tipo, status, configuração ou classificação
+**DEVE** ser extraído para uma constante nomeada em um arquivo auxiliar ou global.
+
+```typescript
+// ❌ PROIBIDO — magic string inline
+const photos = order.media.filter((m) => m.type === 'PHOTO');
+if (status === 'IN_PROGRESS') { ... }
+const maxRetries = 3;
+
+// ✅ CORRETO — constantes nomeadas em arquivo dedicado
+// Em shared/domain/constants.ts ou no módulo correspondente:
+export const MEDIA_TYPE = { PHOTO: 'PHOTO', VIDEO: 'VIDEO' } as const;
+export const MAX_RETRIES = 3;
+
+// No código:
+const photos = order.media.filter((media) => media.type === MEDIA_TYPE.PHOTO);
+if (status === ORDER_STATUS.IN_PROGRESS) { ... }
+```
+
+```dart
+// ❌ PROIBIDO — magic string inline no Dart
+final photos = media.where((m) => m.type == 'PHOTO');
+
+// ✅ CORRETO — constante nomeada
+class MediaType {
+  static const photo = 'PHOTO';
+  static const video = 'VIDEO';
+}
+final photos = media.where((media) => media.type == MediaType.photo);
+```
+
+**Onde colocar as constantes:**
+
+| Escopo              | Localização                                       |
+| ------------------- | ------------------------------------------------- |
+| Global (todas apps) | `packages/contracts/src/constants.ts`             |
+| Módulo (API)        | `modules/<feature>/domain/constants.ts`           |
+| Mobile (Dart)       | `lib/utils/constants.dart` ou no módulo relevante |
+| Web                 | `src/utils/constants.ts`                          |
+
+### NUNCA usar nomes abreviados em callbacks e parâmetros
+
+Variáveis de callback, parâmetros de arrow functions e lambdas
+**DEVEM** ter nomes descritivos. Letras soltas como `m`, `x`, `e`, `v` são proibidas.
+
+```typescript
+// ❌ PROIBIDO — abreviações sem significado
+orders.filter((o) => o.status === 'OPEN');
+media.map((m) => m.url);
+items.forEach((x) => process(x));
+
+// ✅ CORRETO — nomes descritivos
+orders.filter((order) => order.status === ORDER_STATUS.OPEN);
+media.map((mediaItem) => mediaItem.url);
+items.forEach((item) => process(item));
+```
+
+```dart
+// ❌ PROIBIDO
+media.where((m) => m.type == 'PHOTO');
+items.map((e) => e.name);
+
+// ✅ CORRETO
+media.where((mediaItem) => mediaItem.type == MediaType.photo);
+items.map((item) => item.name);
+```
 
 ---
 

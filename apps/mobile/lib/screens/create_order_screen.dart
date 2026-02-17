@@ -114,13 +114,13 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
     }
 
     final validItems = _items
-        .where((i) => i.descCtrl.text.trim().isNotEmpty)
-        .map((i) {
+        .where((item) => item.descCtrl.text.trim().isNotEmpty)
+        .map((item) {
           final price =
-              double.tryParse(i.priceCtrl.text.replaceAll(',', '.')) ?? 0;
+              double.tryParse(item.priceCtrl.text.replaceAll(',', '.')) ?? 0;
           return {
-            'description': i.descCtrl.text.trim(),
-            'quantity': int.tryParse(i.qtyCtrl.text) ?? 1,
+            'description': item.descCtrl.text.trim(),
+            'quantity': int.tryParse(item.qtyCtrl.text) ?? 1,
             'unitPrice': (price * 100).round(),
           };
         })
@@ -178,9 +178,9 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                     hint: 'Selecione a oficina',
                     items: _workshops
                         .map(
-                          (w) => DropdownMenuItem(
-                            value: w['id'] as String,
-                            child: Text(w['name'] as String),
+                          (workshop) => DropdownMenuItem(
+                            value: workshop['id'] as String,
+                            child: Text(workshop['name'] as String),
                           ),
                         )
                         .toList(),
@@ -193,13 +193,13 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                     hint: _selectedWorkshopId == null
                         ? 'Selecione uma oficina primeiro'
                         : 'Selecione o cliente',
-                    items: _customers.map((c) {
-                      final doc = c['document'] as String?;
+                    items: _customers.map((customer) {
+                      final doc = customer['document'] as String?;
                       final label = doc != null && doc.isNotEmpty
-                          ? '${c['name']} ($doc)'
-                          : c['name'] as String;
+                          ? '${customer['name']} ($doc)'
+                          : customer['name'] as String;
                       return DropdownMenuItem(
-                        value: c['id'] as String,
+                        value: customer['id'] as String,
                         child: Text(label),
                       );
                     }).toList(),
@@ -216,10 +216,10 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                         : 'Selecione o veículo',
                     items: _vehicles
                         .map(
-                          (v) => DropdownMenuItem(
-                            value: v['id'] as String,
+                          (vehicle) => DropdownMenuItem(
+                            value: vehicle['id'] as String,
                             child: Text(
-                              '${v['brand']} ${v['model']} — ${v['plate']}',
+                              '${vehicle['brand']} ${vehicle['model']} — ${vehicle['plate']}',
                             ),
                           ),
                         )
@@ -238,7 +238,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                       hintText: 'Ex: Troca de óleo e filtros',
                     ),
                     maxLines: 2,
-                    validator: (v) => v == null || v.trim().isEmpty
+                    validator: (value) => value == null || value.trim().isEmpty
                         ? 'Informe a descrição'
                         : null,
                   ),
@@ -257,9 +257,9 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                   ),
                   const SizedBox(height: TqTokens.space4),
                   ..._items.asMap().entries.map((entry) {
-                    final i = entry.key;
+                    final index = entry.key;
                     final item = entry.value;
-                    return _buildItemCard(item, i);
+                    return _buildItemCard(item, index);
                   }),
                   const SizedBox(height: TqTokens.space16),
                   FilledButton.icon(
@@ -299,7 +299,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
     required void Function(String?)? onChanged,
   }) {
     return DropdownButtonFormField<String>(
-      initialValue: currentValue,
+      value: currentValue,
       hint: Text(hint),
       items: items,
       onChanged: onChanged,

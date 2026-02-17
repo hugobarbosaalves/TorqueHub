@@ -10,6 +10,7 @@ import '../theme/app_tokens.dart';
 import '../widgets/tq_snackbar.dart';
 import '../widgets/tq_confirm_dialog.dart';
 import '../widgets/tq_state_views.dart';
+import '../utils/constants.dart';
 import 'customer_form_screen.dart';
 
 /// Lista de clientes da oficina com CRUD.
@@ -135,7 +136,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
                 0,
               ),
               child: DropdownButtonFormField<String>(
-                initialValue: _selectedWorkshopId,
+                value: _selectedWorkshopId,
                 decoration: const InputDecoration(
                   labelText: 'Oficina',
                   contentPadding: EdgeInsets.symmetric(
@@ -145,9 +146,9 @@ class _CustomersScreenState extends State<CustomersScreen> {
                 ),
                 items: _workshops
                     .map(
-                      (w) => DropdownMenuItem(
-                        value: w['id'] as String,
-                        child: Text(w['name'] as String),
+                      (workshop) => DropdownMenuItem(
+                        value: workshop['id'] as String,
+                        child: Text(workshop['name'] as String),
                       ),
                     )
                     .toList(),
@@ -174,7 +175,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
                       itemCount: _customers.length,
                       separatorBuilder: (_, _) =>
                           const SizedBox(height: TqTokens.space4),
-                      itemBuilder: (_, i) => _buildCard(_customers[i]),
+                      itemBuilder: (_, index) => _buildCard(_customers[index]),
                     ),
                   ),
           ),
@@ -183,11 +184,11 @@ class _CustomersScreenState extends State<CustomersScreen> {
     );
   }
 
-  Widget _buildCard(Map<String, dynamic> c) {
-    final name = c['name'] as String;
-    final doc = c['document'] as String? ?? '';
-    final phone = c['phone'] as String? ?? '';
-    final email = c['email'] as String? ?? '';
+  Widget _buildCard(Map<String, dynamic> customer) {
+    final name = customer['name'] as String;
+    final doc = customer['document'] as String? ?? '';
+    final phone = customer['phone'] as String? ?? '';
+    final email = customer['email'] as String? ?? '';
 
     return Card(
       child: ListTile(
@@ -206,7 +207,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
           style: const TextStyle(fontWeight: TqTokens.fontWeightSemibold),
         ),
         subtitle: Text(
-          [doc, phone, email].where((s) => s.isNotEmpty).join(' • '),
+          [doc, phone, email].where((detail) => detail.isNotEmpty).join(' • '),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: const TextStyle(
@@ -216,18 +217,19 @@ class _CustomersScreenState extends State<CustomersScreen> {
         ),
         trailing: PopupMenuButton<String>(
           onSelected: (action) {
-            if (action == 'edit') _openForm(customer: c);
-            if (action == 'delete') _deleteCustomer(c['id'] as String, name);
+            if (action == MenuAction.edit) _openForm(customer: customer);
+            if (action == MenuAction.delete)
+              _deleteCustomer(customer['id'] as String, name);
           },
           itemBuilder: (_) => [
-            const PopupMenuItem(value: 'edit', child: Text('Editar')),
+            const PopupMenuItem(value: MenuAction.edit, child: Text('Editar')),
             const PopupMenuItem(
-              value: 'delete',
+              value: MenuAction.delete,
               child: Text('Excluir', style: TextStyle(color: TqTokens.danger)),
             ),
           ],
         ),
-        onTap: () => _openForm(customer: c),
+        onTap: () => _openForm(customer: customer),
       ),
     );
   }

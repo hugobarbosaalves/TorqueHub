@@ -5,8 +5,10 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../services/api_service.dart';
 import '../theme/app_tokens.dart';
+import '../widgets/currency_mask_formatter.dart';
 import '../widgets/tq_snackbar.dart';
 import '../widgets/tq_section_title.dart';
 
@@ -116,12 +118,11 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
     final validItems = _items
         .where((item) => item.descCtrl.text.trim().isNotEmpty)
         .map((item) {
-          final price =
-              double.tryParse(item.priceCtrl.text.replaceAll(',', '.')) ?? 0;
+          final cents = parseCurrencyToCents(item.priceCtrl.text);
           return {
             'description': item.descCtrl.text.trim(),
             'quantity': int.tryParse(item.qtyCtrl.text) ?? 1,
-            'unitPrice': (price * 100).round(),
+            'unitPrice': cents,
           };
         })
         .toList();
@@ -365,6 +366,9 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                       isDense: true,
                     ),
                     keyboardType: TextInputType.number,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                    ],
                   ),
                 ),
                 const SizedBox(width: TqTokens.space4),
@@ -373,11 +377,15 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                     controller: item.priceCtrl,
                     decoration: const InputDecoration(
                       labelText: 'Valor (R\$)',
+                      hintText: 'R\$ 0,00',
                       isDense: true,
                     ),
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      CurrencyMaskFormatter(),
+                    ],
+                    validator: (value) => validateCurrency(value),
                   ),
                 ),
               ],

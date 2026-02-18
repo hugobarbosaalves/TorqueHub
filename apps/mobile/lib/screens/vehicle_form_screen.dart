@@ -10,6 +10,9 @@ import '../services/api_service.dart';
 import '../theme/app_tokens.dart';
 import '../widgets/mileage_mask_formatter.dart';
 import '../widgets/tq_plate_field.dart';
+import '../widgets/tq_button.dart';
+import '../widgets/tq_dropdown.dart';
+import '../widgets/tq_text_field.dart';
 import '../widgets/tq_snackbar.dart';
 
 /// Formulário para criar ou editar um veículo.
@@ -159,15 +162,9 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
               const SizedBox(height: TqTokens.space3),
               _loadingCustomers
                   ? const LinearProgressIndicator()
-                  : DropdownButtonFormField<String>(
+                  : TqDropdown<String>(
                       value: _selectedCustomerId,
-                      hint: const Text('Selecione o cliente'),
-                      decoration: const InputDecoration(
-                        contentPadding: EdgeInsets.symmetric(
-                          horizontal: TqTokens.space6,
-                          vertical: TqTokens.space5,
-                        ),
-                      ),
+                      hint: 'Selecione o cliente',
                       items: _customers.map((customer) {
                         final doc = customer['document'] as String? ?? '';
                         final label = doc.isNotEmpty
@@ -182,29 +179,24 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
                           setState(() => _selectedCustomerId = val),
                       validator: (value) =>
                           value == null ? 'Selecione um cliente' : null,
-                      isExpanded: true,
                     ),
               const SizedBox(height: TqTokens.space10),
               TqPlateField(controller: _plateCtrl),
               const SizedBox(height: TqTokens.space8),
-              TextFormField(
+              TqTextField(
                 controller: _brandCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Marca *',
-                  prefixIcon: Icon(Icons.branding_watermark),
-                ),
+                label: 'Marca *',
+                prefixIcon: Icons.branding_watermark,
                 textCapitalization: TextCapitalization.words,
                 validator: (value) => value == null || value.trim().isEmpty
                     ? 'Marca obrigatória'
                     : null,
               ),
               const SizedBox(height: TqTokens.space8),
-              TextFormField(
+              TqTextField(
                 controller: _modelCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Modelo *',
-                  prefixIcon: Icon(Icons.directions_car),
-                ),
+                label: 'Modelo *',
+                prefixIcon: Icons.directions_car,
                 textCapitalization: TextCapitalization.words,
                 validator: (value) => value == null || value.trim().isEmpty
                     ? 'Modelo obrigatório'
@@ -214,9 +206,9 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
               Row(
                 children: [
                   Expanded(
-                    child: TextFormField(
+                    child: TqTextField(
                       controller: _yearCtrl,
-                      decoration: const InputDecoration(labelText: 'Ano'),
+                      label: 'Ano',
                       keyboardType: TextInputType.number,
                       inputFormatters: [
                         FilteringTextInputFormatter.digitsOnly,
@@ -234,22 +226,20 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
                   ),
                   const SizedBox(width: TqTokens.space6),
                   Expanded(
-                    child: TextFormField(
+                    child: TqTextField(
                       controller: _colorCtrl,
-                      decoration: const InputDecoration(labelText: 'Cor'),
+                      label: 'Cor',
                       textCapitalization: TextCapitalization.words,
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: TqTokens.space8),
-              TextFormField(
+              TqTextField(
                 controller: _mileageCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Quilometragem (km)',
-                  hintText: '150.000',
-                  prefixIcon: Icon(Icons.speed),
-                ),
+                label: 'Quilometragem (km)',
+                hint: '150.000',
+                prefixIcon: Icons.speed,
                 keyboardType: TextInputType.number,
                 inputFormatters: [
                   FilteringTextInputFormatter.digitsOnly,
@@ -257,26 +247,11 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
                 ],
               ),
               const SizedBox(height: TqTokens.space14),
-              FilledButton.icon(
+              TqButton.ghost(
+                label: _isEditing ? 'Salvar' : 'Cadastrar',
+                icon: _isEditing ? Icons.save : Icons.directions_car,
+                loading: _loading,
                 onPressed: _loading ? null : _submit,
-                icon: _loading
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: TqTokens.card,
-                        ),
-                      )
-                    : Icon(_isEditing ? Icons.save : Icons.directions_car),
-                label: Text(_isEditing ? 'Salvar' : 'Cadastrar'),
-                style: FilledButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  textStyle: const TextStyle(
-                    fontSize: TqTokens.fontSizeLg,
-                    fontWeight: TqTokens.fontWeightSemibold,
-                  ),
-                ),
               ),
             ],
           ),

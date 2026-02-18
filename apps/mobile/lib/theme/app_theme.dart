@@ -92,6 +92,19 @@ abstract final class AppTheme {
         thickness: 1,
         space: TqTokens.space8,
       ),
+      dropdownMenuTheme: DropdownMenuThemeData(
+        menuStyle: MenuStyle(
+          backgroundColor: WidgetStatePropertyAll(TqTokens.card),
+          elevation: const WidgetStatePropertyAll(4),
+          shape: WidgetStatePropertyAll(
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(TqTokens.radiusXl),
+              side: const BorderSide(color: TqTokens.neutral200, width: 0.5),
+            ),
+          ),
+          surfaceTintColor: const WidgetStatePropertyAll(Colors.transparent),
+        ),
+      ),
     );
   }
 }

@@ -103,7 +103,7 @@ export function renderVehicleSection(doc: PDFKit.PDFDocument, order: ServiceOrde
   doc.y = startY + 25;
 
   const rows = [
-    ['Veículo', `${String(vehicle.brand)} ${String(vehicle.model)}`],
+    ['Veículo', `${vehicle.brand} ${vehicle.model}`],
     ['Placa', vehicle.plate],
   ];
   if (vehicle.year) rows.push(['Ano', String(vehicle.year)]);
@@ -114,10 +114,10 @@ export function renderVehicleSection(doc: PDFKit.PDFDocument, order: ServiceOrde
   for (const [label, value] of rows) {
     doc
       .fillColor(COLOR_MUTED)
-      .text(`${String(label)}:`, 65, doc.y, { continued: true })
+      .text(`${label}:`, 65, doc.y, { continued: true })
       .fillColor('#000000')
       .font('Helvetica-Bold')
-      .text(`  ${String(value)}`)
+      .text(`  ${value}`)
       .font('Helvetica');
   }
 
@@ -140,7 +140,7 @@ export function renderCustomerSection(doc: PDFKit.PDFDocument, order: ServiceOrd
     .text('Nome:', 65, doc.y, { continued: true })
     .fillColor('#000000')
     .font('Helvetica-Bold')
-    .text(`  ${String(order.customer.name)}`)
+    .text(`  ${order.customer.name}`)
     .font('Helvetica');
 
   doc.y += 10;

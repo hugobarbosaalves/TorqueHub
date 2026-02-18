@@ -10,7 +10,7 @@ import '../services/auth_service.dart';
 import '../theme/status_config.dart';
 import '../theme/app_tokens.dart';
 import '../utils/formatters.dart';
-import '../widgets/tq_state_views.dart';
+import '../widgets/widgets.dart';
 import '../utils/constants.dart';
 import 'create_order_screen.dart';
 import 'order_detail_screen.dart';
@@ -117,11 +117,46 @@ class OrdersScreenState extends State<OrdersScreen> {
             ? TextField(
                 controller: _searchCtrl,
                 autofocus: true,
-                style: const TextStyle(color: TqTokens.card),
-                decoration: const InputDecoration(
+                cursorColor: Colors.white,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: TqTokens.fontSizeLg,
+                ),
+                decoration: InputDecoration(
                   hintText: 'Buscar cliente, placa...',
-                  hintStyle: TextStyle(color: TqTokens.neutral400),
-                  border: InputBorder.none,
+                  hintStyle: const TextStyle(color: TqTokens.neutral400),
+                  contentPadding: const EdgeInsets.symmetric(
+                    vertical: TqTokens.space4,
+                    horizontal: TqTokens.space6,
+                  ),
+                  isDense: true,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(
+                      TqTokens.radiusXl,
+                    ),
+                    borderSide: const BorderSide(
+                      color: Colors.white54,
+                      width: 0.8,
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(
+                      TqTokens.radiusXl,
+                    ),
+                    borderSide: const BorderSide(
+                      color: Colors.white54,
+                      width: 0.8,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(
+                      TqTokens.radiusXl,
+                    ),
+                    borderSide: const BorderSide(
+                      color: Colors.white,
+                      width: 1,
+                    ),
+                  ),
                 ),
               )
             : const Text('TorqueHub'),
@@ -193,15 +228,75 @@ class OrdersScreenState extends State<OrdersScreen> {
   }
 
   Widget _buildList() {
+    // — Summary header — contagem por status
+    final statusCounts = <String, int>{};
+    for (final order in _orders) {
+      final status = order['status'] as String? ?? OrderStatus.draft;
+      statusCounts[status] = (statusCounts[status] ?? 0) + 1;
+    }
+
     return RefreshIndicator(
       onRefresh: refresh,
-      child: ListView.builder(
+      child: ListView(
         padding: const EdgeInsets.symmetric(
           horizontal: TqTokens.space8,
           vertical: TqTokens.space6,
         ),
-        itemCount: _filtered.length,
-        itemBuilder: (context, index) => _buildCard(_filtered[index]),
+        children: [
+          // — Chips de resumo por status —
+          SizedBox(
+            height: 36,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              children: statusCounts.entries.map((entry) {
+                final info = getStatusInfo(entry.key);
+                return Padding(
+                  padding: const EdgeInsets.only(right: TqTokens.space4),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: TqTokens.space5,
+                      vertical: TqTokens.space2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: info.color.withAlpha(18),
+                      borderRadius:
+                          BorderRadius.circular(TqTokens.radiusPill),
+                      border: Border.all(
+                        color: info.color.withAlpha(50),
+                        width: 0.5,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '${entry.value}',
+                          style: TextStyle(
+                            color: info.color,
+                            fontSize: TqTokens.fontSizeSm,
+                            fontWeight: TqTokens.fontWeightBold,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          info.label,
+                          style: TextStyle(
+                            color: info.color,
+                            fontSize: TqTokens.fontSizeXs,
+                            fontWeight: TqTokens.fontWeightMedium,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+          const SizedBox(height: TqTokens.space6),
+          // — Cards list —
+          ..._filtered.map((order) => _buildCard(order)),
+        ],
       ),
     );
   }
@@ -210,94 +305,99 @@ class OrdersScreenState extends State<OrdersScreen> {
     final status = order['status'] as String? ?? OrderStatus.draft;
     final info = getStatusInfo(status);
     final color = info.color;
+    final customer = order['customerName'] as String? ?? '';
+    final plate = order['vehiclePlate'] as String? ?? '';
+    final vehicle = order['vehicleSummary'] as String? ?? '';
+    final description = order['description'] as String? ?? 'Sem descrição';
+    final itemCount = (order['items'] as List?)?.length ?? 0;
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: TqTokens.space6),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(TqTokens.radiusXl),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: TqTokens.space5),
+      child: TqCardShell(
+        accentColor: color,
         onTap: () async {
           await Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => OrderDetailScreen(orderId: order['id'] as String),
+              builder: (_) =>
+                  OrderDetailScreen(orderId: order['id'] as String),
             ),
           );
           refresh();
         },
-        child: Padding(
-          padding: const EdgeInsets.all(TqTokens.space8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(info.icon, color: color, size: 20),
-                  const SizedBox(width: TqTokens.space4),
-                  Expanded(
-                    child: Text(
-                      order['description'] as String? ?? 'Sem descrição',
-                      style: const TextStyle(
-                        fontSize: TqTokens.fontSizeLg,
-                        fontWeight: TqTokens.fontWeightSemibold,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // — Row 1: Status badge + valor —
+            Row(
+              children: [
+                TqBadgePill(
+                  label: info.label,
+                  color: color,
+                  icon: info.icon,
+                ),
+                const Spacer(),
+                Text(
+                  formatCurrency(order['totalAmount']),
+                  style: const TextStyle(
+                    fontSize: TqTokens.fontSizeXl,
+                    fontWeight: TqTokens.fontWeightBold,
+                    color: TqTokens.neutral800,
                   ),
-                ],
+                ),
+              ],
+            ),
+            const SizedBox(height: TqTokens.space5),
+            // — Row 2: Descrição —
+            Text(
+              description,
+              style: const TextStyle(
+                fontSize: TqTokens.fontSizeLg,
+                fontWeight: TqTokens.fontWeightSemibold,
+                color: TqTokens.neutral800,
               ),
-              const SizedBox(height: TqTokens.space5),
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: TqTokens.space5,
-                      vertical: TqTokens.space2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: color.withAlpha(25),
-                      borderRadius: BorderRadius.circular(TqTokens.radiusPill),
-                    ),
-                    child: Text(
-                      info.label,
-                      style: TextStyle(
-                        color: color,
-                        fontSize: TqTokens.fontSizeXs,
-                        fontWeight: TqTokens.fontWeightSemibold,
-                      ),
-                    ),
-                  ),
-                  const Spacer(),
-                  Text(
-                    formatCurrency(order['totalAmount']),
-                    style: const TextStyle(
-                      fontSize: TqTokens.fontSizeLg,
-                      fontWeight: TqTokens.fontWeightBold,
-                      color: TqTokens.primary,
-                    ),
-                  ),
-                ],
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: TqTokens.space4),
+            const Divider(height: 1, thickness: 0.5),
+            const SizedBox(height: TqTokens.space4),
+            // — Row 3: Cliente —
+            if (customer.isNotEmpty) ...[
+              TqInfoRow(
+                icon: Icons.person_outline,
+                text: customer,
+                fontWeight: TqTokens.fontWeightMedium,
               ),
-              const SizedBox(height: TqTokens.space4),
-              // Cliente e veículo
-              _buildCustomerVehicleRow(order),
-              const SizedBox(height: TqTokens.space4),
-              Row(
+              const SizedBox(height: TqTokens.space2),
+            ],
+            // — Row 4: Veículo —
+            if (vehicle.isNotEmpty || plate.isNotEmpty) ...[
+              TqInfoRow(
+                icon: Icons.directions_car_outlined,
+                text: [
+                  if (vehicle.isNotEmpty) vehicle,
+                  if (plate.isNotEmpty) plate,
+                ].join(' · '),
+              ),
+              const SizedBox(height: TqTokens.space2),
+            ],
+            // — Row 5: Itens + Data —
+            TqInfoRow(
+              icon: Icons.receipt_outlined,
+              text: '$itemCount ${itemCount == 1 ? 'item' : 'itens'}',
+              fontSize: TqTokens.fontSizeXs,
+              iconSize: 14,
+              textColor: TqTokens.neutral500,
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   const Icon(
-                    Icons.list_alt,
-                    size: 14,
-                    color: TqTokens.neutral500,
+                    Icons.schedule,
+                    size: 13,
+                    color: TqTokens.neutral400,
                   ),
-                  const SizedBox(width: TqTokens.space2),
-                  Text(
-                    '${(order['items'] as List?)?.length ?? 0} itens',
-                    style: const TextStyle(
-                      fontSize: TqTokens.fontSizeXs,
-                      color: TqTokens.neutral600,
-                    ),
-                  ),
-                  const Spacer(),
+                  const SizedBox(width: TqTokens.space1),
                   Text(
                     formatDate(order['createdAt'] as String?),
                     style: const TextStyle(
@@ -307,39 +407,10 @@ class OrdersScreenState extends State<OrdersScreen> {
                   ),
                 ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
-    );
-  }
-
-  Widget _buildCustomerVehicleRow(Map<String, dynamic> order) {
-    final customer = order['customerName'] as String?;
-    final plate = order['vehiclePlate'] as String?;
-    final vehicle = order['vehicleSummary'] as String?;
-    final parts = <String>[
-      if (customer != null && customer.isNotEmpty) customer,
-      if (vehicle != null && vehicle.isNotEmpty) vehicle,
-      if (plate != null && plate.isNotEmpty) plate,
-    ];
-    if (parts.isEmpty) return const SizedBox.shrink();
-    return Row(
-      children: [
-        const Icon(Icons.person_outline, size: 14, color: TqTokens.neutral500),
-        const SizedBox(width: TqTokens.space2),
-        Expanded(
-          child: Text(
-            parts.join(' · '),
-            style: const TextStyle(
-              fontSize: TqTokens.fontSizeXs,
-              color: TqTokens.neutral600,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-      ],
     );
   }
 }

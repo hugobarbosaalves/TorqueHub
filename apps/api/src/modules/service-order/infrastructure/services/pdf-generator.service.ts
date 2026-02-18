@@ -24,8 +24,8 @@ export async function generateQuotePdf(
     size: 'A4',
     margin: 50,
     info: {
-      Title: `Orçamento - ${String(order.description)}`,
-      Author: String(order.workshop.name),
+      Title: `Orçamento - ${order.description}`,
+      Author: order.workshop.name,
       Subject: 'Orçamento de Serviço Automotivo',
       Creator: 'TorqueHub',
     },

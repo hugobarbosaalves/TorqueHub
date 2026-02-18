@@ -153,6 +153,15 @@ class ApiService {
     await _delete('/service-orders/$id');
   }
 
+  /// Atualiza uma ordem DRAFT (descrição, observações, itens).
+  static Future<Map<String, dynamic>> updateServiceOrder(
+    String id,
+    Map<String, dynamic> fields,
+  ) async {
+    final data = await _put('/service-orders/$id', fields);
+    return Map<String, dynamic>.from(data);
+  }
+
   /// CRUD completo de clientes.
   static Future<List<Map<String, dynamic>>> getCustomersByWorkshop(
     String workshopId,

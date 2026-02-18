@@ -7,6 +7,8 @@ library;
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import '../theme/app_tokens.dart';
+import '../widgets/tq_button.dart';
+import '../widgets/tq_text_field.dart';
 import '../widgets/tq_snackbar.dart';
 
 /// Tela de login com email e senha.
@@ -83,14 +85,12 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   const SizedBox(height: TqTokens.space24),
-                  TextFormField(
+                  TqTextField(
                     controller: _emailController,
+                    label: 'Email',
+                    prefixIcon: Icons.email_outlined,
                     keyboardType: TextInputType.emailAddress,
                     textInputAction: TextInputAction.next,
-                    decoration: const InputDecoration(
-                      labelText: 'Email',
-                      prefixIcon: Icon(Icons.email_outlined),
-                    ),
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
                         return 'Informe o email';
@@ -100,24 +100,22 @@ class _LoginScreenState extends State<LoginScreen> {
                     },
                   ),
                   const SizedBox(height: TqTokens.space8),
-                  TextFormField(
+                  TqTextField(
                     controller: _passwordController,
+                    label: 'Senha',
+                    prefixIcon: Icons.lock_outlined,
                     obscureText: _obscurePassword,
                     textInputAction: TextInputAction.done,
                     onFieldSubmitted: (_) => _handleLogin(),
-                    decoration: InputDecoration(
-                      labelText: 'Senha',
-                      prefixIcon: const Icon(Icons.lock_outlined),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscurePassword
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                        ),
-                        onPressed: () {
-                          setState(() => _obscurePassword = !_obscurePassword);
-                        },
+                    suffix: IconButton(
+                      icon: Icon(
+                        _obscurePassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
                       ),
+                      onPressed: () {
+                        setState(() => _obscurePassword = !_obscurePassword);
+                      },
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -128,25 +126,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     },
                   ),
                   const SizedBox(height: TqTokens.space16),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 48,
-                    child: FilledButton(
-                      onPressed: _loading ? null : _handleLogin,
-                      child: _loading
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: TqTokens.card,
-                              ),
-                            )
-                          : const Text(
-                              'Entrar',
-                              style: TextStyle(fontSize: TqTokens.fontSizeLg),
-                            ),
-                    ),
+                  TqButton.ghost(
+                    label: 'Entrar',
+                    loading: _loading,
+                    onPressed: _loading ? null : _handleLogin,
                   ),
                 ],
               ),

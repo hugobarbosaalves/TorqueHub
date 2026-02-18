@@ -7,6 +7,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'plate_mask_formatter.dart';
+import 'tq_text_field.dart';
 
 /// Campo de placa brasileira com máscara automática.
 class TqPlateField extends StatelessWidget {
@@ -29,13 +30,11 @@ class TqPlateField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TextFormField(
+    return TqTextField(
       controller: controller,
-      decoration: const InputDecoration(
-        labelText: 'Placa *',
-        hintText: 'ABC-1D23',
-        prefixIcon: Icon(Icons.pin),
-      ),
+      label: 'Placa *',
+      hint: 'ABC-1D23',
+      prefixIcon: Icons.pin,
       textCapitalization: TextCapitalization.characters,
       inputFormatters: [
         FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9\-]')),

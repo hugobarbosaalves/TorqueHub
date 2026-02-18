@@ -76,6 +76,13 @@ export interface CreateServiceOrderRequest {
   items: Omit<ServiceOrderItemDTO, 'id' | 'totalPrice'>[];
 }
 
+/** Payload for updating an existing service order (only DRAFT). */
+export interface UpdateServiceOrderRequest {
+  description?: string;
+  observations?: string;
+  items?: Omit<ServiceOrderItemDTO, 'id' | 'totalPrice'>[];
+}
+
 /** Response after successfully creating a service order. */
 export interface CreateServiceOrderResponse {
   id: string;

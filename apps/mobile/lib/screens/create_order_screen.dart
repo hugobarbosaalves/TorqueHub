@@ -1,21 +1,30 @@
-/// New service order screen — cascading form for creating orders.
+/// New/edit service order screen — cascading form for creating or editing orders.
 ///
 /// Flow: select Workshop → Customer → Vehicle, then add line items
 /// with description, quantity, and unit price.
+/// When [existingOrder] is provided, operates in edit mode (only DRAFT).
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../services/api_service.dart';
 import '../theme/app_tokens.dart';
+import '../widgets/currency_mask_formatter.dart';
+import '../widgets/tq_button.dart';
+import '../widgets/tq_dropdown.dart';
+import '../widgets/tq_text_field.dart';
 import '../widgets/tq_snackbar.dart';
 import '../widgets/tq_section_title.dart';
 
-/// Tela para o mecânico criar uma nova ordem de serviço.
+/// Tela para criar ou editar uma ordem de serviço.
 class CreateOrderScreen extends StatefulWidget {
-  /// Callback opcional chamado quando a ordem é criada com sucesso.
+  /// Callback opcional chamado quando a ordem é criada/atualizada.
   final VoidCallback? onOrderCreated;
 
-  const CreateOrderScreen({super.key, this.onOrderCreated});
+  /// Dados da ordem existente para modo edição (null = criação).
+  final Map<String, dynamic>? existingOrder;
+
+  const CreateOrderScreen({super.key, this.onOrderCreated, this.existingOrder});
 
   @override
   State<CreateOrderScreen> createState() => _CreateOrderScreenState();
@@ -37,6 +46,9 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
   bool _loading = false;
   bool _loadingData = true;
 
+  /// Indica se estamos em modo edição.
+  bool get _isEditing => widget.existingOrder != null;
+
   @override
   void initState() {
     super.initState();
@@ -52,10 +64,54 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
     super.dispose();
   }
 
+  /// Pré-popula campos a partir da ordem existente (modo edição).
+  void _prefillFromOrder() {
+    final order = widget.existingOrder;
+    if (order == null) return;
+
+    _descriptionCtrl.text = order['description'] as String? ?? '';
+
+    _selectedWorkshopId = order['workshopId'] as String?;
+    _selectedCustomerId = order['customerId'] as String?;
+    _selectedVehicleId = order['vehicleId'] as String?;
+
+    final existingItems = List<Map<String, dynamic>>.from(order['items'] ?? []);
+    _items.clear();
+    for (final item in existingItems) {
+      final entry = _ItemEntry();
+      entry.descCtrl.text = item['description'] as String? ?? '';
+      entry.qtyCtrl.text = '${item['quantity'] ?? 1}';
+      final unitPrice = item['unitPrice'] as int? ?? 0;
+      entry.priceCtrl.text = formatCentsToInput(unitPrice);
+      _items.add(entry);
+    }
+    if (_items.isEmpty) _items.add(_ItemEntry());
+  }
+
   Future<void> _loadWorkshops() async {
     try {
       final data = await ApiService.getWorkshops();
       if (!mounted) return;
+
+      if (_isEditing) {
+        _prefillFromOrder();
+        // Carregar clientes e veículos da ordem existente.
+        if (_selectedWorkshopId != null) {
+          final customers = await ApiService.getCustomers(_selectedWorkshopId!);
+          if (!mounted) return;
+          _customers = customers;
+
+          if (_selectedCustomerId != null) {
+            final vehicles = await ApiService.getVehicles(
+              _selectedWorkshopId!,
+              customerId: _selectedCustomerId,
+            );
+            if (!mounted) return;
+            _vehicles = vehicles;
+          }
+        }
+      }
+
       setState(() {
         _workshops = data;
         _loadingData = false;
@@ -116,12 +172,11 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
     final validItems = _items
         .where((item) => item.descCtrl.text.trim().isNotEmpty)
         .map((item) {
-          final price =
-              double.tryParse(item.priceCtrl.text.replaceAll(',', '.')) ?? 0;
+          final cents = parseCurrencyToCents(item.priceCtrl.text);
           return {
             'description': item.descCtrl.text.trim(),
             'quantity': int.tryParse(item.qtyCtrl.text) ?? 1,
-            'unitPrice': (price * 100).round(),
+            'unitPrice': cents,
           };
         })
         .toList();
@@ -133,26 +188,40 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
 
     setState(() => _loading = true);
     try {
-      await ApiService.createServiceOrder(
-        workshopId: _selectedWorkshopId!,
-        customerId: _selectedCustomerId!,
-        vehicleId: _selectedVehicleId!,
-        description: _descriptionCtrl.text.trim(),
-        items: validItems,
-      );
-      if (!mounted) return;
-      showSuccessSnack(context, 'Ordem de serviço criada com sucesso!');
-      _descriptionCtrl.clear();
-      for (final item in _items) {
-        item.dispose();
+      if (_isEditing) {
+        final orderId = widget.existingOrder!['id'] as String;
+        await ApiService.updateServiceOrder(orderId, {
+          'description': _descriptionCtrl.text.trim(),
+          'items': validItems,
+        });
+        if (!mounted) return;
+        showSuccessSnack(context, 'Ordem atualizada com sucesso!');
+      } else {
+        await ApiService.createServiceOrder(
+          workshopId: _selectedWorkshopId!,
+          customerId: _selectedCustomerId!,
+          vehicleId: _selectedVehicleId!,
+          description: _descriptionCtrl.text.trim(),
+          items: validItems,
+        );
+        if (!mounted) return;
+        showSuccessSnack(context, 'Ordem de serviço criada com sucesso!');
+        _descriptionCtrl.clear();
+        for (final item in _items) {
+          item.dispose();
+        }
+        setState(() {
+          _items.clear();
+          _items.add(_ItemEntry());
+        });
       }
-      setState(() {
-        _items.clear();
-        _items.add(_ItemEntry());
-      });
       widget.onOrderCreated?.call();
+      if (_isEditing && mounted) Navigator.pop(context);
     } catch (e) {
-      showErrorSnack(context, 'Erro ao criar ordem: $e');
+      showErrorSnack(
+        context,
+        _isEditing ? 'Erro ao atualizar ordem: $e' : 'Erro ao criar ordem: $e',
+      );
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -162,7 +231,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Nova Ordem de Serviço'),
+        title: Text(_isEditing ? 'Editar Ordem' : 'Nova Ordem de Serviço'),
         centerTitle: true,
       ),
       body: _loadingData
@@ -184,7 +253,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                           ),
                         )
                         .toList(),
-                    onChanged: _onWorkshopChanged,
+                    onChanged: _isEditing ? null : _onWorkshopChanged,
                   ),
                   const SizedBox(height: TqTokens.space8),
                   const TqSectionTitle('Cliente'),
@@ -203,9 +272,11 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                         child: Text(label),
                       );
                     }).toList(),
-                    onChanged: _selectedWorkshopId == null
+                    onChanged: _isEditing
                         ? null
-                        : _onCustomerChanged,
+                        : (_selectedWorkshopId == null
+                              ? null
+                              : _onCustomerChanged),
                   ),
                   const SizedBox(height: TqTokens.space8),
                   const TqSectionTitle('Veículo'),
@@ -224,19 +295,20 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                           ),
                         )
                         .toList(),
-                    onChanged: _selectedCustomerId == null
+                    onChanged: _isEditing
                         ? null
-                        : (val) => setState(() => _selectedVehicleId = val),
+                        : (_selectedCustomerId == null
+                              ? null
+                              : (val) =>
+                                    setState(() => _selectedVehicleId = val)),
                   ),
                   const SizedBox(height: TqTokens.space12),
                   const Divider(),
                   const SizedBox(height: TqTokens.space8),
                   const TqSectionTitle('Descrição do Serviço'),
-                  TextFormField(
+                  TqTextField(
                     controller: _descriptionCtrl,
-                    decoration: const InputDecoration(
-                      hintText: 'Ex: Troca de óleo e filtros',
-                    ),
+                    hint: 'Ex: Troca de óleo e filtros',
                     maxLines: 2,
                     validator: (value) => value == null || value.trim().isEmpty
                         ? 'Informe a descrição'
@@ -262,28 +334,15 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                     return _buildItemCard(item, index);
                   }),
                   const SizedBox(height: TqTokens.space16),
-                  FilledButton.icon(
+                  TqButton.ghost(
+                    label: _loading
+                        ? (_isEditing ? 'Salvando...' : 'Criando...')
+                        : (_isEditing
+                              ? 'Salvar Alterações'
+                              : 'Criar Ordem de Serviço'),
+                    icon: _loading ? null : Icons.check,
+                    loading: _loading,
                     onPressed: _loading ? null : _submit,
-                    icon: _loading
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: TqTokens.card,
-                            ),
-                          )
-                        : const Icon(Icons.check),
-                    label: Text(
-                      _loading ? 'Criando...' : 'Criar Ordem de Serviço',
-                    ),
-                    style: FilledButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      textStyle: const TextStyle(
-                        fontSize: TqTokens.fontSizeLg,
-                        fontWeight: TqTokens.fontWeightSemibold,
-                      ),
-                    ),
                   ),
                   const SizedBox(height: TqTokens.space12),
                 ],
@@ -298,18 +357,11 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
     required List<DropdownMenuItem<String>> items,
     required void Function(String?)? onChanged,
   }) {
-    return DropdownButtonFormField<String>(
+    return TqDropdown<String>(
       value: currentValue,
-      hint: Text(hint),
+      hint: hint,
       items: items,
       onChanged: onChanged,
-      decoration: const InputDecoration(
-        contentPadding: EdgeInsets.symmetric(
-          horizontal: TqTokens.space6,
-          vertical: TqTokens.space5,
-        ),
-      ),
-      isExpanded: true,
     );
   }
 
@@ -347,37 +399,36 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
               ],
             ),
             const SizedBox(height: TqTokens.space4),
-            TextFormField(
+            TqTextField(
               controller: item.descCtrl,
-              decoration: const InputDecoration(
-                hintText: 'Descrição do item',
-                isDense: true,
-              ),
+              hint: 'Descrição do item',
+              dense: true,
             ),
             const SizedBox(height: TqTokens.space4),
             Row(
               children: [
                 Expanded(
-                  child: TextFormField(
+                  child: TqTextField(
                     controller: item.qtyCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'Qtd',
-                      isDense: true,
-                    ),
+                    label: 'Qtd',
+                    dense: true,
                     keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   ),
                 ),
                 const SizedBox(width: TqTokens.space4),
                 Expanded(
-                  child: TextFormField(
+                  child: TqTextField(
                     controller: item.priceCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'Valor (R\$)',
-                      isDense: true,
-                    ),
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
+                    label: 'Valor (R\$)',
+                    hint: 'R\$ 0,00',
+                    dense: true,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      CurrencyMaskFormatter(),
+                    ],
+                    validator: (value) => validateCurrency(value),
                   ),
                 ),
               ],

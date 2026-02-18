@@ -63,30 +63,3 @@ export const deleteVehicleSchema = {
     404: errorResponse,
   },
 };
-
-/** GET /vehicles/lookup/:plate — Lookup vehicle info by plate */
-export const plateLookupSchema = {
-  tags: ['Vehicles'],
-  summary: 'Busca informações de veículo pela placa (API externa)',
-  description: 'Consulta dados públicos do veículo pela placa brasileira.',
-  params: {
-    type: 'object' as const,
-    properties: {
-      plate: { type: 'string', description: 'Placa do veículo (ABC1D23 ou ABC-1234)' },
-    },
-    required: ['plate'],
-  },
-  response: {
-    200: successResponse({
-      type: 'object' as const,
-      properties: {
-        brand: { type: 'string' },
-        model: { type: 'string' },
-        year: { type: 'integer', nullable: true },
-        color: { type: 'string', nullable: true },
-      },
-    }),
-    404: errorResponse,
-    400: errorResponse,
-  },
-};

@@ -5,9 +5,14 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../services/api_service.dart';
 import '../theme/app_tokens.dart';
+import '../widgets/mileage_mask_formatter.dart';
 import '../widgets/tq_plate_field.dart';
+import '../widgets/tq_button.dart';
+import '../widgets/tq_dropdown.dart';
+import '../widgets/tq_text_field.dart';
 import '../widgets/tq_snackbar.dart';
 
 /// Formulário para criar ou editar um veículo.
@@ -37,12 +42,8 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
   String? _selectedCustomerId;
   bool _loadingCustomers = true;
   bool _loading = false;
-  bool _manualMode = false;
 
   bool get _isEditing => widget.vehicle != null;
-
-  /// Se os campos de detalhe devem ser editáveis (modo manual ou edição).
-  bool get _fieldsEnabled => _manualMode || _isEditing;
 
   @override
   void initState() {
@@ -55,7 +56,6 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
     _colorCtrl = TextEditingController(text: v?['color'] as String? ?? '');
     _mileageCtrl = TextEditingController(text: v?['mileage']?.toString() ?? '');
     _selectedCustomerId = v?['customerId'] as String?;
-    _manualMode = _isEditing;
     _loadCustomers();
   }
 
@@ -85,30 +85,6 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
     }
   }
 
-  /// Consulta dados do veículo pela placa via API.
-  Future<PlateLookupData?> _lookupPlate(String plate) async {
-    final raw = plate.replaceAll(RegExp(r'[^A-Za-z0-9]'), '');
-    final result = await ApiService.lookupPlate(raw);
-    if (result == null) return null;
-    return PlateLookupData(
-      brand: result['brand'] as String? ?? '',
-      model: result['model'] as String? ?? '',
-      year: result['year'] as int?,
-      color: result['color'] as String?,
-    );
-  }
-
-  /// Preenche os campos com os dados retornados pelo lookup.
-  void _onDataFound(PlateLookupData data) {
-    _brandCtrl.text = data.brand;
-    _modelCtrl.text = data.model;
-    if (data.year != null) _yearCtrl.text = data.year.toString();
-    if (data.color != null && data.color!.isNotEmpty) {
-      _colorCtrl.text = data.color!;
-    }
-    setState(() => _manualMode = false);
-  }
-
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedCustomerId == null) {
@@ -128,7 +104,9 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
           if (_colorCtrl.text.trim().isNotEmpty)
             'color': _colorCtrl.text.trim(),
           if (_mileageCtrl.text.trim().isNotEmpty)
-            'mileage': int.tryParse(_mileageCtrl.text.trim()),
+            'mileage': int.tryParse(
+              _mileageCtrl.text.trim().replaceAll('.', ''),
+            ),
         };
         // Envia customerId se foi alterado
         if (_selectedCustomerId != null &&
@@ -145,7 +123,7 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
           model: _modelCtrl.text.trim(),
           year: int.tryParse(_yearCtrl.text.trim()),
           color: _colorCtrl.text.trim(),
-          mileage: int.tryParse(_mileageCtrl.text.trim()),
+          mileage: int.tryParse(_mileageCtrl.text.trim().replaceAll('.', '')),
         );
       }
 
@@ -184,15 +162,9 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
               const SizedBox(height: TqTokens.space3),
               _loadingCustomers
                   ? const LinearProgressIndicator()
-                  : DropdownButtonFormField<String>(
+                  : TqDropdown<String>(
                       value: _selectedCustomerId,
-                      hint: const Text('Selecione o cliente'),
-                      decoration: const InputDecoration(
-                        contentPadding: EdgeInsets.symmetric(
-                          horizontal: TqTokens.space6,
-                          vertical: TqTokens.space5,
-                        ),
-                      ),
+                      hint: 'Selecione o cliente',
                       items: _customers.map((customer) {
                         final doc = customer['document'] as String? ?? '';
                         final label = doc.isNotEmpty
@@ -207,39 +179,25 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
                           setState(() => _selectedCustomerId = val),
                       validator: (value) =>
                           value == null ? 'Selecione um cliente' : null,
-                      isExpanded: true,
                     ),
               const SizedBox(height: TqTokens.space10),
-              TqPlateField(
-                controller: _plateCtrl,
-                onLookup: _lookupPlate,
-                onDataFound: _onDataFound,
-                onManualModeChanged: (manual) =>
-                    setState(() => _manualMode = manual),
-                isEditing: _isEditing,
-              ),
+              TqPlateField(controller: _plateCtrl),
               const SizedBox(height: TqTokens.space8),
-              TextFormField(
+              TqTextField(
                 controller: _brandCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Marca *',
-                  prefixIcon: Icon(Icons.branding_watermark),
-                ),
+                label: 'Marca *',
+                prefixIcon: Icons.branding_watermark,
                 textCapitalization: TextCapitalization.words,
-                enabled: _fieldsEnabled,
                 validator: (value) => value == null || value.trim().isEmpty
                     ? 'Marca obrigatória'
                     : null,
               ),
               const SizedBox(height: TqTokens.space8),
-              TextFormField(
+              TqTextField(
                 controller: _modelCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Modelo *',
-                  prefixIcon: Icon(Icons.directions_car),
-                ),
+                label: 'Modelo *',
+                prefixIcon: Icons.directions_car,
                 textCapitalization: TextCapitalization.words,
-                enabled: _fieldsEnabled,
                 validator: (value) => value == null || value.trim().isEmpty
                     ? 'Modelo obrigatório'
                     : null,
@@ -248,54 +206,52 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
               Row(
                 children: [
                   Expanded(
-                    child: TextFormField(
+                    child: TqTextField(
                       controller: _yearCtrl,
-                      decoration: const InputDecoration(labelText: 'Ano'),
+                      label: 'Ano',
                       keyboardType: TextInputType.number,
-                      enabled: _fieldsEnabled,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(4),
+                      ],
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) return null;
+                        final year = int.tryParse(value.trim());
+                        if (year == null || year < 1900 || year > 2030) {
+                          return 'Ano inválido';
+                        }
+                        return null;
+                      },
                     ),
                   ),
                   const SizedBox(width: TqTokens.space6),
                   Expanded(
-                    child: TextFormField(
+                    child: TqTextField(
                       controller: _colorCtrl,
-                      decoration: const InputDecoration(labelText: 'Cor'),
+                      label: 'Cor',
                       textCapitalization: TextCapitalization.words,
-                      enabled: _fieldsEnabled,
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: TqTokens.space8),
-              TextFormField(
+              TqTextField(
                 controller: _mileageCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Quilometragem (km)',
-                  prefixIcon: Icon(Icons.speed),
-                ),
+                label: 'Quilometragem (km)',
+                hint: '150.000',
+                prefixIcon: Icons.speed,
                 keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  MileageMaskFormatter(),
+                ],
               ),
               const SizedBox(height: TqTokens.space14),
-              FilledButton.icon(
+              TqButton.ghost(
+                label: _isEditing ? 'Salvar' : 'Cadastrar',
+                icon: _isEditing ? Icons.save : Icons.directions_car,
+                loading: _loading,
                 onPressed: _loading ? null : _submit,
-                icon: _loading
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: TqTokens.card,
-                        ),
-                      )
-                    : Icon(_isEditing ? Icons.save : Icons.directions_car),
-                label: Text(_isEditing ? 'Salvar' : 'Cadastrar'),
-                style: FilledButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  textStyle: const TextStyle(
-                    fontSize: TqTokens.fontSizeLg,
-                    fontWeight: TqTokens.fontWeightSemibold,
-                  ),
-                ),
               ),
             ],
           ),

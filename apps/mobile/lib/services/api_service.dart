@@ -153,6 +153,15 @@ class ApiService {
     await _delete('/service-orders/$id');
   }
 
+  /// Atualiza uma ordem DRAFT (descrição, observações, itens).
+  static Future<Map<String, dynamic>> updateServiceOrder(
+    String id,
+    Map<String, dynamic> fields,
+  ) async {
+    final data = await _put('/service-orders/$id', fields);
+    return Map<String, dynamic>.from(data);
+  }
+
   /// CRUD completo de clientes.
   static Future<List<Map<String, dynamic>>> getCustomersByWorkshop(
     String workshopId,
@@ -247,18 +256,6 @@ class ApiService {
 
   static Future<void> deleteVehicle(String id) async {
     await _delete('/vehicles/$id');
-  }
-
-  /// Consulta dados de veículo pela placa (API externa via backend).
-  ///
-  /// Retorna `null` se não encontrado ou placa inválida.
-  static Future<Map<String, dynamic>?> lookupPlate(String plate) async {
-    try {
-      final data = await _get('/vehicles/lookup/$plate');
-      return Map<String, dynamic>.from(data);
-    } on ApiException {
-      return null;
-    }
   }
 
   /// Upload de mídia (foto/vídeo) para uma ordem de serviço.

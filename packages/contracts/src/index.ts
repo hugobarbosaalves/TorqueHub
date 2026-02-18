@@ -13,8 +13,6 @@ export {
   MENU_ACTION,
 } from './constants.js';
 
-export type { PlateLookupResult } from './plate-lookup.js';
-
 /** Standard API success response envelope. */
 export interface ApiResponse<T> {
   success: boolean;
@@ -76,6 +74,13 @@ export interface CreateServiceOrderRequest {
   vehicleId: string;
   description: string;
   items: Omit<ServiceOrderItemDTO, 'id' | 'totalPrice'>[];
+}
+
+/** Payload for updating an existing service order (only DRAFT). */
+export interface UpdateServiceOrderRequest {
+  description?: string;
+  observations?: string;
+  items?: Omit<ServiceOrderItemDTO, 'id' | 'totalPrice'>[];
 }
 
 /** Response after successfully creating a service order. */

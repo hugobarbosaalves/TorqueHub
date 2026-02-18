@@ -7,10 +7,7 @@ library;
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../theme/app_tokens.dart';
-import '../widgets/tq_snackbar.dart';
-import '../widgets/tq_confirm_dialog.dart';
-import '../widgets/tq_state_views.dart';
-import '../utils/constants.dart';
+import '../widgets/widgets.dart';
 import 'vehicle_form_screen.dart';
 
 /// Lista de veículos da oficina com CRUD.
@@ -134,15 +131,10 @@ class _VehiclesScreenState extends State<VehiclesScreen> {
                 TqTokens.space8,
                 0,
               ),
-              child: DropdownButtonFormField<String>(
+              child: TqDropdown<String>(
                 value: _selectedWorkshopId,
-                decoration: const InputDecoration(
-                  labelText: 'Oficina',
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: TqTokens.space6,
-                    vertical: TqTokens.space5,
-                  ),
-                ),
+                hint: 'Selecione a oficina',
+                label: 'Oficina',
                 items: _workshops
                     .map(
                       (workshop) => DropdownMenuItem(
@@ -169,12 +161,64 @@ class _VehiclesScreenState extends State<VehiclesScreen> {
                   )
                 : RefreshIndicator(
                     onRefresh: _loadVehicles,
-                    child: ListView.separated(
-                      padding: const EdgeInsets.all(TqTokens.space8),
-                      itemCount: _vehicles.length,
-                      separatorBuilder: (_, _) =>
-                          const SizedBox(height: TqTokens.space4),
-                      itemBuilder: (_, index) => _buildCard(_vehicles[index]),
+                    child: ListView(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: TqTokens.space8,
+                        vertical: TqTokens.space6,
+                      ),
+                      children: [
+                        // — Header com contagem —
+                        Padding(
+                          padding: const EdgeInsets.only(
+                            bottom: TqTokens.space6,
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: TqTokens.space5,
+                                  vertical: TqTokens.space2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: TqTokens.neutral400.withAlpha(18),
+                                  borderRadius: BorderRadius.circular(
+                                    TqTokens.radiusPill,
+                                  ),
+                                  border: Border.all(
+                                    color: TqTokens.neutral400.withAlpha(50),
+                                    width: 0.5,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      '${_vehicles.length}',
+                                      style: const TextStyle(
+                                        color: TqTokens.neutral400,
+                                        fontSize: TqTokens.fontSizeSm,
+                                        fontWeight: TqTokens.fontWeightBold,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    const Text(
+                                      'cadastrados',
+                                      style: TextStyle(
+                                        color: TqTokens.neutral400,
+                                        fontSize: TqTokens.fontSizeXs,
+                                        fontWeight: TqTokens.fontWeightMedium,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        ..._vehicles.map(
+                          (vehicle) => _buildCard(vehicle),
+                        ),
+                      ],
                     ),
                   ),
           ),
@@ -191,73 +235,70 @@ class _VehiclesScreenState extends State<VehiclesScreen> {
     final color = vehicle['color'] as String? ?? '';
     final mileage = vehicle['mileage'] as int? ?? 0;
     final customerName = vehicle['customerName'] as String? ?? '';
-    final label = '$brand $model — $plate';
+    final label = '$brand $model';
 
-    return Card(
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: TqTokens.warning.withAlpha(25),
-          child: const Icon(Icons.directions_car, color: TqTokens.warning),
-        ),
-        title: Text(
-          label,
-          style: const TextStyle(fontWeight: TqTokens.fontWeightSemibold),
-        ),
-        subtitle: Column(
+    return Padding(
+      padding: const EdgeInsets.only(bottom: TqTokens.space5),
+      child: TqCardShell(
+        accentColor: TqTokens.neutral400,
+        onTap: () => _openForm(vehicle: vehicle),
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (customerName.isNotEmpty)
-              Row(
-                children: [
-                  const Icon(
-                    Icons.person_outline,
-                    size: 14,
-                    color: TqTokens.neutral500,
-                  ),
-                  const SizedBox(width: TqTokens.space2),
-                  Expanded(
-                    child: Text(
-                      customerName,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: TqTokens.fontSizeXs,
-                        color: TqTokens.neutral600,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+            // — Row 1: Badge pill (placa) + ações —
+            Row(
+              children: [
+                TqBadgePill(
+                  label: plate,
+                  color: TqTokens.neutral400,
+                  icon: Icons.directions_car,
+                ),
+                const Spacer(),
+                TqPopupActions(
+                  onEdit: () => _openForm(vehicle: vehicle),
+                  onDelete: () =>
+                      _deleteVehicle(vehicle['id'] as String, '$label — $plate'),
+                ),
+              ],
+            ),
+            const SizedBox(height: TqTokens.space5),
+            // — Row 2: Marca/Modelo —
             Text(
-              [
-                if (year != null) 'Ano: $year',
+              label,
+              style: const TextStyle(
+                fontSize: TqTokens.fontSizeLg,
+                fontWeight: TqTokens.fontWeightSemibold,
+                color: TqTokens.neutral800,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: TqTokens.space4),
+            const Divider(height: 1, thickness: 0.5),
+            const SizedBox(height: TqTokens.space4),
+            // — Detalhes —
+            if (customerName.isNotEmpty) ...[
+              TqInfoRow(
+                icon: Icons.person_outline,
+                text: customerName,
+                fontWeight: TqTokens.fontWeightMedium,
+              ),
+              const SizedBox(height: TqTokens.space2),
+            ],
+            // — Ano + cor + km —
+            TqInfoRow(
+              icon: Icons.calendar_today_outlined,
+              text: [
+                if (year != null) '$year',
                 if (color.isNotEmpty) color,
                 if (mileage > 0) '${mileage}km',
-              ].join(' • '),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: TqTokens.fontSizeXs,
-                color: TqTokens.neutral600,
-              ),
+              ].join(' · '),
+              fontSize: TqTokens.fontSizeXs,
+              iconSize: 14,
+              textColor: TqTokens.neutral500,
             ),
           ],
         ),
-        trailing: PopupMenuButton<String>(
-          onSelected: (action) {
-            if (action == MenuAction.edit) _openForm(vehicle: vehicle);
-            if (action == MenuAction.delete)
-              _deleteVehicle(vehicle['id'] as String, label);
-          },
-          itemBuilder: (_) => [
-            const PopupMenuItem(value: MenuAction.edit, child: Text('Editar')),
-            const PopupMenuItem(
-              value: MenuAction.delete,
-              child: Text('Excluir', style: TextStyle(color: TqTokens.danger)),
-            ),
-          ],
-        ),
-        onTap: () => _openForm(vehicle: vehicle),
       ),
     );
   }

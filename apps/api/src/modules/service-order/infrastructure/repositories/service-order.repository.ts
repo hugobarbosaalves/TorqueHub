@@ -1,5 +1,5 @@
 import type { PrismaClient } from '@prisma/client';
-import type { CreateServiceOrderRequest } from '@torquehub/contracts';
+import type { CreateServiceOrderRequest, UpdateServiceOrderRequest } from '@torquehub/contracts';
 import { ORDER_STATUS } from '@torquehub/contracts';
 
 /** Gera um token público alfanumérico de 12 caracteres. */
@@ -106,6 +106,35 @@ export class ServiceOrderRepository {
   async findById(id: string): Promise<ServiceOrderWithItems | null> {
     return this.db.serviceOrder.findUnique({
       where: { id },
+      include: { items: true, customer: true, vehicle: true },
+    });
+  }
+
+  /** Atualiza descrição, observações e/ou itens de uma ordem existente. */
+  async update(id: string, input: UpdateServiceOrderRequest): Promise<ServiceOrderWithItems> {
+    const data: Record<string, unknown> = {};
+    if (input.description !== undefined) data.description = input.description;
+    if (input.observations !== undefined) data.observations = input.observations;
+
+    if (input.items) {
+      data.totalAmount = input.items.reduce(
+        (sum, item) => sum + item.quantity * item.unitPrice,
+        0,
+      );
+
+      await this.db.serviceOrderItem.deleteMany({ where: { serviceOrderId: id } });
+      data.items = {
+        create: input.items.map((item) => ({
+          description: item.description,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+        })),
+      };
+    }
+
+    return this.db.serviceOrder.update({
+      where: { id },
+      data: data as never,
       include: { items: true, customer: true, vehicle: true },
     });
   }

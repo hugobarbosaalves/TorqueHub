@@ -7,13 +7,29 @@ library;
 /// Formats an amount in centavos to BRL currency string.
 ///
 /// Accepts `int` or parsable `String`. Returns `R$ 0,00` on failure.
+/// Includes thousand separators for readability.
 /// ```dart
-/// formatCurrency(15000); // 'R$ 150,00'
+/// formatCurrency(15000);    // 'R$ 150,00'
+/// formatCurrency(5299900);  // 'R$ 52.999,00'
 /// ```
 String formatCurrency(dynamic cents) {
-  final value =
-      (cents is int ? cents : int.tryParse(cents.toString()) ?? 0) / 100;
-  return 'R\$ ${value.toStringAsFixed(2).replaceAll('.', ',')}';
+  final raw = cents is int ? cents : int.tryParse(cents.toString()) ?? 0;
+  final reais = raw ~/ 100;
+  final centavos = (raw % 100).abs();
+  final reaisStr = _addThousandSeparators(reais.toString());
+  final centavosStr = centavos.toString().padLeft(2, '0');
+  return 'R\$ $reaisStr,$centavosStr';
+}
+
+/// Insere pontos como separadores de milhar.
+String _addThousandSeparators(String number) {
+  final reversed = number.split('').reversed.toList();
+  final buffer = StringBuffer();
+  for (var index = 0; index < reversed.length; index++) {
+    if (index > 0 && index % 3 == 0) buffer.write('.');
+    buffer.write(reversed[index]);
+  }
+  return buffer.toString().split('').reversed.join();
 }
 
 /// Formats an ISO 8601 date string to `dd/MM/yyyy HH:mm`.

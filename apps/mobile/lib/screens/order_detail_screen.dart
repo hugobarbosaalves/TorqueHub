@@ -12,11 +12,13 @@ import '../services/app_config.dart';
 import '../theme/status_config.dart';
 import '../theme/app_tokens.dart';
 import '../utils/formatters.dart';
+import '../widgets/tq_button.dart';
 import '../widgets/tq_snackbar.dart';
 import '../widgets/tq_confirm_dialog.dart';
 import '../widgets/tq_state_views.dart';
 import '../utils/constants.dart';
 import 'media_section_widget.dart';
+import 'create_order_screen.dart';
 
 const _statusFlow = OrderStatus.flow;
 
@@ -176,6 +178,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         _statusFlow.indexOf(status) < _statusFlow.length - 1;
     final canCancel =
         status != OrderStatus.cancelled && status != OrderStatus.completed;
+    final canEdit = status == OrderStatus.draft;
 
     return RefreshIndicator(
       onRefresh: _loadOrder,
@@ -204,7 +207,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           const SizedBox(height: TqTokens.space6),
           _buildTotalRow(order),
           const SizedBox(height: TqTokens.space14),
-          _buildActionButtons(status, canAdvance, canCancel),
+          _buildActionButtons(status, canAdvance, canCancel, canEdit),
           const SizedBox(height: TqTokens.space12),
         ],
       ),
@@ -342,21 +345,58 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     return Row(
       children: [
         Expanded(
-          child: FilledButton.icon(
-            onPressed: _shareOrderLink,
-            icon: const Icon(Icons.share, size: 18),
-            label: const Text('Enviar ao cliente'),
-            style: FilledButton.styleFrom(
-              backgroundColor: TqTokens.whatsapp,
-              padding: const EdgeInsets.symmetric(vertical: TqTokens.space6),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: _shareOrderLink,
+              borderRadius: BorderRadius.circular(TqTokens.radiusXl),
+              child: Ink(
+                decoration: BoxDecoration(
+                  color: TqTokens.whatsapp,
+                  borderRadius: BorderRadius.circular(TqTokens.radiusXl),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  vertical: TqTokens.space6,
+                  horizontal: TqTokens.space10,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.share, size: 18, color: Colors.white),
+                    const SizedBox(width: TqTokens.space4),
+                    const Text(
+                      'Enviar ao cliente',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: TqTokens.fontSizeMd,
+                        fontWeight: TqTokens.fontWeightSemibold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
         ),
-        const SizedBox(width: TqTokens.space5),
-        IconButton.outlined(
-          onPressed: _copyOrderLink,
-          icon: const Icon(Icons.copy, size: 18),
-          tooltip: 'Copiar link',
+        const SizedBox(width: TqTokens.space4),
+        Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: _copyOrderLink,
+            borderRadius: BorderRadius.circular(TqTokens.radiusXl),
+            child: Ink(
+              decoration: BoxDecoration(
+                color: TqTokens.neutral100,
+                borderRadius: BorderRadius.circular(TqTokens.radiusXl),
+              ),
+              padding: const EdgeInsets.all(TqTokens.space6),
+              child: const Icon(
+                Icons.copy,
+                size: 18,
+                color: TqTokens.neutral600,
+              ),
+            ),
+          ),
         ),
       ],
     );
@@ -458,50 +498,54 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     );
   }
 
-  Widget _buildActionButtons(String status, bool canAdvance, bool canCancel) {
+  /// Navega para a tela de edição com os dados da ordem atual.
+  void _navigateToEdit() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CreateOrderScreen(
+          existingOrder: _order,
+          onOrderCreated: _loadOrder,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionButtons(
+    String status,
+    bool canAdvance,
+    bool canCancel,
+    bool canEdit,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        if (canEdit)
+          TqButton.ghost(
+            label: 'Editar Ordem',
+            icon: Icons.edit_outlined,
+            onPressed: _navigateToEdit,
+          ),
+        if (canEdit && canAdvance) const SizedBox(height: TqTokens.space3),
         if (canAdvance)
-          FilledButton.icon(
+          TqButton.ghost(
+            label:
+                'Avançar para: ${getStatusInfo(_statusFlow[_statusFlow.indexOf(status) + 1]).label}',
+            icon: Icons.arrow_forward_rounded,
             onPressed: _advanceStatus,
-            icon: const Icon(Icons.arrow_forward),
-            label: Text(
-              'Avançar para: ${getStatusInfo(_statusFlow[_statusFlow.indexOf(status) + 1]).label}',
-            ),
-            style: FilledButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              textStyle: const TextStyle(
-                fontSize: TqTokens.fontSizeMd,
-                fontWeight: TqTokens.fontWeightSemibold,
-              ),
-            ),
           ),
-        if (canAdvance) const SizedBox(height: TqTokens.space5),
+        if (canAdvance || canEdit) const SizedBox(height: TqTokens.space3),
         if (canCancel)
-          OutlinedButton.icon(
+          TqButton.ghost(
+            label: 'Cancelar Ordem',
+            icon: Icons.cancel_outlined,
             onPressed: _cancelOrder,
-            icon: const Icon(Icons.cancel_outlined, color: TqTokens.warning),
-            label: const Text(
-              'Cancelar Ordem',
-              style: TextStyle(color: TqTokens.warning),
-            ),
-            style: OutlinedButton.styleFrom(
-              side: const BorderSide(color: TqTokens.warning),
-              padding: const EdgeInsets.symmetric(vertical: 14),
-            ),
           ),
-        if (canCancel) const SizedBox(height: TqTokens.space5),
-        TextButton.icon(
+        if (canCancel) const SizedBox(height: TqTokens.space3),
+        TqButton.danger(
+          label: 'Excluir Ordem',
+          icon: Icons.delete_outline_rounded,
           onPressed: _deleteOrder,
-          icon: Icon(
-            Icons.delete_outline,
-            color: TqTokens.danger.withAlpha(180),
-          ),
-          label: Text(
-            'Excluir Ordem',
-            style: TextStyle(color: TqTokens.danger.withAlpha(180)),
-          ),
         ),
       ],
     );

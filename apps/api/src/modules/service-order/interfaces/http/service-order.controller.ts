@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import type {
   CreateServiceOrderRequest,
+  UpdateServiceOrderRequest,
   ApiResponse,
   CreateServiceOrderResponse,
   ServiceOrderDTO,
@@ -14,17 +15,24 @@ import {
   GetServiceOrderUseCase,
 } from '../../application/use-cases/list-service-orders.use-case.js';
 import {
+  UpdateServiceOrderUseCase,
+  NotFoundError,
+  ForbiddenStatusError,
+} from '../../application/use-cases/update-service-order.use-case.js';
+import {
   createOrderSchema,
   listOrdersSchema,
   getOrderSchema,
   updateStatusSchema,
   deleteOrderSchema,
+  updateOrderSchema,
 } from './service-order.schemas.js';
 
 const repo = new ServiceOrderRepository(prisma);
 const createUseCase = new CreateServiceOrderUseCase(repo);
 const listUseCase = new ListServiceOrdersUseCase(repo);
 const getUseCase = new GetServiceOrderUseCase(repo);
+const updateUseCase = new UpdateServiceOrderUseCase(repo);
 
 /** Registers all service order HTTP routes. */
 export function serviceOrderRoutes(app: FastifyInstance): void {
@@ -93,6 +101,34 @@ export function serviceOrderRoutes(app: FastifyInstance): void {
       success: true,
       data: order,
     });
+  });
+
+  /** Atualiza uma ordem DRAFT (descrição, observações, itens). */
+  app.put<{
+    Params: { id: string };
+    Body: UpdateServiceOrderRequest;
+    Reply: ApiResponse<ServiceOrderDTO>;
+  }>('/:id', { schema: updateOrderSchema }, async (request, reply) => {
+    try {
+      const result = await updateUseCase.execute(request.params.id, request.body);
+      return await reply.send({ success: true, data: result });
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        return reply.status(404).send({
+          success: false,
+          data: undefined as never,
+          meta: { error: error.message },
+        });
+      }
+      if (error instanceof ForbiddenStatusError) {
+        return reply.status(403).send({
+          success: false,
+          data: undefined as never,
+          meta: { error: error.message },
+        });
+      }
+      throw error;
+    }
   });
 
   /** Atualiza o status de uma ordem. Valida contra a lista de status permitidos. */

@@ -7,10 +7,7 @@ library;
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../theme/app_tokens.dart';
-import '../widgets/tq_snackbar.dart';
-import '../widgets/tq_confirm_dialog.dart';
-import '../widgets/tq_state_views.dart';
-import '../utils/constants.dart';
+import '../widgets/widgets.dart';
 import 'customer_form_screen.dart';
 
 /// Lista de clientes da oficina com CRUD.
@@ -135,15 +132,10 @@ class _CustomersScreenState extends State<CustomersScreen> {
                 TqTokens.space8,
                 0,
               ),
-              child: DropdownButtonFormField<String>(
+              child: TqDropdown<String>(
                 value: _selectedWorkshopId,
-                decoration: const InputDecoration(
-                  labelText: 'Oficina',
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: TqTokens.space6,
-                    vertical: TqTokens.space5,
-                  ),
-                ),
+                hint: 'Selecione a oficina',
+                label: 'Oficina',
                 items: _workshops
                     .map(
                       (workshop) => DropdownMenuItem(
@@ -170,12 +162,64 @@ class _CustomersScreenState extends State<CustomersScreen> {
                   )
                 : RefreshIndicator(
                     onRefresh: _loadCustomers,
-                    child: ListView.separated(
-                      padding: const EdgeInsets.all(TqTokens.space8),
-                      itemCount: _customers.length,
-                      separatorBuilder: (_, _) =>
-                          const SizedBox(height: TqTokens.space4),
-                      itemBuilder: (_, index) => _buildCard(_customers[index]),
+                    child: ListView(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: TqTokens.space8,
+                        vertical: TqTokens.space6,
+                      ),
+                      children: [
+                        // — Header com contagem —
+                        Padding(
+                          padding: const EdgeInsets.only(
+                            bottom: TqTokens.space6,
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: TqTokens.space5,
+                                  vertical: TqTokens.space2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: TqTokens.neutral400.withAlpha(18),
+                                  borderRadius: BorderRadius.circular(
+                                    TqTokens.radiusPill,
+                                  ),
+                                  border: Border.all(
+                                    color: TqTokens.neutral400.withAlpha(50),
+                                    width: 0.5,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      '${_customers.length}',
+                                      style: const TextStyle(
+                                        color: TqTokens.neutral400,
+                                        fontSize: TqTokens.fontSizeSm,
+                                        fontWeight: TqTokens.fontWeightBold,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    const Text(
+                                      'cadastrados',
+                                      style: TextStyle(
+                                        color: TqTokens.neutral400,
+                                        fontSize: TqTokens.fontSizeXs,
+                                        fontWeight: TqTokens.fontWeightMedium,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        ..._customers.map(
+                          (customer) => _buildCard(customer),
+                        ),
+                      ],
                     ),
                   ),
           ),
@@ -190,46 +234,62 @@ class _CustomersScreenState extends State<CustomersScreen> {
     final phone = customer['phone'] as String? ?? '';
     final email = customer['email'] as String? ?? '';
 
-    return Card(
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: TqTokens.accent.withAlpha(25),
-          child: Text(
-            name.isNotEmpty ? name[0].toUpperCase() : '?',
-            style: const TextStyle(
-              color: TqTokens.accent,
-              fontWeight: TqTokens.fontWeightBold,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: TqTokens.space5),
+      child: TqCardShell(
+        accentColor: TqTokens.neutral400,
+        onTap: () => _openForm(customer: customer),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // — Row 1: Badge pill + ações —
+            Row(
+              children: [
+                TqBadgePill(
+                  label: 'Cliente',
+                  color: TqTokens.neutral400,
+                  icon: Icons.person,
+                ),
+                const Spacer(),
+                TqPopupActions(
+                  onEdit: () => _openForm(customer: customer),
+                  onDelete: () =>
+                      _deleteCustomer(customer['id'] as String, name),
+                ),
+              ],
             ),
-          ),
-        ),
-        title: Text(
-          name,
-          style: const TextStyle(fontWeight: TqTokens.fontWeightSemibold),
-        ),
-        subtitle: Text(
-          [doc, phone, email].where((detail) => detail.isNotEmpty).join(' • '),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            fontSize: TqTokens.fontSizeXs,
-            color: TqTokens.neutral600,
-          ),
-        ),
-        trailing: PopupMenuButton<String>(
-          onSelected: (action) {
-            if (action == MenuAction.edit) _openForm(customer: customer);
-            if (action == MenuAction.delete)
-              _deleteCustomer(customer['id'] as String, name);
-          },
-          itemBuilder: (_) => [
-            const PopupMenuItem(value: MenuAction.edit, child: Text('Editar')),
-            const PopupMenuItem(
-              value: MenuAction.delete,
-              child: Text('Excluir', style: TextStyle(color: TqTokens.danger)),
+            const SizedBox(height: TqTokens.space5),
+            // — Row 2: Nome —
+            Text(
+              name,
+              style: const TextStyle(
+                fontSize: TqTokens.fontSizeLg,
+                fontWeight: TqTokens.fontWeightSemibold,
+                color: TqTokens.neutral800,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
+            const SizedBox(height: TqTokens.space4),
+            const Divider(height: 1, thickness: 0.5),
+            const SizedBox(height: TqTokens.space4),
+            // — Detalhes —
+            if (doc.isNotEmpty) ...[
+              TqInfoRow(
+                icon: Icons.badge_outlined,
+                text: doc,
+                fontWeight: TqTokens.fontWeightMedium,
+              ),
+              const SizedBox(height: TqTokens.space2),
+            ],
+            if (phone.isNotEmpty) ...[
+              TqInfoRow(icon: Icons.phone_outlined, text: phone),
+              const SizedBox(height: TqTokens.space2),
+            ],
+            if (email.isNotEmpty)
+              TqInfoRow(icon: Icons.email_outlined, text: email),
           ],
         ),
-        onTap: () => _openForm(customer: customer),
       ),
     );
   }

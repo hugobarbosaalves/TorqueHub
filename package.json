@@ -31,8 +31,8 @@
     ],
     "ignoredBuiltDependencies": [
       "@prisma/engines",
-      "bcrypt",
-      "prisma"
+      "prisma",
+      "sharp"
     ]
   }
 }

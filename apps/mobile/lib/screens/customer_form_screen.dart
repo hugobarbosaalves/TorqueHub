@@ -5,8 +5,13 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../services/api_service.dart';
 import '../theme/app_tokens.dart';
+import '../widgets/cpf_cnpj_mask_formatter.dart';
+import '../widgets/phone_mask_formatter.dart';
+import '../widgets/tq_button.dart';
+import '../widgets/tq_text_field.dart';
 import '../widgets/tq_snackbar.dart';
 
 /// Formulário para criar ou editar um cliente.
@@ -44,10 +49,10 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
       text: widget.customer?['name'] as String? ?? '',
     );
     _docCtrl = TextEditingController(
-      text: widget.customer?['document'] as String? ?? '',
+      text: formatCpfCnpjRaw(widget.customer?['document'] as String?),
     );
     _phoneCtrl = TextEditingController(
-      text: widget.customer?['phone'] as String? ?? '',
+      text: formatPhoneRaw(widget.customer?['phone'] as String?),
     );
     _emailCtrl = TextEditingController(
       text: widget.customer?['email'] as String? ?? '',
@@ -113,65 +118,56 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              TextFormField(
+              TqTextField(
                 controller: _nameCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Nome *',
-                  prefixIcon: Icon(Icons.person),
-                ),
+                label: 'Nome *',
+                prefixIcon: Icons.person,
+                textCapitalization: TextCapitalization.words,
                 validator: (value) => value == null || value.trim().isEmpty
                     ? 'Nome obrigatório'
                     : null,
-                textCapitalization: TextCapitalization.words,
               ),
               const SizedBox(height: TqTokens.space8),
-              TextFormField(
+              TqTextField(
                 controller: _docCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'CPF / CNPJ',
-                  prefixIcon: Icon(Icons.badge),
-                ),
+                label: 'CPF / CNPJ',
+                hint: '000.000.000-00',
+                prefixIcon: Icons.badge,
                 keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  CpfCnpjMaskFormatter(),
+                ],
+                maxLength: 18,
+                validator: validateCpfCnpj,
               ),
               const SizedBox(height: TqTokens.space8),
-              TextFormField(
+              TqTextField(
                 controller: _phoneCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Telefone',
-                  prefixIcon: Icon(Icons.phone),
-                ),
+                label: 'Telefone',
+                hint: '(11) 99999-9999',
+                prefixIcon: Icons.phone,
                 keyboardType: TextInputType.phone,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  PhoneMaskFormatter(),
+                ],
+                maxLength: 15,
+                validator: validatePhone,
               ),
               const SizedBox(height: TqTokens.space8),
-              TextFormField(
+              TqTextField(
                 controller: _emailCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'E-mail',
-                  prefixIcon: Icon(Icons.email),
-                ),
+                label: 'E-mail',
+                prefixIcon: Icons.email,
                 keyboardType: TextInputType.emailAddress,
               ),
               const SizedBox(height: TqTokens.space14),
-              FilledButton.icon(
+              TqButton.ghost(
+                label: _isEditing ? 'Salvar' : 'Cadastrar',
+                icon: _isEditing ? Icons.save : Icons.person_add,
+                loading: _loading,
                 onPressed: _loading ? null : _submit,
-                icon: _loading
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: TqTokens.card,
-                        ),
-                      )
-                    : Icon(_isEditing ? Icons.save : Icons.person_add),
-                label: Text(_isEditing ? 'Salvar' : 'Cadastrar'),
-                style: FilledButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  textStyle: const TextStyle(
-                    fontSize: TqTokens.fontSizeLg,
-                    fontWeight: TqTokens.fontWeightSemibold,
-                  ),
-                ),
               ),
             ],
           ),

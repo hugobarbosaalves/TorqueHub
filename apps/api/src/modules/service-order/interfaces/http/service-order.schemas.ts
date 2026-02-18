@@ -144,3 +144,39 @@ export const deleteOrderSchema = {
     404: errorResponse,
   },
 };
+
+export const updateOrderSchema = {
+  tags: ['Service Orders'],
+  summary: 'Update a DRAFT service order (description, observations, items)',
+  params: {
+    type: 'object' as const,
+    properties: { id: { type: 'string', format: 'uuid' } },
+    required: ['id'],
+  },
+  body: {
+    type: 'object' as const,
+    properties: {
+      description: { type: 'string' },
+      observations: { type: 'string' },
+      items: {
+        type: 'array',
+        minItems: 1,
+        items: {
+          type: 'object',
+          required: ['description', 'quantity', 'unitPrice'],
+          properties: {
+            description: { type: 'string' },
+            quantity: { type: 'integer', minimum: 1 },
+            unitPrice: { type: 'integer', minimum: 0 },
+          },
+        },
+      },
+    },
+  },
+  response: {
+    200: successResponse(orderSchema),
+    400: errorResponse,
+    403: errorResponse,
+    404: errorResponse,
+  },
+};

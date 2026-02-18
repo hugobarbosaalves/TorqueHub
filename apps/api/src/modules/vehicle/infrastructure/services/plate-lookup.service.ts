@@ -51,6 +51,7 @@ const MOCK_VEHICLES: Record<string, PlateLookupResult> = {
   JKL5H90: { brand: 'Renault', model: 'Kwid', year: 2023, color: 'Branco' },
   GHI7J12: { brand: 'Ford', model: 'Ka', year: 2020, color: 'Prata' },
   DEF8K34: { brand: 'Jeep', model: 'Renegade', year: 2022, color: 'Preto' },
+  FCU3J67: { brand: 'Nissan', model: 'Versa Unique', year: 2017, color: 'Prata' },
 };
 
 /**

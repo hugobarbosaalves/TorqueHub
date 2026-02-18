@@ -63,5 +63,3 @@ export const deleteVehicleSchema = {
     404: errorResponse,
   },
 };
-
-

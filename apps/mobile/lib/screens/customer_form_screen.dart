@@ -5,8 +5,11 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../services/api_service.dart';
 import '../theme/app_tokens.dart';
+import '../widgets/cpf_cnpj_mask_formatter.dart';
+import '../widgets/phone_mask_formatter.dart';
 import '../widgets/tq_snackbar.dart';
 
 /// Formulário para criar ou editar um cliente.
@@ -44,10 +47,10 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
       text: widget.customer?['name'] as String? ?? '',
     );
     _docCtrl = TextEditingController(
-      text: widget.customer?['document'] as String? ?? '',
+      text: formatCpfCnpjRaw(widget.customer?['document'] as String?),
     );
     _phoneCtrl = TextEditingController(
-      text: widget.customer?['phone'] as String? ?? '',
+      text: formatPhoneRaw(widget.customer?['phone'] as String?),
     );
     _emailCtrl = TextEditingController(
       text: widget.customer?['email'] as String? ?? '',
@@ -129,18 +132,32 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
                 controller: _docCtrl,
                 decoration: const InputDecoration(
                   labelText: 'CPF / CNPJ',
+                  hintText: '000.000.000-00',
                   prefixIcon: Icon(Icons.badge),
                 ),
                 keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  CpfCnpjMaskFormatter(),
+                ],
+                maxLength: 18,
+                validator: validateCpfCnpj,
               ),
               const SizedBox(height: TqTokens.space8),
               TextFormField(
                 controller: _phoneCtrl,
                 decoration: const InputDecoration(
                   labelText: 'Telefone',
+                  hintText: '(11) 99999-9999',
                   prefixIcon: Icon(Icons.phone),
                 ),
                 keyboardType: TextInputType.phone,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  PhoneMaskFormatter(),
+                ],
+                maxLength: 15,
+                validator: validatePhone,
               ),
               const SizedBox(height: TqTokens.space8),
               TextFormField(

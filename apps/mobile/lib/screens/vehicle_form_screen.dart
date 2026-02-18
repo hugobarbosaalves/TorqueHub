@@ -5,8 +5,10 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../services/api_service.dart';
 import '../theme/app_tokens.dart';
+import '../widgets/mileage_mask_formatter.dart';
 import '../widgets/tq_plate_field.dart';
 import '../widgets/tq_snackbar.dart';
 
@@ -99,7 +101,9 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
           if (_colorCtrl.text.trim().isNotEmpty)
             'color': _colorCtrl.text.trim(),
           if (_mileageCtrl.text.trim().isNotEmpty)
-            'mileage': int.tryParse(_mileageCtrl.text.trim()),
+            'mileage': int.tryParse(
+              _mileageCtrl.text.trim().replaceAll('.', ''),
+            ),
         };
         // Envia customerId se foi alterado
         if (_selectedCustomerId != null &&
@@ -116,7 +120,9 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
           model: _modelCtrl.text.trim(),
           year: int.tryParse(_yearCtrl.text.trim()),
           color: _colorCtrl.text.trim(),
-          mileage: int.tryParse(_mileageCtrl.text.trim()),
+          mileage: int.tryParse(
+            _mileageCtrl.text.trim().replaceAll('.', ''),
+          ),
         );
       }
 
@@ -181,9 +187,7 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
                       isExpanded: true,
                     ),
               const SizedBox(height: TqTokens.space10),
-              TqPlateField(
-                controller: _plateCtrl,
-              ),
+              TqPlateField(controller: _plateCtrl),
               const SizedBox(height: TqTokens.space8),
               TextFormField(
                 controller: _brandCtrl,
@@ -216,6 +220,18 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
                       controller: _yearCtrl,
                       decoration: const InputDecoration(labelText: 'Ano'),
                       keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(4),
+                      ],
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) return null;
+                        final year = int.tryParse(value.trim());
+                        if (year == null || year < 1900 || year > 2030) {
+                          return 'Ano inválido';
+                        }
+                        return null;
+                      },
                     ),
                   ),
                   const SizedBox(width: TqTokens.space6),
@@ -233,9 +249,14 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
                 controller: _mileageCtrl,
                 decoration: const InputDecoration(
                   labelText: 'Quilometragem (km)',
+                  hintText: '150.000',
                   prefixIcon: Icon(Icons.speed),
                 ),
                 keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  MileageMaskFormatter(),
+                ],
               ),
               const SizedBox(height: TqTokens.space14),
               FilledButton.icon(

@@ -13,8 +13,6 @@ export {
   MENU_ACTION,
 } from './constants.js';
 
-export type { PlateLookupResult } from './plate-lookup.js';
-
 /** Standard API success response envelope. */
 export interface ApiResponse<T> {
   success: boolean;

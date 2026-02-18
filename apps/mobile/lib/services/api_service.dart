@@ -249,18 +249,6 @@ class ApiService {
     await _delete('/vehicles/$id');
   }
 
-  /// Consulta dados de veículo pela placa (API externa via backend).
-  ///
-  /// Retorna `null` se não encontrado ou placa inválida.
-  static Future<Map<String, dynamic>?> lookupPlate(String plate) async {
-    try {
-      final data = await _get('/vehicles/lookup/$plate');
-      return Map<String, dynamic>.from(data);
-    } on ApiException {
-      return null;
-    }
-  }
-
   /// Upload de mídia (foto/vídeo) para uma ordem de serviço.
   static Future<Map<String, dynamic>> uploadMedia(
     String serviceOrderId,

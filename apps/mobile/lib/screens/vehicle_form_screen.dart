@@ -120,9 +120,7 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
           model: _modelCtrl.text.trim(),
           year: int.tryParse(_yearCtrl.text.trim()),
           color: _colorCtrl.text.trim(),
-          mileage: int.tryParse(
-            _mileageCtrl.text.trim().replaceAll('.', ''),
-          ),
+          mileage: int.tryParse(_mileageCtrl.text.trim().replaceAll('.', '')),
         );
       }
 

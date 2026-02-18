@@ -45,8 +45,9 @@ class PhoneMaskFormatter extends TextInputFormatter {
     final digits = newValue.text.replaceAll(RegExp(r'\D'), '');
     if (digits.isEmpty) return newValue.copyWith(text: '');
 
-    final trimmed =
-        digits.length > _mobileDigits ? digits.substring(0, _mobileDigits) : digits;
+    final trimmed = digits.length > _mobileDigits
+        ? digits.substring(0, _mobileDigits)
+        : digits;
 
     final formatted = _format(trimmed);
 

@@ -22,7 +22,9 @@ String formatCpfCnpjRaw(String? raw) {
   final digits = raw.replaceAll(RegExp(r'\D'), '');
   if (digits.isEmpty) return raw;
   if (digits.length <= _cpfDigits) return _formatCpf(digits);
-  return _formatCnpj(digits.length > _cnpjDigits ? digits.substring(0, _cnpjDigits) : digits);
+  return _formatCnpj(
+    digits.length > _cnpjDigits ? digits.substring(0, _cnpjDigits) : digits,
+  );
 }
 
 /// Aplica máscara de CPF ou CNPJ no campo de texto.
@@ -35,11 +37,13 @@ class CpfCnpjMaskFormatter extends TextInputFormatter {
     final digits = newValue.text.replaceAll(RegExp(r'\D'), '');
     if (digits.isEmpty) return newValue.copyWith(text: '');
 
-    final trimmed =
-        digits.length > _cnpjDigits ? digits.substring(0, _cnpjDigits) : digits;
+    final trimmed = digits.length > _cnpjDigits
+        ? digits.substring(0, _cnpjDigits)
+        : digits;
 
-    final formatted =
-        trimmed.length <= _cpfDigits ? _formatCpf(trimmed) : _formatCnpj(trimmed);
+    final formatted = trimmed.length <= _cpfDigits
+        ? _formatCpf(trimmed)
+        : _formatCnpj(trimmed);
 
     return TextEditingValue(
       text: formatted,

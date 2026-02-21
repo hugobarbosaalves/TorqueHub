@@ -34,12 +34,12 @@ export function LoginPage(): ReactNode {
       const user = await login(email, password);
       const redirect = ROLE_REDIRECT[user.role] ?? '/';
       if (user.mustChangePassword) {
-        navigate(`${redirect}/settings`, {
+        void navigate(`${redirect}/settings`, {
           replace: true,
           state: { forcePasswordChange: true },
         });
       } else {
-        navigate(redirect, { replace: true });
+        void navigate(redirect, { replace: true });
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao fazer login');

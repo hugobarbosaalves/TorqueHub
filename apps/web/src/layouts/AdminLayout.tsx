@@ -34,7 +34,7 @@ export function AdminLayout(): ReactNode {
   /** Handles logout click. */
   function handleLogout(): void {
     logout();
-    navigate('/login', { replace: true });
+    void navigate('/login', { replace: true });
   }
 
   return (

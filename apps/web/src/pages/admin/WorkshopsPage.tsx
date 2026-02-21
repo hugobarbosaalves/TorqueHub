@@ -176,7 +176,7 @@ export function WorkshopsPage(): ReactNode {
                   key={workshop.id}
                   className="table-row-clickable"
                   onClick={() => {
-                    navigate(`/admin/workshops/${workshop.id}`);
+                    void navigate(`/admin/workshops/${workshop.id}`);
                   }}
                 >
                   <td className="td-bold">{workshop.name}</td>

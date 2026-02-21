@@ -11,6 +11,7 @@ import { randomUUID } from 'node:crypto';
 import type { FastifyInstance } from 'fastify';
 import type { ApiResponse, MediaDTO, UploadMediaResponse } from '@torquehub/contracts';
 import { prisma } from '../../../../shared/infrastructure/database/prisma.js';
+import { requireRole } from '../../../../shared/infrastructure/auth/role-guard.js';
 import {
   isR2Configured,
   uploadToR2,
@@ -58,7 +59,10 @@ export function mediaRoutes(app: FastifyInstance): void {
 
   app.post<{ Params: { id: string }; Reply: ApiResponse<UploadMediaResponse> }>(
     '/:id/media',
-    { schema: uploadMediaSchema },
+    {
+      schema: uploadMediaSchema,
+      onRequest: [requireRole('WORKSHOP_OWNER', 'MECHANIC', 'PLATFORM_ADMIN')],
+    },
     async (request, reply) => {
       const { id } = request.params;
 
@@ -131,7 +135,10 @@ export function mediaRoutes(app: FastifyInstance): void {
 
   app.get<{ Params: { id: string }; Reply: ApiResponse<MediaDTO[]> }>(
     '/:id/media',
-    { schema: listMediaSchema },
+    {
+      schema: listMediaSchema,
+      onRequest: [requireRole('WORKSHOP_OWNER', 'MECHANIC', 'PLATFORM_ADMIN')],
+    },
     async (request, reply) => {
       const { id } = request.params;
 
@@ -151,7 +158,7 @@ export function mediaRoutes(app: FastifyInstance): void {
 
   app.delete<{ Params: { id: string; mediaId: string }; Reply: ApiResponse<{ deleted: boolean }> }>(
     '/:id/media/:mediaId',
-    { schema: deleteMediaSchema },
+    { schema: deleteMediaSchema, onRequest: [requireRole('WORKSHOP_OWNER', 'PLATFORM_ADMIN')] },
     async (request, reply) => {
       const { mediaId } = request.params;
 

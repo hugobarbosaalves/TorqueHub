@@ -1,7 +1,8 @@
 /// Vehicle form screen — create or edit a vehicle record.
 ///
-/// Receives `workshopId`, optional `customerId`, and optional `vehicle`
-/// map for editing. On submit, calls the appropriate API method.
+/// Receives optional `vehicle` map for editing.
+/// On submit, calls the appropriate API method.
+/// workshopId is injected by the backend via JWT (multi-tenancy).
 library;
 
 import 'package:flutter/material.dart';
@@ -17,13 +18,10 @@ import '../widgets/tq_snackbar.dart';
 
 /// Formulário para criar ou editar um veículo.
 class VehicleFormScreen extends StatefulWidget {
-  /// ID da oficina.
-  final String workshopId;
-
   /// Dados do veículo para edição (null = criar novo).
   final Map<String, dynamic>? vehicle;
 
-  const VehicleFormScreen({super.key, required this.workshopId, this.vehicle});
+  const VehicleFormScreen({super.key, this.vehicle});
 
   @override
   State<VehicleFormScreen> createState() => _VehicleFormScreenState();
@@ -72,7 +70,7 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
 
   Future<void> _loadCustomers() async {
     try {
-      final data = await ApiService.getCustomers(widget.workshopId);
+      final data = await ApiService.listCustomers();
       if (!mounted) return;
       setState(() {
         _customers = data;
@@ -116,7 +114,6 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
         await ApiService.updateVehicle(widget.vehicle!['id'] as String, fields);
       } else {
         await ApiService.createVehicle(
-          workshopId: widget.workshopId,
           customerId: _selectedCustomerId!,
           plate: _plateCtrl.text.trim(),
           brand: _brandCtrl.text.trim(),

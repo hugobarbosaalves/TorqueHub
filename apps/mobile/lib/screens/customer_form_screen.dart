@@ -1,7 +1,8 @@
 /// Customer form screen — create or edit a customer record.
 ///
-/// Receives optional `workshopId` and `customer` map for editing.
+/// Receives optional `customer` map for editing.
 /// On submit, calls the appropriate API method (create or update).
+/// workshopId is injected by the backend via JWT (multi-tenancy).
 library;
 
 import 'package:flutter/material.dart';
@@ -16,17 +17,10 @@ import '../widgets/tq_snackbar.dart';
 
 /// Formulário para criar ou editar um cliente.
 class CustomerFormScreen extends StatefulWidget {
-  /// ID da oficina à qual o cliente será vinculado.
-  final String workshopId;
-
   /// Dados do cliente para edição (null = criar novo).
   final Map<String, dynamic>? customer;
 
-  const CustomerFormScreen({
-    super.key,
-    required this.workshopId,
-    this.customer,
-  });
+  const CustomerFormScreen({super.key, this.customer});
 
   @override
   State<CustomerFormScreen> createState() => _CustomerFormScreenState();
@@ -82,7 +76,6 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
         });
       } else {
         await ApiService.createCustomer(
-          workshopId: widget.workshopId,
           name: _nameCtrl.text.trim(),
           document: _docCtrl.text.trim(),
           phone: _phoneCtrl.text.trim(),

@@ -2,6 +2,8 @@
 ///
 /// Uses the singleton pattern via static methods.
 /// Base URL is configured via [AppConfig.apiBaseUrl].
+/// Multi-tenancy: workshopId is injected by the backend via JWT,
+/// so tenant-scoped calls do NOT send workshopId in the body.
 library;
 
 import 'dart:convert';
@@ -84,59 +86,44 @@ class ApiService {
     }
   }
 
+  // ── Health ──────────────────────────────────────────────
+
   /// Verifica a saúde da API.
   static Future<Map<String, dynamic>> health() async {
     final res = await http.get(Uri.parse('$baseUrl/health'));
     return jsonDecode(res.body) as Map<String, dynamic>;
   }
 
-  /// Lista todas as oficinas cadastradas.
+  // ── Lookup (PLATFORM_ADMIN) ─────────────────────────────
+
+  /// Lista todas as oficinas. Requer role PLATFORM_ADMIN.
   static Future<List<Map<String, dynamic>>> getWorkshops() async {
     final data = await _get('/workshops');
     return List<Map<String, dynamic>>.from(data);
   }
 
-  /// Lista os clientes de uma oficina.
-  static Future<List<Map<String, dynamic>>> getCustomers(
-    String workshopId,
-  ) async {
-    final data = await _get('/workshops/$workshopId/customers');
+  // ── Service Orders (tenant-scoped via JWT) ──────────────
+
+  /// Lista ordens de serviço da oficina do usuário logado.
+  static Future<List<Map<String, dynamic>>> listServiceOrders() async {
+    final data = await _get('/service-orders');
     return List<Map<String, dynamic>>.from(data);
   }
 
-  /// Lista os veículos de uma oficina, opcionalmente filtrando por cliente.
-  static Future<List<Map<String, dynamic>>> getVehicles(
-    String workshopId, {
-    String? customerId,
-  }) async {
-    final qs = customerId != null ? '?customerId=$customerId' : '';
-    final data = await _get('/workshops/$workshopId/vehicles$qs');
-    return List<Map<String, dynamic>>.from(data);
-  }
-
-  /// Lista ordens de serviço, opcionalmente filtrando por oficina.
-  static Future<List<Map<String, dynamic>>> getServiceOrders({
-    String? workshopId,
-  }) async {
-    final qs = workshopId != null ? '?workshopId=$workshopId' : '';
-    final data = await _get('/service-orders$qs');
-    return List<Map<String, dynamic>>.from(data);
-  }
-
+  /// Busca uma ordem de serviço por ID.
   static Future<Map<String, dynamic>> getServiceOrder(String id) async {
     final data = await _get('/service-orders/$id');
     return Map<String, dynamic>.from(data);
   }
 
+  /// Cria uma ordem de serviço. workshopId é injetado pelo backend via JWT.
   static Future<Map<String, dynamic>> createServiceOrder({
-    required String workshopId,
     required String customerId,
     required String vehicleId,
     required String description,
     required List<Map<String, dynamic>> items,
   }) async {
     final data = await _post('/service-orders', {
-      'workshopId': workshopId,
       'customerId': customerId,
       'vehicleId': vehicleId,
       'description': description,
@@ -145,10 +132,12 @@ class ApiService {
     return Map<String, dynamic>.from(data);
   }
 
+  /// Atualiza o status de uma ordem de serviço.
   static Future<void> updateOrderStatus(String id, String status) async {
     await _patch('/service-orders/$id/status', {'status': status});
   }
 
+  /// Exclui uma ordem de serviço.
   static Future<void> deleteServiceOrder(String id) async {
     await _delete('/service-orders/$id');
   }
@@ -162,27 +151,28 @@ class ApiService {
     return Map<String, dynamic>.from(data);
   }
 
-  /// CRUD completo de clientes.
-  static Future<List<Map<String, dynamic>>> getCustomersByWorkshop(
-    String workshopId,
-  ) async {
-    final data = await _get('/customers?workshopId=$workshopId');
+  // ── Customers (tenant-scoped via JWT) ───────────────────
+
+  /// Lista os clientes da oficina do usuário logado.
+  static Future<List<Map<String, dynamic>>> listCustomers() async {
+    final data = await _get('/customers');
     return List<Map<String, dynamic>>.from(data);
   }
 
+  /// Busca um cliente por ID.
   static Future<Map<String, dynamic>> getCustomer(String id) async {
     final data = await _get('/customers/$id');
     return Map<String, dynamic>.from(data);
   }
 
+  /// Cria um cliente. workshopId é injetado pelo backend via JWT.
   static Future<Map<String, dynamic>> createCustomer({
-    required String workshopId,
     required String name,
     String? document,
     String? phone,
     String? email,
   }) async {
-    final body = <String, dynamic>{'workshopId': workshopId, 'name': name};
+    final body = <String, dynamic>{'name': name};
     if (document != null && document.isNotEmpty) body['document'] = document;
     if (phone != null && phone.isNotEmpty) body['phone'] = phone;
     if (email != null && email.isNotEmpty) body['email'] = email;
@@ -190,6 +180,7 @@ class ApiService {
     return Map<String, dynamic>.from(data);
   }
 
+  /// Atualiza um cliente existente.
   static Future<Map<String, dynamic>> updateCustomer(
     String id,
     Map<String, dynamic> fields,
@@ -198,32 +189,30 @@ class ApiService {
     return Map<String, dynamic>.from(data);
   }
 
+  /// Exclui um cliente por ID.
   static Future<void> deleteCustomer(String id) async {
     await _delete('/customers/$id');
   }
 
-  /// CRUD completo de veículos.
-  static Future<List<Map<String, dynamic>>> getVehiclesByWorkshop(
-    String workshopId,
-  ) async {
-    final data = await _get('/vehicles?workshopId=$workshopId');
+  // ── Vehicles (tenant-scoped via JWT) ────────────────────
+
+  /// Lista os veículos da oficina, opcionalmente filtrando por cliente.
+  static Future<List<Map<String, dynamic>>> listVehicles({
+    String? customerId,
+  }) async {
+    final qs = customerId != null ? '?customerId=$customerId' : '';
+    final data = await _get('/vehicles$qs');
     return List<Map<String, dynamic>>.from(data);
   }
 
-  static Future<List<Map<String, dynamic>>> getVehiclesByCustomer(
-    String customerId,
-  ) async {
-    final data = await _get('/vehicles?customerId=$customerId');
-    return List<Map<String, dynamic>>.from(data);
-  }
-
+  /// Busca um veículo por ID.
   static Future<Map<String, dynamic>> getVehicle(String id) async {
     final data = await _get('/vehicles/$id');
     return Map<String, dynamic>.from(data);
   }
 
+  /// Cria um veículo. workshopId é injetado pelo backend via JWT.
   static Future<Map<String, dynamic>> createVehicle({
-    required String workshopId,
     required String customerId,
     required String plate,
     required String brand,
@@ -233,7 +222,6 @@ class ApiService {
     int? mileage,
   }) async {
     final body = <String, dynamic>{
-      'workshopId': workshopId,
       'customerId': customerId,
       'plate': plate,
       'brand': brand,
@@ -246,6 +234,7 @@ class ApiService {
     return Map<String, dynamic>.from(data);
   }
 
+  /// Atualiza um veículo existente.
   static Future<Map<String, dynamic>> updateVehicle(
     String id,
     Map<String, dynamic> fields,
@@ -254,9 +243,12 @@ class ApiService {
     return Map<String, dynamic>.from(data);
   }
 
+  /// Exclui um veículo por ID.
   static Future<void> deleteVehicle(String id) async {
     await _delete('/vehicles/$id');
   }
+
+  // ── Media (tenant-scoped via JWT) ───────────────────────
 
   /// Upload de mídia (foto/vídeo) para uma ordem de serviço.
   static Future<Map<String, dynamic>> uploadMedia(
@@ -292,10 +284,57 @@ class ApiService {
   static Future<void> deleteMedia(String serviceOrderId, String mediaId) async {
     await _delete('/service-orders/$serviceOrderId/media/$mediaId');
   }
+
+  // ── Team Management (tenant-scoped via JWT) ─────────────
+
+  /// Lista os mecânicos/membros da equipe da oficina.
+  static Future<List<Map<String, dynamic>>> listTeam() async {
+    final workshopId = AuthService.workshopId;
+    if (workshopId == null) throw ApiException('Oficina não identificada');
+    final data = await _get('/admin/workshops/$workshopId/users');
+    return List<Map<String, dynamic>>.from(data);
+  }
+
+  /// Cria um novo membro da equipe (mecânico) na oficina.
+  static Future<Map<String, dynamic>> createTeamMember({
+    required String name,
+    required String email,
+    required String password,
+    String role = 'MECHANIC',
+  }) async {
+    final workshopId = AuthService.workshopId;
+    if (workshopId == null) throw ApiException('Oficina não identificada');
+    final data = await _post('/admin/workshops/$workshopId/users', {
+      'name': name,
+      'email': email,
+      'password': password,
+      'role': role,
+    });
+    return Map<String, dynamic>.from(data);
+  }
+
+  // ─── Auth ──────────────────────────────────────────
+
+  /// Altera a senha do usuário autenticado.
+  ///
+  /// Envia a senha atual e a nova senha para o endpoint `PATCH /auth/change-password`.
+  static Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    await _patch('/auth/change-password', {
+      'currentPassword': currentPassword,
+      'newPassword': newPassword,
+    });
+  }
 }
 
+/// Exceção lançada quando uma chamada à API retorna erro.
 class ApiException implements Exception {
+  /// Mensagem de erro retornada pela API.
   final String message;
+
+  /// Cria uma [ApiException] com a mensagem dada.
   ApiException(this.message);
 
   @override

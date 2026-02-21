@@ -79,8 +79,7 @@ class TqDropdown<T> extends StatelessWidget {
                 vertical: TqTokens.space5,
               ),
               filled: true,
-              fillColor:
-                  isDisabled ? TqTokens.background : TqTokens.card,
+              fillColor: isDisabled ? TqTokens.background : TqTokens.card,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(TqTokens.radiusXl),
                 borderSide: BorderSide(
@@ -105,9 +104,7 @@ class TqDropdown<T> extends StatelessWidget {
               errorText: state.errorText,
               suffixIcon: Icon(
                 Icons.keyboard_arrow_down_rounded,
-                color: isDisabled
-                    ? TqTokens.neutral400
-                    : TqTokens.neutral600,
+                color: isDisabled ? TqTokens.neutral400 : TqTokens.neutral600,
                 size: 22,
               ),
             ),

@@ -16,13 +16,20 @@ declare module '@fastify/jwt' {
   interface FastifyJWT {
     payload: {
       sub: string;
-      workshopId: string;
-      role: string;
+      workshopId: string | null;
+      role: 'PLATFORM_ADMIN' | 'WORKSHOP_OWNER' | 'MECHANIC';
     };
     user: {
       sub: string;
-      workshopId: string;
-      role: string;
+      workshopId: string | null;
+      role: 'PLATFORM_ADMIN' | 'WORKSHOP_OWNER' | 'MECHANIC';
     };
+  }
+}
+
+declare module 'fastify' {
+  interface FastifyRequest {
+    /** Tenant ID injected by tenant-context middleware. null for PLATFORM_ADMIN without ?workshopId. */
+    tenantId: string | null;
   }
 }

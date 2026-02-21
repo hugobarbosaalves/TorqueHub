@@ -72,13 +72,14 @@ Managed with **pnpm workspaces**. Flutter is isolated from pnpm.
 
 ## 4. Platform Responsibilities
 
-| Platform      | Target User  | Purpose                                         |
-| ------------- | ------------ | ----------------------------------------------- |
-| `apps/api`    | System       | REST API, business logic, data persistence      |
-| `apps/web`    | **Customer** | Public read-only portal — order lookup by token |
-| `apps/mobile` | **Mechanic** | Full CRUD: orders, customers, vehicles          |
+| Platform      | Target User                | Purpose                                       |
+| ------------- | -------------------------- | --------------------------------------------- |
+| `apps/api`    | System                     | REST API, business logic, data persistence    |
+| `apps/web`    | **Admin / Owner / Client** | Admin portal, backoffice, public quote viewer |
+| `apps/mobile` | **Owner / Mechanic**       | Orders, customers, vehicles, uploads          |
 
-> **CRITICAL**: Web = customer portal only. All mechanic features = mobile only.
+> **Web** serve 3 públicos: PLATFORM_ADMIN (admin portal), WORKSHOP_OWNER (backoffice) e cliente (viewer público).
+> **Mobile** serve WORKSHOP_OWNER e MECHANIC com navegação diferenciada por role.
 
 ---
 
@@ -125,12 +126,15 @@ Managed with **pnpm workspaces**. Flutter is isolated from pnpm.
 ```
 Workshop ──┬── Customer ──── Vehicle
            │
-           ├── User (ADMIN | MECHANIC)
+           ├── User (PLATFORM_ADMIN | WORKSHOP_OWNER | MECHANIC)
            │
            └── ServiceOrder ──── ServiceOrderItem
                     │
                     └── Media
 ```
+
+> **Multi-Tenancy:** Veja `documentation/architecture/MULTI_TENANCY_ARCHITECTURE.md`
+> para detalhes completos sobre isolamento, roles e middleware.
 
 ### 6.2 ServiceOrder Status Flow
 
@@ -141,15 +145,15 @@ DRAFT → PENDING_APPROVAL → APPROVED → IN_PROGRESS → COMPLETED
 
 ### 6.3 Database Schema (Prisma)
 
-| Model            | Key Fields                                                                           |
-| ---------------- | ------------------------------------------------------------------------------------ |
-| Workshop         | id, name, document, phone, email                                                     |
-| Customer         | id, workshopId, name, document, phone, email                                         |
-| Vehicle          | id, workshopId, customerId, plate, brand, model, year, color, mileage                |
-| ServiceOrder     | id, workshopId, customerId, vehicleId, description, status, totalAmount, publicToken |
-| ServiceOrderItem | id, serviceOrderId, description, quantity, unitPrice                                 |
-| Media            | id, serviceOrderId, type, url, caption                                               |
-| User             | id, workshopId, name, email, passwordHash, role (ADMIN/MECHANIC)                     |
+| Model            | Key Fields                                                                                |
+| ---------------- | ----------------------------------------------------------------------------------------- |
+| Workshop         | id, name, document, phone, email                                                          |
+| Customer         | id, workshopId, name, document, phone, email                                              |
+| Vehicle          | id, workshopId, customerId, plate, brand, model, year, color, mileage                     |
+| ServiceOrder     | id, workshopId, customerId, vehicleId, description, status, totalAmount, publicToken      |
+| ServiceOrderItem | id, serviceOrderId, description, quantity, unitPrice                                      |
+| Media            | id, serviceOrderId, type, url, caption                                                    |
+| User             | id, workshopId?, name, email, passwordHash, role (PLATFORM_ADMIN/WORKSHOP_OWNER/MECHANIC) |
 
 ---
 
@@ -286,7 +290,7 @@ NODE_ENV=development
 | ------------ | ------------------------------------------------------ |
 | MVP+         | Media upload, customer approval workflow, public links |
 | Auth         | JWT authentication, role-based access                  |
-| Multi-tenant | Workshop isolation, subscription plans                 |
+| Multi-tenant | ✅ Workshop isolation via workshopId (Row-Level)       |
 | Scale        | Queues, caching, CDN for media                         |
 | Analytics    | Dashboard, financial tracking, audit logs              |
 | Enterprise   | API integrations, white-label, notifications           |

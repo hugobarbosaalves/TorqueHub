@@ -21,6 +21,7 @@ function toDTO(user: UserRecord): UserDTO {
     name: user.name,
     email: user.email,
     role: user.role as UserDTO['role'],
+    mustChangePassword: user.mustChangePassword,
     createdAt: user.createdAt.toISOString(),
   };
 }
@@ -55,7 +56,7 @@ export class RegisterUseCase {
   constructor(private readonly repo: UserRepository) {}
 
   async execute(input: {
-    workshopId: string;
+    workshopId?: string;
     name: string;
     email: string;
     password: string;
@@ -68,7 +69,7 @@ export class RegisterUseCase {
 
     const passwordHash = await hash(input.password, SALT_ROUNDS);
     const user = await this.repo.create({
-      workshopId: input.workshopId,
+      workshopId: input.workshopId ?? null,
       name: input.name,
       email: input.email,
       passwordHash,
@@ -87,5 +88,35 @@ export class GetProfileUseCase {
     const user = await this.repo.findById(userId);
     if (!user) return null;
     return toDTO(user);
+  }
+}
+
+/** Use case: change the authenticated user's password. */
+export class ChangePasswordUseCase {
+  constructor(private readonly repo: UserRepository) {}
+
+  /**
+   * Validates the current password, hashes the new one, and updates it.
+   * Also clears the `mustChangePassword` flag.
+   * @returns Updated UserDTO or throws an error.
+   */
+  async execute(userId: string, currentPassword: string, newPassword: string): Promise<UserDTO> {
+    const user = await this.repo.findById(userId);
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    const isValid = await compare(currentPassword, user.passwordHash);
+    if (!isValid) {
+      throw new Error('Current password is incorrect');
+    }
+
+    if (newPassword.length < 6) {
+      throw new Error('New password must be at least 6 characters');
+    }
+
+    const newHash = await hash(newPassword, SALT_ROUNDS);
+    const updated = await this.repo.updatePassword(userId, newHash);
+    return toDTO(updated);
   }
 }

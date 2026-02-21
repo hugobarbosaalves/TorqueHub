@@ -40,9 +40,7 @@ export class UpdateServiceOrderUseCase {
       publicToken: updated.publicToken,
       customerName: updated.customer?.name ?? null,
       vehiclePlate: updated.vehicle?.plate ?? null,
-      vehicleSummary: updated.vehicle
-        ? `${updated.vehicle.brand} ${updated.vehicle.model}`
-        : null,
+      vehicleSummary: updated.vehicle ? `${updated.vehicle.brand} ${updated.vehicle.model}` : null,
       createdAt: updated.createdAt.toISOString(),
       updatedAt: updated.updatedAt.toISOString(),
     };

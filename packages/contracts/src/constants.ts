@@ -41,3 +41,10 @@ export const MENU_ACTION = {
   DELETE: 'delete',
   LOGOUT: 'logout',
 } as const;
+
+/** Papéis de usuário no sistema multi-tenant. */
+export const USER_ROLE = {
+  PLATFORM_ADMIN: 'PLATFORM_ADMIN',
+  WORKSHOP_OWNER: 'WORKSHOP_OWNER',
+  MECHANIC: 'MECHANIC',
+} as const;

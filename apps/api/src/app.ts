@@ -10,6 +10,7 @@ import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
 import type { FastifyInstance } from 'fastify';
 import authPlugin from './shared/infrastructure/auth/auth.plugin.js';
+import { registerTenantContext } from './shared/infrastructure/auth/tenant-context.js';
 import { authRoutes } from './modules/auth/interfaces/http/auth.controller.js';
 import { serviceOrderRoutes } from './modules/service-order/interfaces/http/service-order.controller.js';
 import { lookupRoutes } from './modules/lookup/interfaces/http/lookup.controller.js';
@@ -18,6 +19,7 @@ import { vehicleRoutes } from './modules/vehicle/interfaces/http/vehicle.control
 import { publicOrderRoutes } from './modules/service-order/interfaces/http/public-order.controller.js';
 import { mediaRoutes } from './modules/service-order/interfaces/http/media.controller.js';
 import { quotePdfRoutes } from './modules/service-order/interfaces/http/quote-pdf.controller.js';
+import { adminRoutes } from './modules/admin/interfaces/http/admin.controller.js';
 import { startQuoteExpiryScheduler } from './modules/service-order/application/quote-expiry.scheduler.js';
 
 const IS_PRODUCTION = process.env['NODE_ENV'] === 'production';
@@ -87,6 +89,7 @@ export async function buildApp(): Promise<FastifyInstance> {
           description: 'Endpoints públicos de acesso do cliente (sem autenticação)',
         },
         { name: 'Media', description: 'Upload e gerenciamento de fotos/vídeos' },
+        { name: 'Admin', description: 'Platform admin — gestão de oficinas e métricas' },
       ],
       components: {
         securitySchemes: {
@@ -139,6 +142,9 @@ export async function buildApp(): Promise<FastifyInstance> {
     return app.authenticate(request, reply);
   });
 
+  /** Tenant context — injects request.tenantId after JWT verification. */
+  registerTenantContext(app);
+
   await app.register(authRoutes, { prefix: '/auth' });
   await app.register(lookupRoutes, { prefix: '/workshops' });
   await app.register(serviceOrderRoutes, { prefix: '/service-orders' });
@@ -147,6 +153,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(publicOrderRoutes, { prefix: '/public/orders' });
   await app.register(quotePdfRoutes, { prefix: '/public/orders' });
   await app.register(mediaRoutes, { prefix: '/service-orders' });
+  await app.register(adminRoutes, { prefix: '/admin' });
 
   startQuoteExpiryScheduler(app.log);
 

@@ -11,6 +11,7 @@ export {
   MEDIA_TYPE,
   MEDIA_TYPE_VALUES,
   MENU_ACTION,
+  USER_ROLE,
 } from './constants.js';
 
 /** Standard API success response envelope. */
@@ -216,15 +217,23 @@ export interface QuotePdfDataDTO extends PublicOrderDetailDTO {
 // ─── Auth ──────────────────────────────────────────────────────
 
 /** Allowed user roles. */
-export type UserRole = 'ADMIN' | 'MECHANIC';
+export type UserRole = 'PLATFORM_ADMIN' | 'WORKSHOP_OWNER' | 'MECHANIC';
+
+/** Values list for validation/Swagger. */
+export const USER_ROLE_VALUES: readonly UserRole[] = [
+  'PLATFORM_ADMIN',
+  'WORKSHOP_OWNER',
+  'MECHANIC',
+] as const;
 
 /** Data transfer object for a user record (no password). */
 export interface UserDTO {
   id: string;
-  workshopId: string;
+  workshopId: string | null;
   name: string;
   email: string;
   role: UserRole;
+  mustChangePassword: boolean;
   createdAt: string;
 }
 
@@ -236,7 +245,7 @@ export interface LoginRequest {
 
 /** Payload for registering a new user. */
 export interface RegisterRequest {
-  workshopId: string;
+  workshopId?: string;
   name: string;
   email: string;
   password: string;
@@ -249,9 +258,63 @@ export interface AuthResponse {
   user: UserDTO;
 }
 
+/** Payload for changing the current user's password. */
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}
+
 /** JWT payload shape — stored inside the token. */
 export interface JwtPayload {
   sub: string;
-  workshopId: string;
+  workshopId: string | null;
   role: UserRole;
+}
+
+// ─── Admin ─────────────────────────────────────────────────────
+
+/** Data transfer object for a workshop record. */
+export interface WorkshopDTO {
+  id: string;
+  name: string;
+  document: string;
+  phone: string | null;
+  email: string | null;
+  address: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** Payload for creating a new workshop via admin. */
+export interface CreateWorkshopRequest {
+  name: string;
+  document: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+}
+
+/** Payload for updating a workshop. */
+export interface UpdateWorkshopRequest {
+  name?: string;
+  document?: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+}
+
+/** Payload for creating a user within a workshop (admin). */
+export interface CreateWorkshopUserRequest {
+  name: string;
+  email: string;
+  password: string;
+  role: 'WORKSHOP_OWNER' | 'MECHANIC';
+}
+
+/** Platform-wide metrics returned by admin dashboard. */
+export interface PlatformMetricsDTO {
+  totalWorkshops: number;
+  totalUsers: number;
+  totalServiceOrders: number;
+  totalCustomers: number;
 }

@@ -74,7 +74,7 @@ class OrdersScreenState extends State<OrdersScreen> {
       _error = null;
     });
     try {
-      final orders = await ApiService.getServiceOrders();
+      final orders = await ApiService.listServiceOrders();
       if (!mounted) return;
       setState(() {
         _orders = orders;
@@ -131,31 +131,22 @@ class OrdersScreenState extends State<OrdersScreen> {
                   ),
                   isDense: true,
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(
-                      TqTokens.radiusXl,
-                    ),
+                    borderRadius: BorderRadius.circular(TqTokens.radiusXl),
                     borderSide: const BorderSide(
                       color: Colors.white54,
                       width: 0.8,
                     ),
                   ),
                   enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(
-                      TqTokens.radiusXl,
-                    ),
+                    borderRadius: BorderRadius.circular(TqTokens.radiusXl),
                     borderSide: const BorderSide(
                       color: Colors.white54,
                       width: 0.8,
                     ),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(
-                      TqTokens.radiusXl,
-                    ),
-                    borderSide: const BorderSide(
-                      color: Colors.white,
-                      width: 1,
-                    ),
+                    borderRadius: BorderRadius.circular(TqTokens.radiusXl),
+                    borderSide: const BorderSide(color: Colors.white, width: 1),
                   ),
                 ),
               )
@@ -198,11 +189,13 @@ class OrdersScreenState extends State<OrdersScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        heroTag: 'fab_orders',
-        onPressed: _createOrder,
-        child: const Icon(Icons.add),
-      ),
+      floatingActionButton: AuthService.isOwnerOrAdmin
+          ? FloatingActionButton(
+              heroTag: 'fab_orders',
+              onPressed: _createOrder,
+              child: const Icon(Icons.add),
+            )
+          : null,
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _error != null
@@ -259,8 +252,7 @@ class OrdersScreenState extends State<OrdersScreen> {
                     ),
                     decoration: BoxDecoration(
                       color: info.color.withAlpha(18),
-                      borderRadius:
-                          BorderRadius.circular(TqTokens.radiusPill),
+                      borderRadius: BorderRadius.circular(TqTokens.radiusPill),
                       border: Border.all(
                         color: info.color.withAlpha(50),
                         width: 0.5,
@@ -319,8 +311,7 @@ class OrdersScreenState extends State<OrdersScreen> {
           await Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) =>
-                  OrderDetailScreen(orderId: order['id'] as String),
+              builder: (_) => OrderDetailScreen(orderId: order['id'] as String),
             ),
           );
           refresh();
@@ -331,11 +322,7 @@ class OrdersScreenState extends State<OrdersScreen> {
             // — Row 1: Status badge + valor —
             Row(
               children: [
-                TqBadgePill(
-                  label: info.label,
-                  color: color,
-                  icon: info.icon,
-                ),
+                TqBadgePill(label: info.label, color: color, icon: info.icon),
                 const Spacer(),
                 Text(
                   formatCurrency(order['totalAmount']),

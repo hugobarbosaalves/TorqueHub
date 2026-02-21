@@ -4,7 +4,7 @@
     {
       "label": "Web: Dev Server",
       "type": "shell",
-      "command": "pnpm --filter torquehub-web dev",
+      "command": "npx pnpm --filter torquehub-web dev",
       "isBackground": true,
       "problemMatcher": {
         "owner": "vite",

@@ -63,10 +63,25 @@ async function seed(): Promise<void> {
       name: 'Admin TorqueHub',
       email: 'admin@torquehub.com.br',
       passwordHash: hashSync('admin123', 10),
-      role: 'ADMIN',
+      role: 'WORKSHOP_OWNER',
     },
   });
   console.log(`  ✅ User: ${adminUser.name} (${adminUser.email}) — role: ${adminUser.role}`);
+
+  const platformAdmin = await prisma.user.upsert({
+    where: { email: 'hugo@torquehub.com.br' },
+    update: {},
+    create: {
+      workshopId: null,
+      name: 'Hugo — Platform Admin',
+      email: 'hugo@torquehub.com.br',
+      passwordHash: hashSync('admin123', 10),
+      role: 'PLATFORM_ADMIN',
+    },
+  });
+  console.log(
+    `  ✅ User: ${platformAdmin.name} (${platformAdmin.email}) — role: ${platformAdmin.role}`,
+  );
 
   console.log('');
   console.log('📋 Seed data IDs (use these for API testing):');
@@ -74,7 +89,9 @@ async function seed(): Promise<void> {
   console.log(`   customerId:  ${customer.id}`);
   console.log(`   vehicleId:   ${vehicle.id}`);
   console.log(`   userId:      ${adminUser.id}`);
-  console.log('   login:       admin@torquehub.com.br / admin123');
+  console.log(`   platformId:  ${platformAdmin.id}`);
+  console.log('   login owner: admin@torquehub.com.br / admin123');
+  console.log('   login admin: hugo@torquehub.com.br / admin123');
   console.log('');
   console.log('🌱 Seeding complete!');
 

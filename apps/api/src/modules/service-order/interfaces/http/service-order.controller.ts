@@ -8,6 +8,7 @@ import type {
 } from '@torquehub/contracts';
 import { ORDER_STATUS_VALUES } from '@torquehub/contracts';
 import { prisma } from '../../../../shared/infrastructure/database/prisma.js';
+import { requireRole } from '../../../../shared/infrastructure/auth/role-guard.js';
 import { ServiceOrderRepository } from '../../infrastructure/repositories/service-order.repository.js';
 import { CreateServiceOrderUseCase } from '../../application/use-cases/create-service-order.use-case.js';
 import {
@@ -40,146 +41,185 @@ export function serviceOrderRoutes(app: FastifyInstance): void {
   app.post<{
     Body: CreateServiceOrderRequest;
     Reply: ApiResponse<CreateServiceOrderResponse>;
-  }>('/', { schema: createOrderSchema }, async (request, reply) => {
-    const body = request.body;
+  }>(
+    '/',
+    { schema: createOrderSchema, onRequest: [requireRole('WORKSHOP_OWNER', 'PLATFORM_ADMIN')] },
+    async (request, reply) => {
+      const tenantId = request.tenantId;
+      if (!tenantId) {
+        return reply.status(400).send({
+          success: false,
+          data: undefined as never,
+          meta: { error: 'workshopId is required' },
+        });
+      }
 
-    if (!body.workshopId || !body.customerId || !body.vehicleId || !body.description) {
-      return reply.status(400).send({
-        success: false,
-        data: undefined as never,
-        meta: { error: 'Missing required fields: workshopId, customerId, vehicleId, description' },
+      const body = request.body;
+
+      if (!body.customerId || !body.vehicleId || !body.description) {
+        return reply.status(400).send({
+          success: false,
+          data: undefined as never,
+          meta: { error: 'Missing required fields: customerId, vehicleId, description' },
+        });
+      }
+
+      if (body.items.length === 0) {
+        return reply.status(400).send({
+          success: false,
+          data: undefined as never,
+          meta: { error: 'At least one item is required' },
+        });
+      }
+
+      const result = await createUseCase.execute({ ...body, workshopId: tenantId });
+
+      return reply.status(201).send({
+        success: true,
+        data: result,
       });
-    }
+    },
+  );
 
-    if (body.items.length === 0) {
-      return reply.status(400).send({
-        success: false,
-        data: undefined as never,
-        meta: { error: 'At least one item is required' },
-      });
-    }
-
-    const result = await createUseCase.execute(body);
-
-    return reply.status(201).send({
-      success: true,
-      data: result,
-    });
-  });
-
-  /** Lista ordens de serviço, com filtro opcional por oficina. */
+  /** Lista ordens de serviço da oficina do usuário autenticado. */
   app.get<{
     Querystring: { workshopId?: string };
     Reply: ApiResponse<ServiceOrderDTO[]>;
-  }>('/', { schema: listOrdersSchema }, async (request, reply) => {
-    const { workshopId } = request.query;
-    const orders = await listUseCase.execute(workshopId);
+  }>(
+    '/',
+    {
+      schema: listOrdersSchema,
+      onRequest: [requireRole('WORKSHOP_OWNER', 'MECHANIC', 'PLATFORM_ADMIN')],
+    },
+    async (request, reply) => {
+      const tenantId = request.tenantId;
+      const orders = await listUseCase.execute(tenantId ?? undefined);
 
-    return reply.send({
-      success: true,
-      data: orders,
-      meta: { total: orders.length },
-    });
-  });
+      return reply.send({
+        success: true,
+        data: orders,
+        meta: { total: orders.length },
+      });
+    },
+  );
 
   /** Busca uma ordem de serviço pelo ID, incluindo itens. */
   app.get<{
     Params: { id: string };
     Reply: ApiResponse<ServiceOrderDTO>;
-  }>('/:id', { schema: getOrderSchema }, async (request, reply) => {
-    const order = await getUseCase.execute(request.params.id);
+  }>(
+    '/:id',
+    {
+      schema: getOrderSchema,
+      onRequest: [requireRole('WORKSHOP_OWNER', 'MECHANIC', 'PLATFORM_ADMIN')],
+    },
+    async (request, reply) => {
+      const order = await getUseCase.execute(request.params.id);
 
-    if (!order) {
-      return reply.status(404).send({
-        success: false,
-        data: undefined as never,
-        meta: { error: 'Service order not found' },
+      if (!order) {
+        return reply.status(404).send({
+          success: false,
+          data: undefined as never,
+          meta: { error: 'Service order not found' },
+        });
+      }
+
+      return reply.send({
+        success: true,
+        data: order,
       });
-    }
-
-    return reply.send({
-      success: true,
-      data: order,
-    });
-  });
+    },
+  );
 
   /** Atualiza uma ordem DRAFT (descrição, observações, itens). */
   app.put<{
     Params: { id: string };
     Body: UpdateServiceOrderRequest;
     Reply: ApiResponse<ServiceOrderDTO>;
-  }>('/:id', { schema: updateOrderSchema }, async (request, reply) => {
-    try {
-      const result = await updateUseCase.execute(request.params.id, request.body);
-      return await reply.send({ success: true, data: result });
-    } catch (error) {
-      if (error instanceof NotFoundError) {
-        return reply.status(404).send({
-          success: false,
-          data: undefined as never,
-          meta: { error: error.message },
-        });
+  }>(
+    '/:id',
+    { schema: updateOrderSchema, onRequest: [requireRole('WORKSHOP_OWNER', 'PLATFORM_ADMIN')] },
+    async (request, reply) => {
+      try {
+        const result = await updateUseCase.execute(request.params.id, request.body);
+        return await reply.send({ success: true, data: result });
+      } catch (error) {
+        if (error instanceof NotFoundError) {
+          return reply.status(404).send({
+            success: false,
+            data: undefined as never,
+            meta: { error: error.message },
+          });
+        }
+        if (error instanceof ForbiddenStatusError) {
+          return reply.status(403).send({
+            success: false,
+            data: undefined as never,
+            meta: { error: error.message },
+          });
+        }
+        throw error;
       }
-      if (error instanceof ForbiddenStatusError) {
-        return reply.status(403).send({
-          success: false,
-          data: undefined as never,
-          meta: { error: error.message },
-        });
-      }
-      throw error;
-    }
-  });
+    },
+  );
 
   /** Atualiza o status de uma ordem. Valida contra a lista de status permitidos. */
   app.patch<{
     Params: { id: string };
     Body: { status: string };
     Reply: ApiResponse<{ id: string; status: string }>;
-  }>('/:id/status', { schema: updateStatusSchema }, async (request, reply) => {
-    const { id } = request.params;
-    const { status } = request.body;
+  }>(
+    '/:id/status',
+    { schema: updateStatusSchema, onRequest: [requireRole('WORKSHOP_OWNER', 'PLATFORM_ADMIN')] },
+    async (request, reply) => {
+      const { id } = request.params;
+      const { status } = request.body;
 
-    if (!ORDER_STATUS_VALUES.includes(status as (typeof ORDER_STATUS_VALUES)[number])) {
-      return reply.status(400).send({
-        success: false,
-        data: undefined as never,
-        meta: { error: `Invalid status. Must be one of: ${ORDER_STATUS_VALUES.join(', ')}` },
-      });
-    }
+      if (!ORDER_STATUS_VALUES.includes(status as (typeof ORDER_STATUS_VALUES)[number])) {
+        return reply.status(400).send({
+          success: false,
+          data: undefined as never,
+          meta: { error: `Invalid status. Must be one of: ${ORDER_STATUS_VALUES.join(', ')}` },
+        });
+      }
 
-    try {
-      const updated = await repo.updateStatus(id, status);
-      return await reply.send({
-        success: true,
-        data: { id: updated.id, status: updated.status },
-      });
-    } catch {
-      return reply.status(404).send({
-        success: false,
-        data: undefined as never,
-        meta: { error: 'Service order not found' },
-      });
-    }
-  });
+      try {
+        const updated = await repo.updateStatus(id, status);
+        return await reply.send({
+          success: true,
+          data: { id: updated.id, status: updated.status },
+        });
+      } catch {
+        return reply.status(404).send({
+          success: false,
+          data: undefined as never,
+          meta: { error: 'Service order not found' },
+        });
+      }
+    },
+  );
 
   /** Remove uma ordem de serviço pelo ID. Retorna 404 se não encontrada. */
   app.delete<{
     Params: { id: string };
     Reply: ApiResponse<{ deleted: boolean }>;
-  }>('/:id', { schema: deleteOrderSchema }, async (request, reply) => {
-    try {
-      await repo.delete(request.params.id);
-      return await reply.send({
-        success: true,
-        data: { deleted: true },
-      });
-    } catch {
-      return reply.status(404).send({
-        success: false,
-        data: undefined as never,
-        meta: { error: 'Service order not found' },
-      });
-    }
-  });
+  }>(
+    '/:id',
+    { schema: deleteOrderSchema, onRequest: [requireRole('WORKSHOP_OWNER', 'PLATFORM_ADMIN')] },
+    async (request, reply) => {
+      try {
+        await repo.delete(request.params.id);
+        return await reply.send({
+          success: true,
+          data: { deleted: true },
+        });
+      } catch {
+        return reply.status(404).send({
+          success: false,
+          data: undefined as never,
+          meta: { error: 'Service order not found' },
+        });
+      }
+    },
+  );
 }

@@ -117,10 +117,7 @@ export class ServiceOrderRepository {
     if (input.observations !== undefined) data.observations = input.observations;
 
     if (input.items) {
-      data.totalAmount = input.items.reduce(
-        (sum, item) => sum + item.quantity * item.unitPrice,
-        0,
-      );
+      data.totalAmount = input.items.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0);
 
       await this.db.serviceOrderItem.deleteMany({ where: { serviceOrderId: id } });
       data.items = {

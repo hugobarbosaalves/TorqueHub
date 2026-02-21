@@ -2,6 +2,7 @@
 ///
 /// Persiste o token via SharedPreferences.
 /// Oferece métodos para login, logout e verificação do estado.
+/// Decodifica role e workshopId do JWT payload para navegação multi-tenant.
 library;
 
 import 'dart:convert';
@@ -9,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'api_service.dart';
 import 'app_config.dart';
+import '../utils/constants.dart';
 
 /// Gerencia autenticação e persistência do token JWT.
 class AuthService {
@@ -26,6 +28,26 @@ class AuthService {
 
   /// Verifica se existe um token salvo.
   static bool get isAuthenticated => _token != null;
+
+  /// Role do usuário extraído do JWT payload.
+  static String get role => _user?['role'] as String? ?? UserRole.mechanic;
+
+  /// ID da oficina extraído do JWT payload (null para PLATFORM_ADMIN).
+  static String? get workshopId => _user?['workshopId'] as String?;
+
+  /// Verifica se o usuário é dono da oficina ou admin da plataforma.
+  static bool get isOwnerOrAdmin =>
+      role == UserRole.workshopOwner || role == UserRole.platformAdmin;
+
+  /// Verifica se o usuário é mecânico.
+  static bool get isMechanic => role == UserRole.mechanic;
+
+  /// Verifica se o usuário é admin da plataforma.
+  static bool get isPlatformAdmin => role == UserRole.platformAdmin;
+
+  /// Indica se o usuário precisa trocar a senha no primeiro acesso.
+  static bool get mustChangePassword =>
+      _user?['mustChangePassword'] as bool? ?? false;
 
   /// Inicializa o serviço, restaurando token salvo (se existir).
   static Future<void> init() async {

@@ -45,9 +45,9 @@ export const createOrderSchema = {
   summary: 'Create a new service order',
   body: {
     type: 'object' as const,
-    required: ['workshopId', 'customerId', 'vehicleId', 'description', 'items'],
+    required: ['customerId', 'vehicleId', 'description', 'items'],
     properties: {
-      workshopId: { type: 'string', format: 'uuid' },
+      workshopId: { type: 'string', format: 'uuid', description: 'Injected from JWT — optional in body' },
       customerId: { type: 'string', format: 'uuid' },
       vehicleId: { type: 'string', format: 'uuid' },
       description: { type: 'string' },

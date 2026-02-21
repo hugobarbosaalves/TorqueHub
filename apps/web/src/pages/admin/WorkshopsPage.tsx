@@ -83,10 +83,10 @@ export function WorkshopsPage(): ReactNode {
       </div>
 
       {showForm && (
-        <div className="card" style={{ marginBottom: 'var(--space-10)' }}>
+        <div className="card card-gap-bottom">
           <div className="card-body">
             <h2 className="section-title">Nova Oficina</h2>
-            {formError && <div className="login-error">{formError}</div>}
+            {formError && <div className="alert alert-error">{formError}</div>}
             <form
               className="form-grid"
               onSubmit={(event) => {

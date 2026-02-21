@@ -71,17 +71,12 @@ export function SettingsPage(): ReactNode {
         </div>
       </div>
 
-      <div className="card" style={{ marginTop: 'var(--space-6)' }}>
+      <div className="card">
         <div className="card-body">
           <h2 className="section-title">Alterar Senha</h2>
 
           {message && (
-            <div
-              className={`alert alert-${message.type}`}
-              style={{ marginBottom: 'var(--space-4)' }}
-            >
-              {message.text}
-            </div>
+            <div className={`alert alert-${message.type}`}>{message.text}</div>
           )}
 
           <form onSubmit={handleSubmit} className="form-stack">

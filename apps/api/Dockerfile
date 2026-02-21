@@ -14,7 +14,7 @@ RUN corepack enable && corepack prepare pnpm@10.29.3 --activate
 WORKDIR /app
 
 # Copy workspace config first (for Docker layer caching)
-COPY pnpm-workspace.yaml pnpm-lock.yaml package.json tsconfig.base.json ./
+COPY pnpm-workspace.yaml pnpm-lock.yaml package.json tsconfig.base.json .npmrc ./
 COPY apps/api/package.json apps/api/
 COPY packages/contracts/package.json packages/contracts/
 COPY packages/design-tokens/package.json packages/design-tokens/
@@ -39,7 +39,7 @@ COPY --from=deps /app/packages/entities/node_modules ./packages/entities/node_mo
 COPY --from=deps /app/packages/utils/node_modules ./packages/utils/node_modules
 
 # Copy workspace config
-COPY pnpm-workspace.yaml pnpm-lock.yaml package.json tsconfig.base.json ./
+COPY pnpm-workspace.yaml pnpm-lock.yaml package.json tsconfig.base.json .npmrc ./
 
 # Copy source code
 COPY packages/ packages/
@@ -62,5 +62,5 @@ EXPOSE 3333
 
 WORKDIR /app/apps/api
 
-# Run compiled JS in production (faster startup, lower memory)
-CMD ["node", "--import", "tsx", "src/server.ts"]
+# Run migrations then start server
+CMD sh -c "npx prisma migrate deploy && node --import tsx src/server.ts"

@@ -149,9 +149,9 @@ export function WorkshopDetailPage(): ReactNode {
       </div>
 
       {editing ? (
-        <div className="card" style={{ marginBottom: 'var(--space-10)' }}>
+        <div className="card card-gap-bottom">
           <div className="card-body">
-            {editError && <div className="login-error">{editError}</div>}
+            {editError && <div className="alert alert-error">{editError}</div>}
             <form
               className="form-grid"
               onSubmit={(event) => {
@@ -218,7 +218,7 @@ export function WorkshopDetailPage(): ReactNode {
           </div>
         </div>
       ) : (
-        <div className="card" style={{ marginBottom: 'var(--space-10)' }}>
+        <div className="card card-gap-bottom">
           <div className="card-body">
             <div className="detail-grid">
               <div className="detail-item">
@@ -262,9 +262,9 @@ export function WorkshopDetailPage(): ReactNode {
       </div>
 
       {showUserForm && (
-        <div className="card" style={{ marginBottom: 'var(--space-10)' }}>
+        <div className="card card-gap-bottom">
           <div className="card-body">
-            {userFormError && <div className="login-error">{userFormError}</div>}
+            {userFormError && <div className="alert alert-error">{userFormError}</div>}
             <form
               className="form-grid"
               onSubmit={(event) => {

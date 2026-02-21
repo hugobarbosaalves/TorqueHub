@@ -1,10 +1,12 @@
-/// Tela de login — autenticação do mecânico/admin.
+/// Tela de login — autenticação multi-tenant.
 ///
 /// Exibe campos de email e senha com validação básica.
-/// Ao autenticar com sucesso, navega para a tela principal (MainShell).
+/// Ao autenticar com sucesso, navega para a tela principal (MainShell),
+/// que adapta a navegação conforme o role do usuário.
 library;
 
 import 'package:flutter/material.dart';
+import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../theme/app_tokens.dart';
 import '../widgets/tq_button.dart';
@@ -33,6 +35,111 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  /// Exibe dialog obrigatório de troca de senha no primeiro acesso.
+  void _showForceChangePasswordDialog() {
+    final newPasswordController = TextEditingController();
+    final confirmController = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        bool submitting = false;
+        return StatefulBuilder(
+          builder: (builderContext, setDialogState) {
+            return AlertDialog(
+              title: const Text('Troque sua senha'),
+              content: Form(
+                key: formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'Esta é sua primeira vez acessando. Por segurança, defina uma nova senha.',
+                      style: TextStyle(fontSize: TqTokens.fontSizeSm),
+                    ),
+                    const SizedBox(height: TqTokens.space8),
+                    TextFormField(
+                      controller: newPasswordController,
+                      obscureText: true,
+                      decoration: const InputDecoration(
+                        labelText: 'Nova senha',
+                        prefixIcon: Icon(Icons.lock_reset),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.length < 6) {
+                          return 'Mínimo 6 caracteres';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: TqTokens.space6),
+                    TextFormField(
+                      controller: confirmController,
+                      obscureText: true,
+                      decoration: const InputDecoration(
+                        labelText: 'Confirmar nova senha',
+                        prefixIcon: Icon(Icons.check_circle_outline),
+                      ),
+                      validator: (value) {
+                        if (value != newPasswordController.text) {
+                          return 'As senhas não coincidem';
+                        }
+                        return null;
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                FilledButton(
+                  onPressed: submitting
+                      ? null
+                      : () async {
+                          if (!formKey.currentState!.validate()) return;
+                          setDialogState(() => submitting = true);
+                          try {
+                            await ApiService.changePassword(
+                              currentPassword: _passwordController.text,
+                              newPassword: newPasswordController.text,
+                            );
+                            if (!builderContext.mounted) return;
+                            Navigator.of(dialogContext).pop();
+                            Navigator.of(context).pushReplacementNamed('/home');
+                          } on ApiException catch (error) {
+                            if (!builderContext.mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(error.message),
+                                backgroundColor: TqTokens.danger,
+                              ),
+                            );
+                          } finally {
+                            if (builderContext.mounted) {
+                              setDialogState(() => submitting = false);
+                            }
+                          }
+                        },
+                  child: submitting
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Text('Alterar e Continuar'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
   /// Executa o login e navega para a shell principal.
   Future<void> _handleLogin() async {
     if (_formKey.currentState?.validate() != true) return;
@@ -44,7 +151,11 @@ class _LoginScreenState extends State<LoginScreen> {
         _passwordController.text,
       );
       if (!mounted) return;
-      Navigator.of(context).pushReplacementNamed('/home');
+      if (AuthService.mustChangePassword) {
+        _showForceChangePasswordDialog();
+      } else {
+        Navigator.of(context).pushReplacementNamed('/home');
+      }
     } catch (e) {
       if (!mounted) return;
       showErrorSnack(context, '$e');
@@ -79,7 +190,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: TqTokens.space4),
                   Text(
-                    'Acesso do mecânico',
+                    'Acesso à oficina',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: TqTokens.neutral400,
                     ),

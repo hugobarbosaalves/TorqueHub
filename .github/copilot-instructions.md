@@ -2,16 +2,164 @@
 
 > Este arquivo é carregado automaticamente pelo GitHub Copilot no VS Code.
 > Qualquer agente IA DEVE seguir estas regras ao gerar ou modificar código.
+> Última atualização: 2026-02-21
 
 ---
 
 ## Pré-requisitos — Leitura Obrigatória
 
-Antes de **qualquer** ação, leia estes dois documentos na íntegra:
+Antes de **qualquer** ação, leia estes documentos na íntegra:
 
 1. `PROJECT_CONVENTIONS.md` — regras de código, arquitetura, naming, proibições
 2. `DESIGN_SYSTEM.md` — tokens visuais, componentes, como usar cores/fontes/espaçamento
 3. `documentation/idea/TORQUEHUB_MASTER_DOCUMENTATION.md` — contexto do produto
+4. `documentation/architecture/MULTI_TENANCY_ARCHITECTURE.md` — **arquitetura multi-tenancy (OBRIGATÓRIO)**
+
+---
+
+## Arquitetura Multi-Tenancy — Regras Fundamentais
+
+> O TorqueHub é um SaaS multi-tenant. Cada oficina (`Workshop`) é um tenant isolado.
+> TODAS as decisões de código DEVEM respeitar este modelo.
+
+### Modelo de Papéis (UserRole) — 3 níveis
+
+| Role             | workshopId         | Acessa                                       |
+| ---------------- | ------------------ | -------------------------------------------- |
+| `PLATFORM_ADMIN` | `null`             | Todas oficinas, métricas globais, onboarding |
+| `WORKSHOP_OWNER` | `uuid` obrigatório | Tudo na própria oficina, cadastra mecânicos  |
+| `MECHANIC`       | `uuid` obrigatório | OS atribuídas, upload de fotos               |
+
+**NUNCA use `ADMIN` sozinho.** O enum correto é `PLATFORM_ADMIN` ou `WORKSHOP_OWNER`.
+
+### JWT Payload — Estrutura Oficial
+
+```typescript
+interface JwtPayload {
+  sub: string; // userId
+  workshopId: string | null; // null SOMENTE para PLATFORM_ADMIN
+  role: 'PLATFORM_ADMIN' | 'WORKSHOP_OWNER' | 'MECHANIC';
+}
+```
+
+### Isolamento de Dados — Regras de Ouro
+
+```
+1. TODA query a Customer, Vehicle, ServiceOrder, User DEVE filtrar por workshopId
+2. O Tenant Context Middleware (shared/infrastructure/auth/tenant-context.ts) injeta
+   request.tenantId automaticamente — NUNCA ignore
+3. PLATFORM_ADMIN acessa cross-tenant via query param ?workshopId=
+4. WORKSHOP_OWNER e MECHANIC SEMPRE recebem workshopId do JWT — NUNCA do body/query
+5. Repositories usam scopedPrisma(tenantId) — NUNCA prisma direto em rotas tenant-scoped
+```
+
+### Role Guard — Toda rota protegida DEVE declarar roles
+
+```typescript
+// ✅ CORRETO — roles explícitos
+app.post('/users', {
+  onRequest: [requireRole('WORKSHOP_OWNER', 'PLATFORM_ADMIN')],
+  handler: createUserHandler,
+});
+
+// ❌ PROIBIDO — rota sem role guard (exceto /public/* e /auth/*)
+app.post('/users', { handler: createUserHandler });
+```
+
+### Matriz de Permissões
+
+| Recurso                | PLATFORM_ADMIN | WORKSHOP_OWNER |   MECHANIC    |
+| ---------------------- | :------------: | :------------: | :-----------: |
+| Ver todas oficinas     |       ✅       |       ❌       |      ❌       |
+| Criar oficina + owner  |       ✅       |       ❌       |      ❌       |
+| Métricas globais       |       ✅       |       ❌       |      ❌       |
+| Cadastrar mecânico     |       ✅       |       ✅       |      ❌       |
+| CRUD clientes/veículos |       ✅       |       ✅       |  🔶 Leitura   |
+| CRUD ordens de serviço |       ✅       |       ✅       | 🔶 Atribuídas |
+| Upload fotos/vídeos    |       ✅       |       ✅       |      ✅       |
+| Gerar orçamento PDF    |       ✅       |       ✅       |      ❌       |
+| Config da oficina      |       ✅       |       ✅       |      ❌       |
+
+---
+
+## Estrutura de Módulos API — Padrão
+
+### Módulos existentes (tenant-scoped)
+
+```
+modules/
+├── auth/           → Login, register, profile (/auth/*)
+├── customer/       → CRUD clientes (/customers/*)
+├── vehicle/        → CRUD veículos (/vehicles/*)
+├── service-order/  → CRUD OS + media + quote (/service-orders/*)
+├── lookup/         → Busca oficinas (/workshops/*)
+└── admin/          → CRUD oficinas + users (/admin/*) — PLATFORM_ADMIN only
+```
+
+### Criando um novo endpoint
+
+```
+1. Crie dentro de modules/<feature>/
+   ├── domain/entities/      (tipos, interfaces)
+   ├── application/use-cases/ (lógica de negócio)
+   ├── infrastructure/repositories/ (acesso a dados)
+   └── interfaces/http/      (controller + schemas)
+
+2. Controller DEVE:
+   - Usar requireRole() com roles explícitos
+   - Receber tenantId via request.tenantId (NUNCA do body)
+   - Usar scopedPrisma(tenantId) nos repositories
+   - Ter schema Swagger documentado
+
+3. Resposta padrão: { success: true, data: T }
+4. Erros padrão: { success: false, data: null, meta: { error: string } }
+```
+
+---
+
+## Portais Web — Estrutura de Rotas
+
+```
+apps/web/src/
+├── pages/
+│   ├── public/           ← Viewer de orçamento (sem auth)
+│   ├── admin/            ← PLATFORM_ADMIN only
+│   │   ├── DashboardPage.tsx
+│   │   ├── WorkshopsPage.tsx
+│   │   ├── WorkshopDetailPage.tsx
+│   │   └── SettingsPage.tsx
+│   └── backoffice/       ← WORKSHOP_OWNER only
+│       ├── DashboardPage.tsx
+│       ├── MechanicsPage.tsx
+│       ├── OrdersPage.tsx
+│       ├── CustomersPage.tsx
+│       ├── ReportsPage.tsx
+│       └── SettingsPage.tsx
+├── guards/
+│   └── RoleGuard.tsx     ← Redirect por JWT role
+└── layouts/
+    ├── AdminLayout.tsx
+    └── BackofficeLayout.tsx
+```
+
+**Roteamento:**
+
+- `/admin/*` → `RoleGuard(['PLATFORM_ADMIN'])`
+- `/backoffice/*` → `RoleGuard(['WORKSHOP_OWNER'])`
+- `/public/*` → sem auth
+- Login unificado em `/login` → redirect por role
+
+---
+
+## App Mobile — Diferenciação por Role
+
+Um único APK. Após login, a navegação muda conforme o role:
+
+| Role           | Bottom Nav                                         |
+| -------------- | -------------------------------------------------- |
+| WORKSHOP_OWNER | OS · Clientes · Veículos · Equipe · Config         |
+| MECHANIC       | Minhas OS · Upload                                 |
+| PLATFORM_ADMIN | Dashboard overview (funcionalidades pesadas = web) |
 
 ---
 
@@ -32,11 +180,9 @@ Antes de **qualquer** ação, leia estes dois documentos na íntegra:
 ```
 Web    → import { statusConfig } from '@torquehub/design-tokens';
          const info = statusConfig['IN_PROGRESS'];
-         // info.label, info.icon, info.color
 
 Mobile → import '../theme/status_config.dart';
          final info = getStatusInfo('IN_PROGRESS');
-         // info.label, info.icon, info.color
 
 NUNCA crie mapas de status locais. Use o centralizado.
 ```
@@ -64,20 +210,6 @@ NUNCA crie mapas de status locais. Use o centralizado.
 8. Tema         → AppTheme.light (já aplicado no main.dart)
 ```
 
-### Preciso adicionar um ENDPOINT na API?
-
-```
-Seguir estrutura de módulo:
-  modules/<feature>/
-  ├── domain/entities/
-  ├── application/use-cases/
-  ├── infrastructure/repositories/
-  └── interfaces/http/ (controller + schemas)
-
-Resposta padrão: { success: true, data: T }
-Swagger obrigatório com schema documentado.
-```
-
 ### Preciso adicionar uma TELA no mobile?
 
 ```
@@ -91,22 +223,26 @@ O tema global (AppTheme.light) já configura Card, Button, Input, etc.
 
 ## Proibições Absolutas
 
-| NUNCA faça isto                                | Motivo                                        |
-| ---------------------------------------------- | --------------------------------------------- |
-| Editar `tokens.css` ou `app_tokens.dart`       | São GERADOS. Edite `tokens.json` e regenere   |
-| Usar `Color(0xFF...)` hardcoded no Flutter     | Use `TqTokens.*`                              |
-| Usar cor hex literal no CSS                    | Use `var(--color-*)`                          |
-| Criar mapa de status local                     | Use `statusConfig` centralizado               |
-| Exceder 200 linhas por arquivo                 | Dividir em módulos menores                    |
-| Usar `any` (TS) ou `dynamic` sem necessidade   | Tipagem obrigatória                           |
-| Usar `\|\|` para default values                | Usar `??` (nullish coalescing)                |
-| Usar `!` (non-null assertion)                  | Usar type guards ou `??`                      |
-| Esquecer JSDoc/DartDoc em exports              | Documentação obrigatória                      |
-| Hardcodar credenciais ou URLs de produção      | Usar variáveis de ambiente / AppConfig        |
-| Usar `console.log` em produção                 | Usar logger estruturado                       |
-| Criar comentários decorativos (`// ── ... ──`) | Usar JSDoc descritivo                         |
-| Usar magic strings/números hardcodados         | Extrair para constantes em arquivos dedicados |
-| Usar nomes abreviados em callbacks (`m`, `x`)  | Usar nomes descritivos (`media`, `order`)     |
+| NUNCA faça isto                                  | Motivo                                        |
+| ------------------------------------------------ | --------------------------------------------- |
+| Editar `tokens.css` ou `app_tokens.dart`         | São GERADOS. Edite `tokens.json` e regenere   |
+| Usar `Color(0xFF...)` hardcoded no Flutter       | Use `TqTokens.*`                              |
+| Usar cor hex literal no CSS                      | Use `var(--color-*)`                          |
+| Criar mapa de status local                       | Use `statusConfig` centralizado               |
+| Exceder 200 linhas por arquivo                   | Dividir em módulos menores                    |
+| Usar `any` (TS) ou `dynamic` sem necessidade     | Tipagem obrigatória                           |
+| Usar `\|\|` para default values                  | Usar `??` (nullish coalescing)                |
+| Usar `!` (non-null assertion)                    | Usar type guards ou `??`                      |
+| Esquecer JSDoc/DartDoc em exports                | Documentação obrigatória                      |
+| Hardcodar credenciais ou URLs de produção        | Usar variáveis de ambiente / AppConfig        |
+| Usar `console.log` em produção                   | Usar logger estruturado                       |
+| Criar comentários decorativos (`// ── ... ──`)   | Usar JSDoc descritivo                         |
+| Usar magic strings/números hardcodados           | Extrair para constantes em arquivos dedicados |
+| Usar nomes abreviados em callbacks (`m`, `x`)    | Usar nomes descritivos (`media`, `order`)     |
+| Usar role `ADMIN` sozinho                        | Use `PLATFORM_ADMIN` ou `WORKSHOP_OWNER`      |
+| Acessar dados sem filtrar workshopId             | Use `scopedPrisma(tenantId)`                  |
+| Criar rota sem `requireRole()`                   | Exceto `/public/*` e `/auth/*`                |
+| Aceitar workshopId do body em rotas autenticadas | Use `request.tenantId` do middleware          |
 
 ---
 
@@ -124,11 +260,9 @@ if (status === 'IN_PROGRESS') { ... }
 const maxRetries = 3;
 
 // ✅ CORRETO — constantes nomeadas em arquivo dedicado
-// Em shared/domain/constants.ts ou no módulo correspondente:
 export const MEDIA_TYPE = { PHOTO: 'PHOTO', VIDEO: 'VIDEO' } as const;
 export const MAX_RETRIES = 3;
 
-// No código:
 const photos = order.media.filter((media) => media.type === MEDIA_TYPE.PHOTO);
 if (status === ORDER_STATUS.IN_PROGRESS) { ... }
 ```
@@ -156,65 +290,55 @@ final photos = media.where((media) => media.type == MediaType.photo);
 
 ### NUNCA usar nomes abreviados em callbacks e parâmetros
 
-Variáveis de callback, parâmetros de arrow functions e lambdas
-**DEVEM** ter nomes descritivos. Letras soltas como `m`, `x`, `e`, `v` são proibidas.
-
 ```typescript
-// ❌ PROIBIDO — abreviações sem significado
+// ❌ PROIBIDO
 orders.filter((o) => o.status === 'OPEN');
 media.map((m) => m.url);
-items.forEach((x) => process(x));
-
-// ✅ CORRETO — nomes descritivos
-orders.filter((order) => order.status === ORDER_STATUS.OPEN);
-media.map((mediaItem) => mediaItem.url);
-items.forEach((item) => process(item));
-```
-
-```dart
-// ❌ PROIBIDO
-media.where((m) => m.type == 'PHOTO');
-items.map((e) => e.name);
 
 // ✅ CORRETO
-media.where((mediaItem) => mediaItem.type == MediaType.photo);
-items.map((item) => item.name);
+orders.filter((order) => order.status === ORDER_STATUS.OPEN);
+media.map((mediaItem) => mediaItem.url);
 ```
 
 ---
 
 ## Arquivos-Chave por Responsabilidade
 
-| Responsabilidade               | Arquivo(s)                                             |
-| ------------------------------ | ------------------------------------------------------ |
-| Tokens visuais (fonte verdade) | `packages/design-tokens/tokens.json`                   |
-| Geração de tokens              | `packages/design-tokens/generate.mjs`                  |
-| Tokens TS para import web      | `packages/design-tokens/src/*.ts`                      |
-| CSS custom properties (gerado) | `apps/web/src/styles/tokens.css`                       |
-| Estilos globais web            | `apps/web/src/styles/global.css`                       |
-| Tokens Dart (gerado)           | `apps/mobile/lib/theme/app_tokens.dart`                |
-| Tema Material 3                | `apps/mobile/lib/theme/app_theme.dart`                 |
-| Config de status (Dart)        | `apps/mobile/lib/theme/status_config.dart`             |
-| Config de status (TS)          | `packages/design-tokens/src/status.ts`                 |
-| DTOs compartilhados            | `packages/contracts/src/index.ts`                      |
-| Regras de código               | `PROJECT_CONVENTIONS.md`                               |
-| Design System completo         | `DESIGN_SYSTEM.md`                                     |
-| Documentação do produto        | `documentation/idea/TORQUEHUB_MASTER_DOCUMENTATION.md` |
-| Configuração do app mobile     | `apps/mobile/lib/services/app_config.dart`             |
+| Responsabilidade               | Arquivo(s)                                                  |
+| ------------------------------ | ----------------------------------------------------------- |
+| Tokens visuais (fonte verdade) | `packages/design-tokens/tokens.json`                        |
+| Geração de tokens              | `packages/design-tokens/generate.mjs`                       |
+| Tokens TS para import web      | `packages/design-tokens/src/*.ts`                           |
+| CSS custom properties (gerado) | `apps/web/src/styles/tokens.css`                            |
+| Estilos globais web            | `apps/web/src/styles/global.css`                            |
+| Tokens Dart (gerado)           | `apps/mobile/lib/theme/app_tokens.dart`                     |
+| Tema Material 3                | `apps/mobile/lib/theme/app_theme.dart`                      |
+| Config de status (Dart)        | `apps/mobile/lib/theme/status_config.dart`                  |
+| Config de status (TS)          | `packages/design-tokens/src/status.ts`                      |
+| DTOs compartilhados            | `packages/contracts/src/index.ts`                           |
+| Regras de código               | `PROJECT_CONVENTIONS.md`                                    |
+| Design System completo         | `DESIGN_SYSTEM.md`                                          |
+| Documentação do produto        | `documentation/idea/TORQUEHUB_MASTER_DOCUMENTATION.md`      |
+| **Arquitetura multi-tenancy**  | `documentation/architecture/MULTI_TENANCY_ARCHITECTURE.md`  |
+| Configuração do app mobile     | `apps/mobile/lib/services/app_config.dart`                  |
+| Tenant Context Middleware      | `apps/api/src/shared/infrastructure/auth/tenant-context.ts` |
+| Role Guard                     | `apps/api/src/shared/infrastructure/auth/role-guard.ts`     |
+| Auth Plugin (JWT)              | `apps/api/src/shared/infrastructure/auth/auth.plugin.ts`    |
 
 ---
 
 ## Fluxo de Trabalho Padrão
 
-1. Ler `PROJECT_CONVENTIONS.md` + `DESIGN_SYSTEM.md`
+1. Ler `PROJECT_CONVENTIONS.md` + `DESIGN_SYSTEM.md` + `MULTI_TENANCY_ARCHITECTURE.md`
 2. Trabalhar na branch `develop`
 3. Usar tokens para qualquer valor visual
 4. Tipar tudo explicitamente (TS strict, Dart explicit)
-5. JSDoc/DartDoc em toda função/classe exportada
-6. Rodar `get_errors()` após mudanças
-7. Testar endpoints com curl
-8. Commit com prefixo: `feat:`, `fix:`, `docs:`, `refactor:`, `chore:`
-9. Push para `develop`, merge para `main` quando pronto para produção
+5. Toda rota API deve ter `requireRole()` e usar `request.tenantId`
+6. JSDoc/DartDoc em toda função/classe exportada
+7. Rodar `get_errors()` após mudanças
+8. Testar endpoints com curl
+9. Commit com prefixo: `feat:`, `fix:`, `docs:`, `refactor:`, `chore:`
+10. Push para `develop`, merge para `main` quando pronto para produção
 
 ---
 

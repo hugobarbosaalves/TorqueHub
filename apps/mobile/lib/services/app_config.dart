@@ -17,7 +17,7 @@ class AppConfig {
       case Environment.dev:
         // Android emulator: 10.0.2.2 = localhost da máquina host
         // Device físico na mesma rede: use o IP local (ex: 192.168.1.x:3333)
-        return 'http://192.168.1.9:3333';
+        return 'http://10.0.2.2:3333';
       case Environment.prod:
         // Render (ou outro hosting) — altere para sua URL real
         return 'https://torquehub-21wh.onrender.com';

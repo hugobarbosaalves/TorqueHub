@@ -129,24 +129,15 @@ class TqTextField extends StatelessWidget {
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(TqTokens.radiusXl),
-          borderSide: const BorderSide(
-            color: TqTokens.neutral200,
-            width: 1,
-          ),
+          borderSide: const BorderSide(color: TqTokens.neutral200, width: 1),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(TqTokens.radiusXl),
-          borderSide: const BorderSide(
-            color: TqTokens.neutral200,
-            width: 1,
-          ),
+          borderSide: const BorderSide(color: TqTokens.neutral200, width: 1),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(TqTokens.radiusXl),
-          borderSide: const BorderSide(
-            color: TqTokens.primary,
-            width: 1.5,
-          ),
+          borderSide: const BorderSide(color: TqTokens.primary, width: 1.5),
         ),
         disabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(TqTokens.radiusXl),
@@ -157,17 +148,11 @@ class TqTextField extends StatelessWidget {
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(TqTokens.radiusXl),
-          borderSide: const BorderSide(
-            color: TqTokens.danger,
-            width: 1,
-          ),
+          borderSide: const BorderSide(color: TqTokens.danger, width: 1),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(TqTokens.radiusXl),
-          borderSide: const BorderSide(
-            color: TqTokens.danger,
-            width: 1.5,
-          ),
+          borderSide: const BorderSide(color: TqTokens.danger, width: 1.5),
         ),
       ),
     );

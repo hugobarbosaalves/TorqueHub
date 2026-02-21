@@ -1,11 +1,12 @@
 /// Vehicle management screen — CRUD operations for workshop vehicles.
 ///
-/// Lists vehicles filtered by workshop, with delete confirmation and
-/// navigation to [VehicleFormScreen] for create/edit.
+/// Lists vehicles of the authenticated user's workshop (tenant-scoped via JWT).
+/// Provides delete confirmation and navigation to [VehicleFormScreen].
 library;
 
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../services/auth_service.dart';
 import '../theme/app_tokens.dart';
 import '../widgets/widgets.dart';
 import 'vehicle_form_screen.dart';
@@ -19,8 +20,6 @@ class VehiclesScreen extends StatefulWidget {
 }
 
 class _VehiclesScreenState extends State<VehiclesScreen> {
-  List<Map<String, dynamic>> _workshops = [];
-  String? _selectedWorkshopId;
   List<Map<String, dynamic>> _vehicles = [];
   bool _loading = true;
   String? _error;
@@ -28,41 +27,17 @@ class _VehiclesScreenState extends State<VehiclesScreen> {
   @override
   void initState() {
     super.initState();
-    _loadWorkshops();
+    _loadVehicles();
   }
 
-  Future<void> _loadWorkshops() async {
-    try {
-      final ws = await ApiService.getWorkshops();
-      if (!mounted) return;
-      setState(() {
-        _workshops = ws;
-        if (ws.isNotEmpty) {
-          _selectedWorkshopId = ws.first['id'] as String;
-        }
-      });
-      if (_selectedWorkshopId != null) {
-        _loadVehicles();
-      } else {
-        setState(() => _loading = false);
-      }
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _error = e.toString();
-        _loading = false;
-      });
-    }
-  }
-
+  /// Carrega veículos da oficina do usuário logado (JWT tenant-scoped).
   Future<void> _loadVehicles() async {
-    if (_selectedWorkshopId == null) return;
     setState(() {
       _loading = true;
       _error = null;
     });
     try {
-      final data = await ApiService.getVehiclesByWorkshop(_selectedWorkshopId!);
+      final data = await ApiService.listVehicles();
       if (!mounted) return;
       setState(() {
         _vehicles = data;
@@ -77,6 +52,7 @@ class _VehiclesScreenState extends State<VehiclesScreen> {
     }
   }
 
+  /// Exclui um veículo após confirmação.
   Future<void> _deleteVehicle(String id, String label) async {
     final confirmed = await showConfirmDialog(
       context,
@@ -97,133 +73,95 @@ class _VehiclesScreenState extends State<VehiclesScreen> {
     }
   }
 
+  /// Abre o formulário para criar ou editar um veículo.
   void _openForm({Map<String, dynamic>? vehicle}) async {
     final result = await Navigator.push<bool>(
       context,
-      MaterialPageRoute(
-        builder: (_) => VehicleFormScreen(
-          workshopId: _selectedWorkshopId!,
-          vehicle: vehicle,
-        ),
-      ),
+      MaterialPageRoute(builder: (_) => VehicleFormScreen(vehicle: vehicle)),
     );
     if (result == true) _loadVehicles();
   }
 
   @override
   Widget build(BuildContext context) {
+    final canEdit = AuthService.isOwnerOrAdmin;
+
     return Scaffold(
       appBar: AppBar(title: const Text('Veículos'), centerTitle: true),
-      floatingActionButton: _selectedWorkshopId == null
-          ? null
-          : FloatingActionButton(
+      floatingActionButton: canEdit
+          ? FloatingActionButton(
               heroTag: 'fab_vehicles',
               onPressed: () => _openForm(),
               child: const Icon(Icons.directions_car),
-            ),
-      body: Column(
-        children: [
-          if (_workshops.length > 1)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                TqTokens.space8,
-                TqTokens.space6,
-                TqTokens.space8,
-                0,
-              ),
-              child: TqDropdown<String>(
-                value: _selectedWorkshopId,
-                hint: 'Selecione a oficina',
-                label: 'Oficina',
-                items: _workshops
-                    .map(
-                      (workshop) => DropdownMenuItem(
-                        value: workshop['id'] as String,
-                        child: Text(workshop['name'] as String),
-                      ),
-                    )
-                    .toList(),
-                onChanged: (val) {
-                  setState(() => _selectedWorkshopId = val);
-                  _loadVehicles();
-                },
-              ),
-            ),
-          Expanded(
-            child: _loading
-                ? const Center(child: CircularProgressIndicator())
-                : _error != null
-                ? TqErrorState(message: _error!, onRetry: _loadVehicles)
-                : _vehicles.isEmpty
-                ? const TqEmptyState(
-                    icon: Icons.directions_car_outlined,
-                    title: 'Nenhum veículo cadastrado',
-                  )
-                : RefreshIndicator(
-                    onRefresh: _loadVehicles,
-                    child: ListView(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: TqTokens.space8,
-                        vertical: TqTokens.space6,
-                      ),
+            )
+          : null,
+      body: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : _error != null
+          ? TqErrorState(message: _error!, onRetry: _loadVehicles)
+          : _vehicles.isEmpty
+          ? const TqEmptyState(
+              icon: Icons.directions_car_outlined,
+              title: 'Nenhum veículo cadastrado',
+            )
+          : RefreshIndicator(
+              onRefresh: _loadVehicles,
+              child: ListView(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: TqTokens.space8,
+                  vertical: TqTokens.space6,
+                ),
+                children: [
+                  // — Header com contagem —
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: TqTokens.space6),
+                    child: Row(
                       children: [
-                        // — Header com contagem —
-                        Padding(
-                          padding: const EdgeInsets.only(
-                            bottom: TqTokens.space6,
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: TqTokens.space5,
+                            vertical: TqTokens.space2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: TqTokens.neutral400.withAlpha(18),
+                            borderRadius: BorderRadius.circular(
+                              TqTokens.radiusPill,
+                            ),
+                            border: Border.all(
+                              color: TqTokens.neutral400.withAlpha(50),
+                              width: 0.5,
+                            ),
                           ),
                           child: Row(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: TqTokens.space5,
-                                  vertical: TqTokens.space2,
+                              Text(
+                                '${_vehicles.length}',
+                                style: const TextStyle(
+                                  color: TqTokens.neutral400,
+                                  fontSize: TqTokens.fontSizeSm,
+                                  fontWeight: TqTokens.fontWeightBold,
                                 ),
-                                decoration: BoxDecoration(
-                                  color: TqTokens.neutral400.withAlpha(18),
-                                  borderRadius: BorderRadius.circular(
-                                    TqTokens.radiusPill,
-                                  ),
-                                  border: Border.all(
-                                    color: TqTokens.neutral400.withAlpha(50),
-                                    width: 0.5,
-                                  ),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      '${_vehicles.length}',
-                                      style: const TextStyle(
-                                        color: TqTokens.neutral400,
-                                        fontSize: TqTokens.fontSizeSm,
-                                        fontWeight: TqTokens.fontWeightBold,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 4),
-                                    const Text(
-                                      'cadastrados',
-                                      style: TextStyle(
-                                        color: TqTokens.neutral400,
-                                        fontSize: TqTokens.fontSizeXs,
-                                        fontWeight: TqTokens.fontWeightMedium,
-                                      ),
-                                    ),
-                                  ],
+                              ),
+                              const SizedBox(width: 4),
+                              const Text(
+                                'cadastrados',
+                                style: TextStyle(
+                                  color: TqTokens.neutral400,
+                                  fontSize: TqTokens.fontSizeXs,
+                                  fontWeight: TqTokens.fontWeightMedium,
                                 ),
                               ),
                             ],
                           ),
                         ),
-                        ..._vehicles.map(
-                          (vehicle) => _buildCard(vehicle),
-                        ),
                       ],
                     ),
                   ),
-          ),
-        ],
-      ),
+                  ..._vehicles.map((vehicle) => _buildCard(vehicle)),
+                ],
+              ),
+            ),
     );
   }
 
@@ -256,8 +194,10 @@ class _VehiclesScreenState extends State<VehiclesScreen> {
                 const Spacer(),
                 TqPopupActions(
                   onEdit: () => _openForm(vehicle: vehicle),
-                  onDelete: () =>
-                      _deleteVehicle(vehicle['id'] as String, '$label — $plate'),
+                  onDelete: () => _deleteVehicle(
+                    vehicle['id'] as String,
+                    '$label — $plate',
+                  ),
                 ),
               ],
             ),

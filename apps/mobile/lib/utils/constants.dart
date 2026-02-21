@@ -37,6 +37,20 @@ class MediaType {
   static const video = 'VIDEO';
 }
 
+/// Papéis de usuário no sistema multi-tenant.
+class UserRole {
+  UserRole._();
+
+  /// Administrador da plataforma — acessa todas as oficinas.
+  static const platformAdmin = 'PLATFORM_ADMIN';
+
+  /// Dono da oficina — acessa apenas sua oficina.
+  static const workshopOwner = 'WORKSHOP_OWNER';
+
+  /// Mecânico — acessa apenas OS atribuídas.
+  static const mechanic = 'MECHANIC';
+}
+
 /// Ações de menu popup reutilizáveis.
 class MenuAction {
   MenuAction._();

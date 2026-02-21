@@ -95,6 +95,9 @@ importers:
       fastify-plugin:
         specifier: ^5.1.0
         version: 5.1.0
+      nodemailer:
+        specifier: ^8.0.1
+        version: 8.0.1
       pdfkit:
         specifier: ^0.17.2
         version: 0.17.2
@@ -111,6 +114,9 @@ importers:
       '@types/node':
         specifier: 24.0.4
         version: 24.0.4
+      '@types/nodemailer':
+        specifier: ^7.0.11
+        version: 7.0.11
       '@types/pg':
         specifier: ^8.16.0
         version: 8.16.0
@@ -126,6 +132,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@torquehub/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
       '@torquehub/design-tokens':
         specifier: workspace:*
         version: link:../../packages/design-tokens
@@ -1499,6 +1508,9 @@ packages:
   '@types/node@24.0.4':
     resolution: {integrity: sha512-ulyqAkrhnuNq9pB76DRBTkcS6YsmDALy6Ua63V8OhrOBgbcYt6IOdzpw5P1+dyRIyMerzLkeYWBeOXPpA9GMAA==}
 
+  '@types/nodemailer@7.0.11':
+    resolution: {integrity: sha512-E+U4RzR2dKrx+u3N4DlsmLaDC6mMZOM/TPROxA0UAPiTgI0y4CEFBmZE+coGWTjakDriRsXG368lNk1u9Q0a2g==}
+
   '@types/pdfkit@0.17.5':
     resolution: {integrity: sha512-T3ZHnvF91HsEco5ClhBCOuBwobZfPcI2jaiSHybkkKYq4KhVIIurod94JVKvDIG0JXT6o3KiERC0X0//m8dyrg==}
 
@@ -2265,6 +2277,10 @@ packages:
 
   node-releases@2.0.27:
     resolution: {integrity: sha512-nmh3lCkYZ3grZvqcCH+fjmQ7X+H0OeZgP40OierEaAptX4XofMh5kwNbWh7lBduUzCcV/8kZ+NDLCwm2iorIlA==}
+
+  nodemailer@8.0.1:
+    resolution: {integrity: sha512-5kcldIXmaEjZcHR6F28IKGSgpmZHaF1IXLWFTG+Xh3S+Cce4MiakLtWY+PlBU69fLbRa8HlaGIrC/QolUpHkhg==}
+    engines: {node: '>=6.0.0'}
 
   nypm@0.6.5:
     resolution: {integrity: sha512-K6AJy1GMVyfyMXRVB88700BJqNUkByijGJM8kEHpLdcAt+vSQAVfkWWHYzuRXHSY6xA2sNc5RjTj0p9rE2izVQ==}
@@ -4641,6 +4657,10 @@ snapshots:
     dependencies:
       undici-types: 7.8.0
 
+  '@types/nodemailer@7.0.11':
+    dependencies:
+      '@types/node': 24.0.4
+
   '@types/pdfkit@0.17.5':
     dependencies:
       '@types/node': 24.0.4
@@ -5470,6 +5490,8 @@ snapshots:
   node-fetch-native@1.6.7: {}
 
   node-releases@2.0.27: {}
+
+  nodemailer@8.0.1: {}
 
   nypm@0.6.5:
     dependencies:

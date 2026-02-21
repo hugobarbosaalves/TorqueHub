@@ -1,7 +1,8 @@
 /// New/edit service order screen — cascading form for creating or editing orders.
 ///
-/// Flow: select Workshop → Customer → Vehicle, then add line items
+/// Flow: select Customer → Vehicle, then add line items
 /// with description, quantity, and unit price.
+/// Workshop is determined by JWT (multi-tenancy).
 /// When [existingOrder] is provided, operates in edit mode (only DRAFT).
 library;
 
@@ -31,11 +32,9 @@ class CreateOrderScreen extends StatefulWidget {
 }
 
 class _CreateOrderScreenState extends State<CreateOrderScreen> {
-  List<Map<String, dynamic>> _workshops = [];
   List<Map<String, dynamic>> _customers = [];
   List<Map<String, dynamic>> _vehicles = [];
 
-  String? _selectedWorkshopId;
   String? _selectedCustomerId;
   String? _selectedVehicleId;
 
@@ -52,7 +51,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
   @override
   void initState() {
     super.initState();
-    _loadWorkshops();
+    _loadInitialData();
   }
 
   @override
@@ -71,7 +70,6 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
 
     _descriptionCtrl.text = order['description'] as String? ?? '';
 
-    _selectedWorkshopId = order['workshopId'] as String?;
     _selectedCustomerId = order['customerId'] as String?;
     _selectedVehicleId = order['vehicleId'] as String?;
 
@@ -88,71 +86,43 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
     if (_items.isEmpty) _items.add(_ItemEntry());
   }
 
-  Future<void> _loadWorkshops() async {
+  /// Carrega clientes da oficina. Em modo edição, também carrega veículos.
+  Future<void> _loadInitialData() async {
     try {
-      final data = await ApiService.getWorkshops();
-      if (!mounted) return;
-
       if (_isEditing) {
         _prefillFromOrder();
-        // Carregar clientes e veículos da ordem existente.
-        if (_selectedWorkshopId != null) {
-          final customers = await ApiService.getCustomers(_selectedWorkshopId!);
-          if (!mounted) return;
-          _customers = customers;
-
-          if (_selectedCustomerId != null) {
-            final vehicles = await ApiService.getVehicles(
-              _selectedWorkshopId!,
-              customerId: _selectedCustomerId,
-            );
-            if (!mounted) return;
-            _vehicles = vehicles;
-          }
-        }
       }
 
-      setState(() {
-        _workshops = data;
-        _loadingData = false;
-      });
+      final customers = await ApiService.listCustomers();
+      if (!mounted) return;
+      _customers = customers;
+
+      if (_isEditing && _selectedCustomerId != null) {
+        final vehicles = await ApiService.listVehicles(
+          customerId: _selectedCustomerId,
+        );
+        if (!mounted) return;
+        _vehicles = vehicles;
+      }
+
+      setState(() => _loadingData = false);
     } catch (e) {
       if (!mounted) return;
       setState(() => _loadingData = false);
-      showErrorSnack(context, 'Erro ao carregar oficinas: $e');
+      showErrorSnack(context, 'Erro ao carregar dados: $e');
     }
   }
 
-  Future<void> _onWorkshopChanged(String? id) async {
-    setState(() {
-      _selectedWorkshopId = id;
-      _selectedCustomerId = null;
-      _selectedVehicleId = null;
-      _customers = [];
-      _vehicles = [];
-    });
-    if (id == null) return;
-    try {
-      final data = await ApiService.getCustomers(id);
-      if (!mounted) return;
-      setState(() => _customers = data);
-    } catch (e) {
-      showErrorSnack(context, 'Erro ao carregar clientes: $e');
-    }
-  }
-
+  /// Callback quando o cliente selecionado muda.
   Future<void> _onCustomerChanged(String? id) async {
     setState(() {
       _selectedCustomerId = id;
       _selectedVehicleId = null;
       _vehicles = [];
     });
-    if (id == null || _selectedWorkshopId == null) return;
+    if (id == null) return;
     try {
-      final data = await ApiService.getVehicles(
-        _selectedWorkshopId!,
-        customerId: id,
-      );
+      final data = await ApiService.listVehicles(customerId: id);
       if (!mounted) return;
       setState(() => _vehicles = data);
     } catch (e) {
@@ -160,12 +130,11 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
     }
   }
 
+  /// Submete a ordem (criação ou edição).
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    if (_selectedWorkshopId == null ||
-        _selectedCustomerId == null ||
-        _selectedVehicleId == null) {
-      showErrorSnack(context, 'Selecione oficina, cliente e veículo');
+    if (_selectedCustomerId == null || _selectedVehicleId == null) {
+      showErrorSnack(context, 'Selecione cliente e veículo');
       return;
     }
 
@@ -198,7 +167,6 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
         showSuccessSnack(context, 'Ordem atualizada com sucesso!');
       } else {
         await ApiService.createServiceOrder(
-          workshopId: _selectedWorkshopId!,
           customerId: _selectedCustomerId!,
           vehicleId: _selectedVehicleId!,
           description: _descriptionCtrl.text.trim(),
@@ -241,27 +209,10 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
               child: ListView(
                 padding: const EdgeInsets.all(TqTokens.space8),
                 children: [
-                  const TqSectionTitle('Oficina'),
-                  _buildDropdown(
-                    currentValue: _selectedWorkshopId,
-                    hint: 'Selecione a oficina',
-                    items: _workshops
-                        .map(
-                          (workshop) => DropdownMenuItem(
-                            value: workshop['id'] as String,
-                            child: Text(workshop['name'] as String),
-                          ),
-                        )
-                        .toList(),
-                    onChanged: _isEditing ? null : _onWorkshopChanged,
-                  ),
-                  const SizedBox(height: TqTokens.space8),
                   const TqSectionTitle('Cliente'),
                   _buildDropdown(
                     currentValue: _selectedCustomerId,
-                    hint: _selectedWorkshopId == null
-                        ? 'Selecione uma oficina primeiro'
-                        : 'Selecione o cliente',
+                    hint: 'Selecione o cliente',
                     items: _customers.map((customer) {
                       final doc = customer['document'] as String?;
                       final label = doc != null && doc.isNotEmpty
@@ -272,11 +223,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                         child: Text(label),
                       );
                     }).toList(),
-                    onChanged: _isEditing
-                        ? null
-                        : (_selectedWorkshopId == null
-                              ? null
-                              : _onCustomerChanged),
+                    onChanged: _isEditing ? null : _onCustomerChanged,
                   ),
                   const SizedBox(height: TqTokens.space8),
                   const TqSectionTitle('Veículo'),

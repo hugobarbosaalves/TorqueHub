@@ -137,25 +137,27 @@ enum MediaType {
   @@map("media_type")
 }
 
-/// Usuário do sistema — mecânico ou admin da oficina.
+/// Usuário do sistema — platform admin, dono de oficina ou mecânico.
 model User {
-  id           String   @id @default(uuid())
-  workshopId   String   @map("workshop_id")
-  name         String
-  email        String   @unique
-  passwordHash String   @map("password_hash")
-  role         UserRole @default(MECHANIC)
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  id                 String   @id @default(uuid())
+  workshopId         String?  @map("workshop_id")
+  name               String
+  email              String   @unique
+  passwordHash       String   @map("password_hash")
+  role               UserRole @default(MECHANIC)
+  mustChangePassword Boolean  @default(false) @map("must_change_password")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
 
-  workshop Workshop @relation(fields: [workshopId], references: [id])
+  workshop Workshop? @relation(fields: [workshopId], references: [id])
 
   @@map("users")
 }
 
 /// Papéis de usuário no sistema.
 enum UserRole {
-  ADMIN
+  PLATFORM_ADMIN
+  WORKSHOP_OWNER
   MECHANIC
 
   @@map("user_role")

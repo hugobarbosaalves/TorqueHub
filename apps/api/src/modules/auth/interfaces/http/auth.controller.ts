@@ -10,6 +10,7 @@ import type {
   AuthResponse,
   LoginRequest,
   RegisterRequest,
+  ChangePasswordRequest,
   UserDTO,
 } from '@torquehub/contracts';
 import { prisma } from '../../../../shared/infrastructure/database/prisma.js';
@@ -18,8 +19,14 @@ import {
   LoginUseCase,
   RegisterUseCase,
   GetProfileUseCase,
+  ChangePasswordUseCase,
 } from '../../application/use-cases/auth.use-case.js';
-import { loginSchema, registerSchema, profileSchema } from './auth.schemas.js';
+import {
+  loginSchema,
+  registerSchema,
+  profileSchema,
+  changePasswordSchema,
+} from './auth.schemas.js';
 
 const userRepo = new UserRepository(prisma);
 
@@ -30,6 +37,7 @@ export function authRoutes(app: FastifyInstance): void {
   );
   const registerUseCase = new RegisterUseCase(userRepo);
   const profileUseCase = new GetProfileUseCase(userRepo);
+  const changePasswordUseCase = new ChangePasswordUseCase(userRepo);
 
   /** Login — retorna JWT + dados do usuário. */
   app.post<{ Body: LoginRequest; Reply: ApiResponse<AuthResponse> }>(
@@ -87,6 +95,32 @@ export function authRoutes(app: FastifyInstance): void {
       }
 
       return reply.send({ success: true, data: user });
+    },
+  );
+
+  /** Change Password — altera a senha do usuário autenticado. */
+  app.patch<{ Body: ChangePasswordRequest; Reply: ApiResponse<UserDTO> }>(
+    '/change-password',
+    { schema: changePasswordSchema, onRequest: [app.authenticate] },
+    async (request, reply) => {
+      const { currentPassword, newPassword } = request.body;
+
+      try {
+        const user = await changePasswordUseCase.execute(
+          request.user.sub,
+          currentPassword,
+          newPassword,
+        );
+        return await reply.send({ success: true, data: user });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Failed to change password';
+        const status = message.includes('incorrect') ? 401 : 400;
+        return reply.status(status).send({
+          success: false,
+          data: undefined as never,
+          meta: { error: message },
+        });
+      }
     },
   );
 }

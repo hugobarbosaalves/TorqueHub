@@ -8,18 +8,19 @@ import type { PrismaClient, UserRole } from '@prisma/client';
 /** Raw database record shape returned by Prisma for User. */
 export interface UserRecord {
   id: string;
-  workshopId: string;
+  workshopId: string | null;
   name: string;
   email: string;
   passwordHash: string;
   role: string;
+  mustChangePassword: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
 
 /** Input for creating a new user. */
 interface CreateUserInput {
-  workshopId: string;
+  workshopId?: string | null;
   name: string;
   email: string;
   passwordHash: string;
@@ -51,5 +52,13 @@ export class UserRepository {
       where: { workshopId },
       orderBy: { name: 'asc' },
     }) as Promise<UserRecord[]>;
+  }
+
+  /** Updates the user's password hash and clears mustChangePassword flag. */
+  async updatePassword(userId: string, passwordHash: string): Promise<UserRecord> {
+    return this.db.user.update({
+      where: { id: userId },
+      data: { passwordHash, mustChangePassword: false },
+    }) as Promise<UserRecord>;
   }
 }

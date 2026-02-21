@@ -28,8 +28,9 @@ class CurrencyMaskFormatter extends TextInputFormatter {
     final digits = newValue.text.replaceAll(RegExp(r'\D'), '');
     if (digits.isEmpty) return newValue.copyWith(text: '');
 
-    final trimmed =
-        digits.length > _maxDigits ? digits.substring(0, _maxDigits) : digits;
+    final trimmed = digits.length > _maxDigits
+        ? digits.substring(0, _maxDigits)
+        : digits;
 
     final cents = int.tryParse(trimmed) ?? 0;
     final formatted = _formatBrl(cents);

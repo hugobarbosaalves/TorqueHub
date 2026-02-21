@@ -26,7 +26,11 @@ export const listCustomersSchema = {
   querystring: {
     type: 'object' as const,
     properties: {
-      workshopId: { type: 'string', format: 'uuid', description: 'Workshop ID filter (PLATFORM_ADMIN only)' },
+      workshopId: {
+        type: 'string',
+        format: 'uuid',
+        description: 'Workshop ID filter (PLATFORM_ADMIN only)',
+      },
     },
   },
   response: {

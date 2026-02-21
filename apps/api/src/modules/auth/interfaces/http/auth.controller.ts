@@ -27,6 +27,7 @@ import {
   profileSchema,
   changePasswordSchema,
 } from './auth.schemas.js';
+import { requireRole } from '../../../../shared/infrastructure/auth/role-guard.js';
 
 const userRepo = new UserRepository(prisma);
 
@@ -59,10 +60,13 @@ export function authRoutes(app: FastifyInstance): void {
     },
   );
 
-  /** Register — cria um novo usuário. */
+  /** Register — cria um novo usuário (requer PLATFORM_ADMIN ou WORKSHOP_OWNER). */
   app.post<{ Body: RegisterRequest; Reply: ApiResponse<UserDTO> }>(
     '/register',
-    { schema: registerSchema },
+    {
+      schema: registerSchema,
+      onRequest: [app.authenticate, requireRole('PLATFORM_ADMIN', 'WORKSHOP_OWNER')],
+    },
     async (request, reply) => {
       try {
         const user = await registerUseCase.execute(request.body);

@@ -7,6 +7,7 @@
 import type { ReactNode } from 'react';
 import type { VehicleSummary } from '../services/api';
 import { SectionCard } from './SectionCard';
+import { Car, User } from './icons';
 
 interface VehicleInfoProps {
   readonly vehicle: VehicleSummary;
@@ -21,31 +22,16 @@ export function VehicleInfo({ vehicle, customerName }: VehicleInfoProps): ReactN
     .join(' · ');
 
   return (
-    <SectionCard icon="🚗" title="Veículo">
-      <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+    <SectionCard icon={<Car size={20} />} title="Veículo">
+      <div className="vehicle-row">
         <div>
-          <p style={{ fontSize: 18, fontWeight: 700, color: 'var(--color-text)' }}>{vehicleName}</p>
-          {details && (
-            <p style={{ fontSize: 13, color: 'var(--color-text-secondary)' }}>{details}</p>
-          )}
+          <p className="vehicle-name">{vehicleName}</p>
+          {details && <p className="vehicle-details">{details}</p>}
         </div>
-        <div
-          style={{
-            background: 'var(--color-primary)',
-            color: 'var(--color-card)',
-            padding: '6px 14px',
-            borderRadius: 6,
-            fontWeight: 700,
-            fontSize: 16,
-            letterSpacing: 1,
-            alignSelf: 'center',
-          }}
-        >
-          {vehicle.plate}
-        </div>
+        <div className="vehicle-plate">{vehicle.plate}</div>
       </div>
-      <p style={{ marginTop: 12, fontSize: 14, color: 'var(--color-text-secondary)' }}>
-        👤 Cliente: <strong>{customerName}</strong>
+      <p className="vehicle-customer">
+        <User size={14} /> Cliente: <strong>{customerName}</strong>
       </p>
     </SectionCard>
   );

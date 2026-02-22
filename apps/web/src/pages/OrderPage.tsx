@@ -14,6 +14,7 @@ import { MediaGallery } from '../components/MediaGallery';
 import { VehicleHistory } from '../components/VehicleHistory';
 import { QuoteDownload } from '../components/QuoteDownload';
 import { formatDateLong } from '../utils/format';
+import { Frown, Search } from '../components/icons';
 
 /** Renders the full order detail page for the public client portal. */
 export function OrderPage(): ReactNode {
@@ -50,11 +51,11 @@ export function OrderPage(): ReactNode {
       <div className="container">
         <div className="card card-border-danger">
           <div className="card-body error-card-body">
-            <span className="order-hero-emoji">😕</span>
+            <span className="order-hero-emoji"><Frown size={48} /></span>
             <p className="order-error-title">{error || 'Ordem não encontrada'}</p>
             <p className="order-error-hint">Verifique o link e tente novamente.</p>
             <Link to="/" className="btn btn-primary order-error-link">
-              Buscar pelo código
+              <Search size={16} /> Buscar pelo código
             </Link>
           </div>
         </div>

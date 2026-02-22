@@ -6,6 +6,7 @@
 
 import { useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Car, Search } from '../components/icons';
 
 /** Renders the token search form for the client portal landing page. */
 export function HomePage(): ReactNode {
@@ -37,7 +38,7 @@ export function HomePage(): ReactNode {
               className="input"
             />
             <button type="submit" className="btn btn-primary" disabled={!token.trim()}>
-              Consultar
+              <Search size={16} /> Consultar
             </button>
           </form>
         </div>
@@ -45,7 +46,7 @@ export function HomePage(): ReactNode {
 
       {/* Welcome placeholder */}
       <div className="welcome-section">
-        <span className="welcome-emoji">🚗</span>
+        <span className="welcome-emoji"><Car size={48} /></span>
         <p className="welcome-text">Bem-vindo ao portal do cliente TorqueHub</p>
         <p className="welcome-subtext">
           Aqui você pode acompanhar o orçamento e o andamento do serviço do seu veículo.

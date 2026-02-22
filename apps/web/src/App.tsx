@@ -13,6 +13,7 @@ import { RoleGuard } from './guards/RoleGuard';
 import { AdminLayout } from './layouts/AdminLayout';
 import { BackofficeLayout } from './layouts/BackofficeLayout';
 import { isAuthenticated, getUser } from './services/authService';
+import { Wrench } from './components/icons';
 
 /* Admin pages */
 import { DashboardPage as AdminDashboard } from './pages/admin/DashboardPage';
@@ -32,8 +33,8 @@ import { SettingsPage as BackofficeSettings } from './pages/backoffice/SettingsP
 function Header(): ReactNode {
   return (
     <header className="header">
-      <Link to="/portal" style={{ color: 'var(--color-card)', textDecoration: 'none' }}>
-        <h1>🔧 TorqueHub</h1>
+      <Link to="/portal" className="header-link">
+        <h1><Wrench size={28} /> TorqueHub</h1>
       </Link>
       <p>Portal do Cliente — Acompanhe seu serviço</p>
     </header>

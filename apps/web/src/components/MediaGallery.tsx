@@ -9,6 +9,7 @@ import type { MediaRecord } from '../services/api';
 import { mediaUrl } from '../services/api';
 import { SectionCard } from './SectionCard';
 import { MEDIA_TYPE } from '../utils/constants';
+import { Camera } from './icons';
 
 interface MediaGalleryProps {
   readonly media: MediaRecord[];
@@ -23,7 +24,7 @@ export function MediaGallery({ media }: MediaGalleryProps): ReactNode {
   if (photos.length === 0) return null;
 
   return (
-    <SectionCard icon="📸" title="Fotos do Serviço">
+    <SectionCard icon={<Camera size={20} />} title="Fotos do Serviço">
       <div className="media-grid">
         {photos.map((photo, idx) => (
           <button

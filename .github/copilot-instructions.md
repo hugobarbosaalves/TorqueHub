@@ -2,7 +2,7 @@
 
 > Este arquivo é carregado automaticamente pelo GitHub Copilot no VS Code.
 > Qualquer agente IA DEVE seguir estas regras ao gerar ou modificar código.
-> Última atualização: 2026-02-21
+> Última atualização: 2026-02-22
 
 ---
 
@@ -195,6 +195,50 @@ NUNCA crie mapas de status locais. Use o centralizado.
 3. Para dados de status: import { statusConfig } from '@torquehub/design-tokens'
 4. Props interfaces DEVEM ter campos readonly
 5. Retorno tipado como ReactNode
+6. ÍCONES — sempre import de 'components/icons' (nunca emoji/Unicode)
+7. ESTILOS — sempre via className + CSS classes (nunca style={{ }} inline)
+```
+
+### Ícones no Web — Regras Obrigatórias (lucide-react)
+
+```
+1. Biblioteca: lucide-react (já instalada)
+2. Importar SEMPRE de: import { NomeIcon } from '../components/icons'
+   - Este módulo centraliza e re-exporta todos os ícones usados no projeto
+   - Para adicionar um ícone novo: adicione o export em components/icons.ts
+3. NUNCA usar emojis (📊, 📋, 🔧, ❌, ✅) como ícones de UI
+4. NUNCA importar direto de 'lucide-react' — usar o módulo centralizado
+5. Para ícones de status de OS: import { getStatusIcon } from '../components/statusIcons'
+   - Retorna o LucideIcon component correspondente ao status
+6. Tamanhos padrão de ícone:
+   - Inline em texto / botão: size={16}
+   - Em nav items / labels: size={18}
+   - Em cards / destaques: size={20} a size={28}
+   - Hero / destaque grande: size={48}
+7. Quando o ícone aparece junto com texto, o container DEVE ter:
+   display: flex; align-items: center; gap: var(--space-2);
+```
+
+### Estilos no Web — NUNCA usar inline styles
+
+```
+1. PROIBIDO: style={{ fontSize: 14, padding: '8px', color: '#fff' }}
+2. OBRIGATÓRIO: className="minha-classe" + definição em global.css
+3. Cores dinâmicas (ex: status color do backend) são a ÚNICA exceção:
+   style={{ backgroundColor: info.color }} — quando o valor vem de dados
+4. Todas as classes DEVEM usar CSS custom properties (tokens):
+   - Cores: var(--color-brand-primary), var(--color-neutral-400), etc.
+   - Espaçamento: var(--space-2), var(--space-4), etc.
+   - Tipografia: var(--font-size-sm), var(--font-weight-bold), etc.
+   - Bordas: var(--radius-md), var(--radius-xl), etc.
+5. NUNCA usar cores hex literais (#fff, #94a3b8) — usar tokens
+6. Classes utilitárias disponíveis em global.css:
+   - Layout: .card, .section-title, .table-wrapper, .data-table
+   - Tabela: .th-center, .th-right, .td-center, .td-right, .td-bold
+   - Status: .status-banner, .status-banner-icon, .status-banner-label
+   - Veículo: .vehicle-row, .vehicle-name, .vehicle-details, .vehicle-plate
+   - Histórico: .history-list, .history-entry, .history-entry-header, etc.
+   - Formulário: .form-group, .form-input, .form-select, .form-textarea
 ```
 
 ### Preciso criar ou alterar um WIDGET FLUTTER?
@@ -243,6 +287,10 @@ O tema global (AppTheme.light) já configura Card, Button, Input, etc.
 | Acessar dados sem filtrar workshopId             | Use `scopedPrisma(tenantId)`                  |
 | Criar rota sem `requireRole()`                   | Exceto `/public/*` e `/auth/*`                |
 | Aceitar workshopId do body em rotas autenticadas | Use `request.tenantId` do middleware          |
+| Usar emojis como ícones na UI web                | Use `lucide-react` via `components/icons.ts`  |
+| Importar lucide-react diretamente                | Use o módulo centralizado `components/icons`  |
+| Usar `style={{ }}` inline em componentes web     | Use `className` + CSS classes em `global.css` |
+| Usar cores hardcoded (`#fff`, `#94a3b8`)         | Use CSS tokens: `var(--color-*)`              |
 
 ---
 
@@ -311,6 +359,8 @@ media.map((mediaItem) => mediaItem.url);
 | Tokens TS para import web      | `packages/design-tokens/src/*.ts`                           |
 | CSS custom properties (gerado) | `apps/web/src/styles/tokens.css`                            |
 | Estilos globais web            | `apps/web/src/styles/global.css`                            |
+| Ícones centralizados (web)     | `apps/web/src/components/icons.ts`                          |
+| Ícones de status OS (web)      | `apps/web/src/components/statusIcons.ts`                    |
 | Tokens Dart (gerado)           | `apps/mobile/lib/theme/app_tokens.dart`                     |
 | Tema Material 3                | `apps/mobile/lib/theme/app_theme.dart`                      |
 | Config de status (Dart)        | `apps/mobile/lib/theme/status_config.dart`                  |

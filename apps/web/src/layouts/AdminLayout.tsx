@@ -7,12 +7,13 @@
 import { type ReactNode, useState, useCallback } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { getUser, logout } from '../services/authService';
+import { LayoutDashboard, Store, Settings, Menu, Wrench, LogOut } from '../components/icons';
 
 /** Navigation items for the admin sidebar. */
 const NAV_ITEMS = [
-  { to: '/admin', label: 'Dashboard', icon: '📊' },
-  { to: '/admin/workshops', label: 'Oficinas', icon: '🏪' },
-  { to: '/admin/settings', label: 'Configurações', icon: '⚙️' },
+  { to: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+  { to: '/admin/workshops', label: 'Oficinas', icon: Store },
+  { to: '/admin/settings', label: 'Configurações', icon: Settings },
 ] as const;
 
 /** Admin layout with sidebar + mobile hamburger + content area. */
@@ -42,9 +43,9 @@ export function AdminLayout(): ReactNode {
       {/* Mobile top bar */}
       <div className="mobile-topbar">
         <button className="mobile-menu-btn" type="button" onClick={toggleMenu} aria-label="Menu">
-          ☰
+          <Menu size={24} />
         </button>
-        <span className="mobile-topbar-title">🔧 TorqueHub</span>
+        <span className="mobile-topbar-title"><Wrench size={18} /> TorqueHub</span>
         <span className="mobile-topbar-badge">Admin</span>
       </div>
 
@@ -57,7 +58,7 @@ export function AdminLayout(): ReactNode {
 
       <aside className={`sidebar${menuOpen ? ' sidebar-open' : ''}`}>
         <div className="sidebar-brand">
-          <h2>🔧 TorqueHub</h2>
+          <h2><Wrench size={22} /> TorqueHub</h2>
           <span className="sidebar-badge">Admin</span>
         </div>
 
@@ -70,7 +71,7 @@ export function AdminLayout(): ReactNode {
               className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`}
               onClick={closeMenu}
             >
-              <span className="sidebar-icon">{item.icon}</span>
+              <span className="sidebar-icon"><item.icon size={18} /></span>
               {item.label}
             </NavLink>
           ))}
@@ -82,7 +83,7 @@ export function AdminLayout(): ReactNode {
             <span className="sidebar-user-role">Administrador</span>
           </div>
           <button className="sidebar-logout" type="button" onClick={handleLogout}>
-            Sair
+            <LogOut size={16} /> Sair
           </button>
         </div>
       </aside>

@@ -7,6 +7,7 @@
 
 import type { ReactNode } from 'react';
 import { statusConfig } from '@torquehub/design-tokens';
+import { getStatusIcon } from './statusIcons';
 
 interface StatusBannerProps {
   readonly status: string;
@@ -14,27 +15,13 @@ interface StatusBannerProps {
 
 /** Renders a full-width colored banner representing the order status. */
 export function StatusBanner({ status }: StatusBannerProps): ReactNode {
-  const info = statusConfig[status] ?? { label: status, color: '#94a3b8', icon: '❓' };
+  const info = statusConfig[status] ?? { label: status, color: 'var(--color-neutral-400)', icon: 'CircleHelp' };
+  const IconComponent = getStatusIcon(info.icon);
 
   return (
-    <div
-      style={{
-        background: info.color,
-        color: '#fff',
-        padding: 'var(--space-8) var(--space-12)',
-        textAlign: 'center',
-      }}
-    >
-      <span style={{ fontSize: 'var(--font-size-5xl)' }}>{info.icon}</span>
-      <h3
-        style={{
-          margin: '4px 0 0',
-          fontSize: 'var(--font-size-2xl)',
-          fontWeight: 'var(--font-weight-bold)',
-        }}
-      >
-        {info.label}
-      </h3>
+    <div className="status-banner" style={{ backgroundColor: info.color }}>
+      <IconComponent size={36} className="status-banner-icon" />
+      <h3 className="status-banner-label">{info.label}</h3>
     </div>
   );
 }

@@ -23,25 +23,11 @@ export function HomePage(): ReactNode {
       {/* Search card */}
       <div className="card">
         <div className="card-body">
-          <h2
-            style={{
-              marginBottom: 'var(--space-4)',
-              fontSize: 'var(--font-size-lg)',
-              color: 'var(--color-text)',
-            }}
-          >
-            Consultar Ordem de Serviço
-          </h2>
-          <p
-            style={{
-              marginBottom: 'var(--space-8)',
-              fontSize: 'var(--font-size-sm)',
-              color: 'var(--color-text-secondary)',
-            }}
-          >
+          <h2 className="search-heading">Consultar Ordem de Serviço</h2>
+          <p className="search-description">
             Insira o código que você recebeu da oficina para acompanhar o status do seu serviço.
           </p>
-          <form onSubmit={handleSubmit} style={{ display: 'flex', gap: 'var(--space-4)' }}>
+          <form onSubmit={handleSubmit} className="search-form">
             <input
               value={token}
               onChange={(e) => {
@@ -58,14 +44,10 @@ export function HomePage(): ReactNode {
       </div>
 
       {/* Welcome placeholder */}
-      <div
-        style={{ textAlign: 'center', marginTop: 'var(--space-20)', color: 'var(--color-muted)' }}
-      >
-        <span style={{ fontSize: 64 }}>🚗</span>
-        <p style={{ fontSize: 'var(--font-size-md)', marginTop: 'var(--space-6)' }}>
-          Bem-vindo ao portal do cliente TorqueHub
-        </p>
-        <p style={{ fontSize: 'var(--font-size-sm)', marginTop: 'var(--space-2)' }}>
+      <div className="welcome-section">
+        <span className="welcome-emoji">🚗</span>
+        <p className="welcome-text">Bem-vindo ao portal do cliente TorqueHub</p>
+        <p className="welcome-subtext">
           Aqui você pode acompanhar o orçamento e o andamento do serviço do seu veículo.
         </p>
       </div>

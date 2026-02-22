@@ -11,6 +11,7 @@ import type {
   CreateWorkshopRequest,
   UpdateWorkshopRequest,
   CreateWorkshopUserRequest,
+  UpdateWorkshopUserRequest,
 } from '@torquehub/contracts';
 import type {
   AdminRepository,
@@ -121,6 +122,41 @@ export class CreateWorkshopUserUseCase {
     await sendInviteEmail(input.email, input.name, input.password, workshopName, input.role);
 
     return toUserDTO(user);
+  }
+}
+
+/** Use case: delete a workshop and all its data. */
+export class DeleteWorkshopUseCase {
+  constructor(private readonly repo: AdminRepository) {}
+
+  /** Deletes a workshop by ID. Throws if not found. */
+  async execute(id: string): Promise<void> {
+    const workshop = await this.repo.findWorkshopById(id);
+    if (!workshop) throw new Error('Workshop not found');
+    await this.repo.deleteWorkshop(id);
+  }
+}
+
+/** Use case: update a user within a workshop. */
+export class UpdateWorkshopUserUseCase {
+  constructor(private readonly repo: AdminRepository) {}
+
+  /** Updates user data and returns the DTO. */
+  async execute(userId: string, input: UpdateWorkshopUserRequest): Promise<UserDTO> {
+    const user = await this.repo.updateUser(userId, input);
+    return toUserDTO(user);
+  }
+}
+
+/** Use case: delete a user. */
+export class DeleteWorkshopUserUseCase {
+  constructor(private readonly repo: AdminRepository) {}
+
+  /** Deletes a user by ID. Throws if not found. */
+  async execute(userId: string): Promise<void> {
+    const user = await this.repo.findUserById(userId);
+    if (!user) throw new Error('User not found');
+    await this.repo.deleteUser(userId);
   }
 }
 

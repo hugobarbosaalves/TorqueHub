@@ -38,9 +38,9 @@ export function OrderPage(): ReactNode {
 
   if (loading) {
     return (
-      <div className="container" style={{ textAlign: 'center', paddingTop: 60 }}>
+      <div className="container loading-center">
         <div className="spinner" />
-        <p style={{ color: 'var(--color-muted)', marginTop: 16 }}>Carregando sua ordem...</p>
+        <p className="loading-text">Carregando sua ordem...</p>
       </div>
     );
   }
@@ -48,22 +48,12 @@ export function OrderPage(): ReactNode {
   if (error || !order) {
     return (
       <div className="container">
-        <div className="card" style={{ borderLeft: '4px solid var(--color-danger)' }}>
-          <div className="card-body" style={{ textAlign: 'center' }}>
-            <span style={{ fontSize: 48 }}>😕</span>
-            <p
-              style={{ fontSize: 16, fontWeight: 600, marginTop: 12, color: 'var(--color-danger)' }}
-            >
-              {error || 'Ordem não encontrada'}
-            </p>
-            <p style={{ fontSize: 14, color: 'var(--color-muted)', marginTop: 8 }}>
-              Verifique o link e tente novamente.
-            </p>
-            <Link
-              to="/"
-              className="btn btn-primary"
-              style={{ marginTop: 16, display: 'inline-flex' }}
-            >
+        <div className="card card-border-danger">
+          <div className="card-body error-card-body">
+            <span className="order-hero-emoji">😕</span>
+            <p className="order-error-title">{error || 'Ordem não encontrada'}</p>
+            <p className="order-error-hint">Verifique o link e tente novamente.</p>
+            <Link to="/" className="btn btn-primary order-error-link">
               Buscar pelo código
             </Link>
           </div>
@@ -73,20 +63,14 @@ export function OrderPage(): ReactNode {
   }
 
   return (
-    <div className="container" style={{ paddingTop: 0 }}>
+    <div className="container order-container">
       {/* Status Banner */}
-      <div className="card" style={{ marginBottom: 20 }}>
+      <div className="card order-status-card">
         <StatusBanner status={order.status} />
         <div className="card-body">
-          <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 4 }}>{order.description}</h2>
-          {order.observations && (
-            <p style={{ fontSize: 14, color: 'var(--color-text-secondary)', fontStyle: 'italic' }}>
-              {order.observations}
-            </p>
-          )}
-          <p style={{ fontSize: 12, color: 'var(--color-muted)', marginTop: 8 }}>
-            Criada em {formatDateLong(order.createdAt)}
-          </p>
+          <h2 className="order-description">{order.description}</h2>
+          {order.observations && <p className="order-observations">{order.observations}</p>}
+          <p className="order-date">Criada em {formatDateLong(order.createdAt)}</p>
         </div>
       </div>
 

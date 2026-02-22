@@ -110,9 +110,11 @@ export function ReportsPage(): ReactNode {
         </div>
       </div>
 
-      <div className="card" style={{ marginTop: 'var(--space-6)' }}>
+      <div className="card">
         <div className="card-body">
           <h2 className="section-title">Ordens por Status</h2>
+        </div>
+        <div className="table-wrapper">
           <table className="data-table">
             <thead>
               <tr>

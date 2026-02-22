@@ -7,22 +7,33 @@
 import { type ReactNode, useState, useCallback } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { getUser, logout } from '../services/authService';
+import {
+  LayoutDashboard,
+  ClipboardList,
+  Users,
+  Wrench,
+  BarChart3,
+  Settings,
+  Menu,
+  LogOut,
+} from '../components/icons';
+import type { LucideIcon } from 'lucide-react';
 
 /** Navigation items for the backoffice sidebar — WORKSHOP_OWNER sees all, MECHANIC sees limited. */
 interface NavItem {
   readonly to: string;
   readonly label: string;
-  readonly icon: string;
+  readonly icon: LucideIcon;
   readonly ownerOnly?: boolean;
 }
 
 const NAV_ITEMS: readonly NavItem[] = [
-  { to: '/backoffice', label: 'Dashboard', icon: '📊' },
-  { to: '/backoffice/orders', label: 'Ordens de Serviço', icon: '📋' },
-  { to: '/backoffice/customers', label: 'Clientes', icon: '👥', ownerOnly: true },
-  { to: '/backoffice/mechanics', label: 'Equipe', icon: '🔧', ownerOnly: true },
-  { to: '/backoffice/reports', label: 'Relatórios', icon: '📈', ownerOnly: true },
-  { to: '/backoffice/settings', label: 'Configurações', icon: '⚙️' },
+  { to: '/backoffice', label: 'Dashboard', icon: LayoutDashboard },
+  { to: '/backoffice/orders', label: 'Ordens de Serviço', icon: ClipboardList },
+  { to: '/backoffice/customers', label: 'Clientes', icon: Users, ownerOnly: true },
+  { to: '/backoffice/mechanics', label: 'Equipe', icon: Wrench, ownerOnly: true },
+  { to: '/backoffice/reports', label: 'Relatórios', icon: BarChart3, ownerOnly: true },
+  { to: '/backoffice/settings', label: 'Configurações', icon: Settings },
 ];
 
 /** Backoffice layout with sidebar + mobile hamburger + content area. */
@@ -57,9 +68,9 @@ export function BackofficeLayout(): ReactNode {
       {/* Mobile top bar */}
       <div className="mobile-topbar">
         <button className="mobile-menu-btn" type="button" onClick={toggleMenu} aria-label="Menu">
-          ☰
+          <Menu size={24} />
         </button>
-        <span className="mobile-topbar-title">🔧 TorqueHub</span>
+        <span className="mobile-topbar-title"><Wrench size={18} /> TorqueHub</span>
         <span className="mobile-topbar-badge backoffice">Oficina</span>
       </div>
 
@@ -72,7 +83,7 @@ export function BackofficeLayout(): ReactNode {
 
       <aside className={`sidebar sidebar-backoffice${menuOpen ? ' sidebar-open' : ''}`}>
         <div className="sidebar-brand">
-          <h2>🔧 TorqueHub</h2>
+          <h2><Wrench size={22} /> TorqueHub</h2>
           <span className="sidebar-badge backoffice">Oficina</span>
         </div>
 
@@ -85,7 +96,7 @@ export function BackofficeLayout(): ReactNode {
               className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`}
               onClick={closeMenu}
             >
-              <span className="sidebar-icon">{item.icon}</span>
+              <span className="sidebar-icon"><item.icon size={18} /></span>
               {item.label}
             </NavLink>
           ))}
@@ -99,7 +110,7 @@ export function BackofficeLayout(): ReactNode {
             </span>
           </div>
           <button className="sidebar-logout" type="button" onClick={handleLogout}>
-            Sair
+            <LogOut size={16} /> Sair
           </button>
         </div>
       </aside>

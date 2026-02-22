@@ -8,6 +8,7 @@ import type { ServiceOrderDTO } from '@torquehub/contracts';
 import { statusConfig } from '@torquehub/design-tokens';
 import { listOrders } from '../../services/backofficeService';
 import { getUser } from '../../services/authService';
+import { ClipboardList } from '../../components/icons';
 
 /** Backoffice dashboard with order counts by status. */
 export function DashboardPage(): ReactNode {
@@ -44,7 +45,7 @@ export function DashboardPage(): ReactNode {
 
       <div className="metrics-grid">
         <div className="metric-card">
-          <span className="metric-icon">📋</span>
+          <span className="metric-icon"><ClipboardList size={28} /></span>
           <div className="metric-info">
             <span className="metric-value">{orders.length}</span>
             <span className="metric-label">Total de OS</span>

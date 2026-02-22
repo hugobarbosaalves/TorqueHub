@@ -8,6 +8,7 @@ import { type ReactNode, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { UserRole } from '@torquehub/contracts';
 import { login } from '../services/authService';
+import { Wrench } from '../components/icons';
 
 /** Redirect target after login, by role. */
 const ROLE_REDIRECT: Record<UserRole, string> = {
@@ -52,7 +53,7 @@ export function LoginPage(): ReactNode {
     <div className="login-page">
       <div className="login-card">
         <div className="login-header">
-          <h1>🔧 TorqueHub</h1>
+          <h1><Wrench size={28} /> TorqueHub</h1>
           <p>Acesse sua conta</p>
         </div>
 

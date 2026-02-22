@@ -9,7 +9,7 @@
 import type { ReactNode } from 'react';
 
 interface SectionCardProps {
-  readonly icon: string;
+  readonly icon: ReactNode;
   readonly title: string;
   readonly children: ReactNode;
 }

@@ -14,6 +14,7 @@ import type {
   CreateWorkshopRequest,
   UpdateWorkshopRequest,
   CreateWorkshopUserRequest,
+  UpdateWorkshopUserRequest,
 } from '@torquehub/contracts';
 import { prisma } from '../../../../shared/infrastructure/database/prisma.js';
 import { requireRole } from '../../../../shared/infrastructure/auth/role-guard.js';
@@ -23,8 +24,11 @@ import {
   GetWorkshopUseCase,
   CreateWorkshopUseCase,
   UpdateWorkshopUseCase,
+  DeleteWorkshopUseCase,
   ListWorkshopUsersUseCase,
   CreateWorkshopUserUseCase,
+  UpdateWorkshopUserUseCase,
+  DeleteWorkshopUserUseCase,
   GetPlatformMetricsUseCase,
 } from '../../application/use-cases/admin.use-cases.js';
 import {
@@ -32,8 +36,11 @@ import {
   createWorkshopSchema,
   getWorkshopSchema,
   updateWorkshopSchema,
+  deleteWorkshopSchema,
   listWorkshopUsersSchema,
   createWorkshopUserSchema,
+  updateWorkshopUserSchema,
+  deleteWorkshopUserSchema,
   getMetricsSchema,
 } from './admin.schemas.js';
 
@@ -42,8 +49,11 @@ const listWorkshopsUC = new ListWorkshopsUseCase(repo);
 const getWorkshopUC = new GetWorkshopUseCase(repo);
 const createWorkshopUC = new CreateWorkshopUseCase(repo);
 const updateWorkshopUC = new UpdateWorkshopUseCase(repo);
+const deleteWorkshopUC = new DeleteWorkshopUseCase(repo);
 const listUsersUC = new ListWorkshopUsersUseCase(repo);
 const createUserUC = new CreateWorkshopUserUseCase(repo);
+const updateUserUC = new UpdateWorkshopUserUseCase(repo);
+const deleteUserUC = new DeleteWorkshopUserUseCase(repo);
 const metricsUC = new GetPlatformMetricsUseCase(repo);
 
 /** Registers all admin routes (PLATFORM_ADMIN only). */
@@ -219,6 +229,98 @@ export function adminRoutes(app: FastifyInstance): void {
     async (_request, reply) => {
       const metrics = await metricsUC.execute();
       return reply.send({ success: true, data: metrics });
+    },
+  );
+
+  /** Exclui uma oficina e todos os dados relacionados. */
+  app.delete<{ Params: { id: string }; Reply: ApiResponse<null> }>(
+    '/workshops/:id',
+    { schema: deleteWorkshopSchema, onRequest: [requireRole('PLATFORM_ADMIN')] },
+    async (request, reply) => {
+      try {
+        await deleteWorkshopUC.execute(request.params.id);
+        return await reply.send({ success: true, data: null });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Failed to delete workshop';
+        return reply.status(404).send({
+          success: false,
+          data: undefined as never,
+          meta: { error: message },
+        });
+      }
+    },
+  );
+
+  /** Atualiza um usuário de uma oficina. Verifica pertencimento ao workshop. */
+  app.patch<{
+    Params: { id: string; userId: string };
+    Body: UpdateWorkshopUserRequest;
+    Reply: ApiResponse<UserDTO>;
+  }>(
+    '/workshops/:id/users/:userId',
+    { schema: updateWorkshopUserSchema, onRequest: [requireRole('PLATFORM_ADMIN')] },
+    async (request, reply) => {
+      const { id: workshopId, userId } = request.params;
+
+      const targetUser = await repo.findUserById(userId);
+      if (targetUser?.workshopId !== workshopId) {
+        return reply.status(404).send({
+          success: false,
+          data: undefined as never,
+          meta: { error: 'User not found in this workshop' },
+        });
+      }
+
+      try {
+        const user = await updateUserUC.execute(userId, request.body);
+        return await reply.send({ success: true, data: user });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Failed to update user';
+        return reply.status(400).send({
+          success: false,
+          data: undefined as never,
+          meta: { error: message },
+        });
+      }
+    },
+  );
+
+  /** Exclui um usuário de uma oficina. Impede auto-exclusão e verifica pertencimento. */
+  app.delete<{ Params: { id: string; userId: string }; Reply: ApiResponse<null> }>(
+    '/workshops/:id/users/:userId',
+    { schema: deleteWorkshopUserSchema, onRequest: [requireRole('PLATFORM_ADMIN')] },
+    async (request, reply) => {
+      const { id: workshopId, userId } = request.params;
+      const currentUserId = request.user.sub;
+
+      if (userId === currentUserId) {
+        return reply.status(403).send({
+          success: false,
+          data: undefined as never,
+          meta: { error: 'Cannot delete your own account' },
+        });
+      }
+
+      const targetUser = await repo.findUserById(userId);
+      if (targetUser?.workshopId !== workshopId) {
+        return reply.status(404).send({
+          success: false,
+          data: undefined as never,
+          meta: { error: 'User not found in this workshop' },
+        });
+      }
+
+      try {
+        await deleteUserUC.execute(userId);
+        return await reply.send({ success: true, data: null });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Failed to delete user';
+        return reply.status(404).send({
+          success: false,
+          data: undefined as never,
+          meta: { error: message },
+        });
+      }
     },
   );
 }

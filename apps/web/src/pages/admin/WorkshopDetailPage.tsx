@@ -1,5 +1,5 @@
 /**
- * Admin WorkshopDetailPage — view/edit a workshop and manage its users.
+ * Admin WorkshopDetailPage — view/edit/delete a workshop and manage its users.
  * @module AdminWorkshopDetailPage
  */
 
@@ -10,14 +10,25 @@ import type {
   UserDTO,
   CreateWorkshopUserRequest,
   UpdateWorkshopRequest,
+  UpdateWorkshopUserRequest,
 } from '@torquehub/contracts';
 import {
   getWorkshop,
   updateWorkshop,
+  deleteWorkshop,
   listWorkshopUsers,
   createWorkshopUser,
+  updateWorkshopUser,
+  deleteWorkshopUser,
 } from '../../services/adminService';
-import { ArrowLeft, Pencil, XCircle, Plus, Loader2 } from '../../components/icons';
+import {
+  ArrowLeft,
+  Pencil,
+  XCircle,
+  Plus,
+  Loader2,
+  Trash2,
+} from '../../components/icons';
 
 /** Maps role to display label. */
 function roleLabel(role: string): string {
@@ -29,7 +40,7 @@ function roleLabel(role: string): string {
   return labels[role] ?? role;
 }
 
-/** Workshop detail page with user management. */
+/** Workshop detail page with full CRUD. */
 export function WorkshopDetailPage(): ReactNode {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -39,11 +50,15 @@ export function WorkshopDetailPage(): ReactNode {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  /** Edit form state. */
+  /** Edit workshop form state. */
   const [editing, setEditing] = useState(false);
   const [editForm, setEditForm] = useState<UpdateWorkshopRequest>({});
   const [editError, setEditError] = useState('');
   const [editSaving, setEditSaving] = useState(false);
+
+  /** Delete workshop state. */
+  const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   /** New user form state. */
   const [showUserForm, setShowUserForm] = useState(false);
@@ -55,6 +70,15 @@ export function WorkshopDetailPage(): ReactNode {
   });
   const [userFormError, setUserFormError] = useState('');
   const [userSaving, setUserSaving] = useState(false);
+
+  /** Edit user state. */
+  const [editingUserId, setEditingUserId] = useState<string | null>(null);
+  const [editUserForm, setEditUserForm] = useState<UpdateWorkshopUserRequest>({});
+  const [editUserError, setEditUserError] = useState('');
+  const [editUserSaving, setEditUserSaving] = useState(false);
+
+  /** Delete user state. */
+  const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -121,6 +145,63 @@ export function WorkshopDetailPage(): ReactNode {
     }
   }
 
+  /** Handles workshop deletion. */
+  async function handleDeleteWorkshop(): Promise<void> {
+    if (!id) return;
+    setDeleting(true);
+    try {
+      await deleteWorkshop(id);
+      void navigate('/admin/workshops');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao excluir oficina');
+      setDeleting(false);
+    }
+  }
+
+  /** Starts inline editing of a user. */
+  function startEditUser(user: UserDTO): void {
+    setEditingUserId(user.id);
+    const formData: UpdateWorkshopUserRequest = { name: user.name, email: user.email };
+    if (user.role !== 'PLATFORM_ADMIN') {
+      formData.role = user.role;
+    }
+    setEditUserForm(formData);
+    setEditUserError('');
+  }
+
+  /** Handles user update. */
+  async function handleUpdateUser(event: FormEvent): Promise<void> {
+    event.preventDefault();
+    if (!id || !editingUserId) return;
+    setEditUserError('');
+    setEditUserSaving(true);
+    try {
+      await updateWorkshopUser(id, editingUserId, editUserForm);
+      setEditingUserId(null);
+      const updatedUsers = await listWorkshopUsers(id);
+      setUsers(updatedUsers);
+    } catch (err) {
+      setEditUserError(err instanceof Error ? err.message : 'Erro ao atualizar usuário');
+    } finally {
+      setEditUserSaving(false);
+    }
+  }
+
+  /** Handles user deletion. */
+  async function handleDeleteUser(userId: string): Promise<void> {
+    if (!id) return;
+    setDeletingUserId(userId);
+    try {
+      await deleteWorkshopUser(id, userId);
+      const updatedUsers = await listWorkshopUsers(id);
+      setUsers(updatedUsers);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao excluir usuário');
+    } finally {
+      setDeletingUserId(null);
+    }
+  }
+
   if (error) return <div className="page-error">{error}</div>;
   if (loading || !workshop) return <div className="spinner" />;
 
@@ -138,24 +219,76 @@ export function WorkshopDetailPage(): ReactNode {
 
       <div className="page-header-row">
         <h1 className="page-title">{workshop.name}</h1>
-        <button
-          className={editing ? 'btn btn-secondary' : 'btn btn-outline'}
-          type="button"
-          onClick={() => {
-            setEditing(!editing);
-          }}
-        >
-          {editing ? (
-            <>
-              <XCircle size={16} /> Cancelar
-            </>
-          ) : (
-            <>
-              <Pencil size={16} /> Editar
-            </>
+        <div className="page-header-actions">
+          <button
+            className={editing ? 'btn btn-secondary' : 'btn btn-outline'}
+            type="button"
+            onClick={() => {
+              setEditing(!editing);
+              setDeleteConfirm(false);
+            }}
+          >
+            {editing ? (
+              <>
+                <XCircle size={16} /> Cancelar
+              </>
+            ) : (
+              <>
+                <Pencil size={16} /> Editar
+              </>
+            )}
+          </button>
+          {!editing && (
+            <button
+              className="btn btn-danger"
+              type="button"
+              onClick={() => {
+                setDeleteConfirm(!deleteConfirm);
+              }}
+            >
+              <Trash2 size={16} /> Excluir
+            </button>
           )}
-        </button>
+        </div>
       </div>
+
+      {deleteConfirm && (
+        <div className="card card-danger card-gap-bottom">
+          <div className="card-body">
+            <p className="delete-confirm-text">
+              Tem certeza que deseja excluir a oficina <strong>{workshop.name}</strong>?
+              Esta ação é irreversível e removerá todos os dados associados.
+            </p>
+            <div className="delete-confirm-actions">
+              <button
+                className="btn btn-danger"
+                type="button"
+                disabled={deleting}
+                onClick={() => {
+                  void handleDeleteWorkshop();
+                }}
+              >
+                {deleting ? (
+                  <>
+                    <Loader2 size={16} className="spin" /> Excluindo...
+                  </>
+                ) : (
+                  'Confirmar Exclusão'
+                )}
+              </button>
+              <button
+                className="btn btn-secondary"
+                type="button"
+                onClick={() => {
+                  setDeleteConfirm(false);
+                }}
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {editing ? (
         <div className="card card-gap-bottom">
@@ -370,24 +503,131 @@ export function WorkshopDetailPage(): ReactNode {
               <th>Email</th>
               <th>Papel</th>
               <th>Criado em</th>
+              <th className="th-center">Ações</th>
             </tr>
           </thead>
           <tbody>
-            {users.map((user) => (
-              <tr key={user.id}>
-                <td className="td-bold">{user.name}</td>
-                <td>{user.email}</td>
-                <td>
-                  <span className={`role-badge role-${user.role.toLowerCase()}`}>
-                    {roleLabel(user.role)}
-                  </span>
-                </td>
-                <td>{new Date(user.createdAt).toLocaleDateString('pt-BR')}</td>
-              </tr>
-            ))}
+            {users.map((user) =>
+              editingUserId === user.id ? (
+                <tr key={user.id}>
+                  <td colSpan={5}>
+                    <form
+                      className="inline-edit-form"
+                      onSubmit={(event) => {
+                        void handleUpdateUser(event);
+                      }}
+                    >
+                      {editUserError && (
+                        <div className="alert alert-error">{editUserError}</div>
+                      )}
+                      <div className="inline-edit-fields">
+                        <input
+                          className="input"
+                          placeholder="Nome"
+                          value={editUserForm.name ?? ''}
+                          onChange={(event) => {
+                            setEditUserForm({ ...editUserForm, name: event.target.value });
+                          }}
+                        />
+                        <input
+                          className="input"
+                          type="email"
+                          placeholder="Email"
+                          value={editUserForm.email ?? ''}
+                          onChange={(event) => {
+                            setEditUserForm({ ...editUserForm, email: event.target.value });
+                          }}
+                        />
+                        <select
+                          className="input"
+                          value={editUserForm.role ?? 'WORKSHOP_OWNER'}
+                          onChange={(event) => {
+                            setEditUserForm({
+                              ...editUserForm,
+                              role: event.target.value as 'WORKSHOP_OWNER' | 'MECHANIC',
+                            });
+                          }}
+                        >
+                          <option value="WORKSHOP_OWNER">Dono da Oficina</option>
+                          <option value="MECHANIC">Mecânico</option>
+                        </select>
+                        <div className="table-actions">
+                          <button
+                            className="btn btn-primary btn-sm"
+                            type="submit"
+                            disabled={editUserSaving}
+                          >
+                            {editUserSaving ? (
+                              <Loader2 size={14} className="spin" />
+                            ) : (
+                              'Salvar'
+                            )}
+                          </button>
+                          <button
+                            className="btn btn-secondary btn-sm"
+                            type="button"
+                            onClick={() => {
+                              setEditingUserId(null);
+                            }}
+                          >
+                            Cancelar
+                          </button>
+                        </div>
+                      </div>
+                    </form>
+                  </td>
+                </tr>
+              ) : (
+                <tr key={user.id}>
+                  <td className="td-bold">{user.name}</td>
+                  <td>{user.email}</td>
+                  <td>
+                    <span className={`role-badge role-${user.role.toLowerCase()}`}>
+                      {roleLabel(user.role)}
+                    </span>
+                  </td>
+                  <td>{new Date(user.createdAt).toLocaleDateString('pt-BR')}</td>
+                  <td className="td-center">
+                    <div className="table-actions">
+                      <button
+                        className="btn-icon"
+                        type="button"
+                        title="Editar usuário"
+                        onClick={() => {
+                          startEditUser(user);
+                        }}
+                      >
+                        <Pencil size={16} />
+                      </button>
+                      <button
+                        className="btn-icon btn-icon-danger"
+                        type="button"
+                        title="Excluir usuário"
+                        disabled={deletingUserId === user.id}
+                        onClick={() => {
+                          if (
+                            globalThis.confirm(
+                              `Excluir o usuário ${user.name}? Esta ação é irreversível.`,
+                            )
+                          ) {
+                            void handleDeleteUser(user.id);
+                          }
+                        }}
+                      >
+                        {deletingUserId === user.id ? (
+                          <Loader2 size={16} className="spin" />
+                        ) : (
+                          <Trash2 size={16} />
+                        )}
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ),
+            )}
             {users.length === 0 && (
               <tr>
-                <td colSpan={4} className="td-empty">
+                <td colSpan={5} className="td-empty">
                   Nenhum usuário cadastrado
                 </td>
               </tr>

@@ -194,3 +194,76 @@ export const getMetricsSchema = {
     },
   },
 };
+
+/** Params schema reused by workshop-scoped routes. */
+const workshopIdParams = {
+  type: 'object',
+  required: ['id'],
+  properties: { id: { type: 'string', format: 'uuid' } },
+} as const;
+
+/** Params schema for user routes under a workshop. */
+const workshopUserParams = {
+  type: 'object',
+  required: ['id', 'userId'],
+  properties: {
+    id: { type: 'string', format: 'uuid' },
+    userId: { type: 'string', format: 'uuid' },
+  },
+} as const;
+
+/** DELETE /admin/workshops/:id — delete a workshop. */
+export const deleteWorkshopSchema = {
+  tags: ['Admin'],
+  summary: 'Exclui uma oficina e todos os dados relacionados (PLATFORM_ADMIN)',
+  params: workshopIdParams,
+  response: {
+    200: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean' },
+        data: { type: 'object', nullable: true },
+      },
+    },
+  },
+};
+
+/** PATCH /admin/workshops/:id/users/:userId — update a user. */
+export const updateWorkshopUserSchema = {
+  tags: ['Admin'],
+  summary: 'Atualiza um usuário de uma oficina (PLATFORM_ADMIN)',
+  params: workshopUserParams,
+  body: {
+    type: 'object',
+    properties: {
+      name: { type: 'string' },
+      email: { type: 'string', format: 'email' },
+      role: { type: 'string', enum: ['WORKSHOP_OWNER', 'MECHANIC'] },
+    },
+  },
+  response: {
+    200: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean' },
+        data: { type: 'object', properties: userProperties },
+      },
+    },
+  },
+};
+
+/** DELETE /admin/workshops/:id/users/:userId — delete a user. */
+export const deleteWorkshopUserSchema = {
+  tags: ['Admin'],
+  summary: 'Exclui um usuário de uma oficina (PLATFORM_ADMIN)',
+  params: workshopUserParams,
+  response: {
+    200: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean' },
+        data: { type: 'object', nullable: true },
+      },
+    },
+  },
+};

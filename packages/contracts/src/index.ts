@@ -311,6 +311,13 @@ export interface CreateWorkshopUserRequest {
   role: 'WORKSHOP_OWNER' | 'MECHANIC';
 }
 
+/** Payload for updating a user within a workshop (admin). */
+export interface UpdateWorkshopUserRequest {
+  name?: string;
+  email?: string;
+  role?: 'WORKSHOP_OWNER' | 'MECHANIC';
+}
+
 /** Platform-wide metrics returned by admin dashboard. */
 export interface PlatformMetricsDTO {
   totalWorkshops: number;

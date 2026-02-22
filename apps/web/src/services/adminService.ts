@@ -11,6 +11,7 @@ import type {
   CreateWorkshopRequest,
   UpdateWorkshopRequest,
   CreateWorkshopUserRequest,
+  UpdateWorkshopUserRequest,
 } from '@torquehub/contracts';
 import { authFetch } from './authService';
 
@@ -97,4 +98,41 @@ export async function createWorkshopUser(
   if (!res.ok)
     throw new Error((json.meta?.['error'] as string | undefined) ?? 'Erro ao criar usuário');
   return json.data;
+}
+
+/** Deletes a workshop by ID. */
+export async function deleteWorkshop(id: string): Promise<void> {
+  const res = await authFetch(`/admin/workshops/${id}`, { method: 'DELETE' });
+  const json = (await res.json()) as ApiResponse<null>;
+  if (!res.ok)
+    throw new Error((json.meta?.['error'] as string | undefined) ?? 'Erro ao excluir oficina');
+}
+
+/** Updates a user within a workshop. */
+export async function updateWorkshopUser(
+  workshopId: string,
+  userId: string,
+  data: UpdateWorkshopUserRequest,
+): Promise<UserDTO> {
+  const res = await authFetch(`/admin/workshops/${workshopId}/users/${userId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+  const json = (await res.json()) as ApiResponse<UserDTO>;
+  if (!res.ok)
+    throw new Error((json.meta?.['error'] as string | undefined) ?? 'Erro ao atualizar usuário');
+  return json.data;
+}
+
+/** Deletes a user from a workshop. */
+export async function deleteWorkshopUser(
+  workshopId: string,
+  userId: string,
+): Promise<void> {
+  const res = await authFetch(`/admin/workshops/${workshopId}/users/${userId}`, {
+    method: 'DELETE',
+  });
+  const json = (await res.json()) as ApiResponse<null>;
+  if (!res.ok)
+    throw new Error((json.meta?.['error'] as string | undefined) ?? 'Erro ao excluir usuário');
 }

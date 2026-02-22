@@ -9,7 +9,7 @@ enum Environment { dev, prod }
 
 /// Configurações centralizadas — alterne [_current] para trocar de ambiente.
 class AppConfig {
-  static const Environment _current = Environment.dev;
+  static const Environment _current = Environment.prod;
 
   /// URL base da API conforme o ambiente.
   static String get apiBaseUrl {

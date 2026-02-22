@@ -527,6 +527,11 @@ a:hover {
   gap: var(--space-8);
   margin-bottom: var(--space-8);
 }
+.page-header-actions {
+  display: flex;
+  gap: var(--space-4);
+  align-items: center;
+}
 .page-error {
   padding: var(--space-12);
   color: var(--color-danger);
@@ -1006,6 +1011,60 @@ select.input:hover,
 }
 .card-gap-bottom {
   margin-bottom: var(--space-10);
+}
+.card-danger {
+  border: 1px solid #fca5a5;
+  background: #fef2f2;
+}
+.delete-confirm-text {
+  color: var(--color-danger);
+  font-size: var(--font-size-md);
+  line-height: 1.6;
+  margin: 0;
+}
+.delete-confirm-actions {
+  display: flex;
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+}
+.table-actions {
+  display: flex;
+  gap: var(--space-2);
+  justify-content: center;
+  align-items: center;
+}
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-lg);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.btn-icon:hover {
+  background: var(--color-neutral-50);
+  color: var(--color-text);
+}
+.btn-icon-danger:hover {
+  background: #fef2f2;
+  color: var(--color-danger);
+}
+.inline-edit-form {
+  padding: var(--space-4) 0;
+}
+.inline-edit-fields {
+  display: flex;
+  gap: var(--space-4);
+  align-items: center;
+  flex-wrap: wrap;
+}
+.inline-edit-fields .input {
+  max-width: 200px;
 }
 
 /* ─── HomePage ───────────────────────────────────── */

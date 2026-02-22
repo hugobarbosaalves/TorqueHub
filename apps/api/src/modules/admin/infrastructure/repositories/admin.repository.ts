@@ -105,6 +105,43 @@ export class AdminRepository {
     });
   }
 
+  /** Deletes a workshop and all related data in a transaction. */
+  async deleteWorkshop(id: string): Promise<void> {
+    await this.prisma.$transaction(async (tx) => {
+      const serviceOrders = await tx.serviceOrder.findMany({
+        where: { workshopId: id },
+        select: { id: true },
+      });
+      const orderIds = serviceOrders.map((order) => order.id);
+
+      if (orderIds.length > 0) {
+        await tx.media.deleteMany({ where: { serviceOrderId: { in: orderIds } } });
+        await tx.serviceOrderItem.deleteMany({ where: { serviceOrderId: { in: orderIds } } });
+        await tx.serviceOrder.deleteMany({ where: { workshopId: id } });
+      }
+
+      await tx.vehicle.deleteMany({ where: { workshopId: id } });
+      await tx.customer.deleteMany({ where: { workshopId: id } });
+      await tx.user.deleteMany({ where: { workshopId: id } });
+      await tx.workshop.delete({ where: { id } });
+    });
+  }
+
+  /** Finds a user by ID. */
+  async findUserById(id: string): Promise<User | null> {
+    return this.prisma.user.findUnique({ where: { id } });
+  }
+
+  /** Updates an existing user. */
+  async updateUser(id: string, data: { name?: string; email?: string; role?: 'WORKSHOP_OWNER' | 'MECHANIC' }): Promise<User> {
+    return this.prisma.user.update({ where: { id }, data });
+  }
+
+  /** Deletes a user by ID. */
+  async deleteUser(id: string): Promise<void> {
+    await this.prisma.user.delete({ where: { id } });
+  }
+
   /** Returns platform-wide aggregate metrics. */
   async getMetrics(): Promise<PlatformMetrics> {
     const [totalWorkshops, totalUsers, totalServiceOrders, totalCustomers] = await Promise.all([

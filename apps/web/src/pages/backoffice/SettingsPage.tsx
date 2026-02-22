@@ -6,6 +6,7 @@
 import { useState } from 'react';
 import type { ReactNode, FormEvent } from 'react';
 import { getUser, changePassword } from '../../services/authService';
+import { Loader2 } from '../../components/icons';
 
 /** Workshop settings page with profile and password change. */
 export function SettingsPage(): ReactNode {
@@ -122,7 +123,7 @@ export function SettingsPage(): ReactNode {
               />
             </div>
             <button type="submit" className="btn btn-primary" disabled={loading}>
-              {loading ? 'Alterando...' : 'Alterar Senha'}
+              {loading ? <><Loader2 size={16} className="spin" /> Alterando...</> : 'Alterar Senha'}
             </button>
           </form>
         </div>

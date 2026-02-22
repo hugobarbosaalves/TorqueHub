@@ -6,6 +6,7 @@
 import { type ReactNode, useEffect, useState, type FormEvent } from 'react';
 import type { CustomerDTO } from '@torquehub/contracts';
 import { listCustomers, createCustomer, deleteCustomer } from '../../services/backofficeService';
+import { Plus, XCircle, Loader2, Trash2 } from '../../components/icons';
 
 /** Customers listing + creation page. */
 export function CustomersPage(): ReactNode {
@@ -74,13 +75,13 @@ export function CustomersPage(): ReactNode {
           <p className="page-subtitle">{customers.length} clientes</p>
         </div>
         <button
-          className="btn btn-primary"
+          className={showForm ? 'btn btn-secondary' : 'btn btn-primary'}
           type="button"
           onClick={() => {
             setShowForm(!showForm);
           }}
         >
-          {showForm ? 'Cancelar' : '+ Novo Cliente'}
+          {showForm ? <><XCircle size={16} /> Cancelar</> : <><Plus size={16} /> Novo Cliente</>}
         </button>
       </div>
 
@@ -139,7 +140,7 @@ export function CustomersPage(): ReactNode {
               </label>
               <div className="form-actions">
                 <button className="btn btn-primary" type="submit" disabled={saving}>
-                  {saving ? 'Salvando...' : 'Criar Cliente'}
+                  {saving ? <><Loader2 size={16} className="spin" /> Salvando...</> : 'Criar Cliente'}
                 </button>
               </div>
             </form>
@@ -176,7 +177,7 @@ export function CustomersPage(): ReactNode {
                         void handleDelete(customer);
                       }}
                     >
-                      Excluir
+                      <Trash2 size={14} /> Excluir
                     </button>
                   </td>
                 </tr>

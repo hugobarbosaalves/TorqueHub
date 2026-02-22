@@ -7,6 +7,7 @@ import { type ReactNode, useEffect, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { WorkshopDTO, CreateWorkshopRequest } from '@torquehub/contracts';
 import { listWorkshops, createWorkshop } from '../../services/adminService';
+import { Plus, XCircle, Loader2 } from '../../components/icons';
 
 /** Workshops listing + creation page. */
 export function WorkshopsPage(): ReactNode {
@@ -72,13 +73,13 @@ export function WorkshopsPage(): ReactNode {
           <p className="page-subtitle">{workshops.length} oficinas cadastradas</p>
         </div>
         <button
-          className="btn btn-primary"
+          className={showForm ? 'btn btn-secondary' : 'btn btn-primary'}
           type="button"
           onClick={() => {
             setShowForm(!showForm);
           }}
         >
-          {showForm ? 'Cancelar' : '+ Nova Oficina'}
+          {showForm ? <><XCircle size={16} /> Cancelar</> : <><Plus size={16} /> Nova Oficina</>}
         </button>
       </div>
 
@@ -148,7 +149,7 @@ export function WorkshopsPage(): ReactNode {
               </label>
               <div className="form-actions">
                 <button className="btn btn-primary" type="submit" disabled={saving}>
-                  {saving ? 'Salvando...' : 'Criar Oficina'}
+                  {saving ? <><Loader2 size={16} className="spin" /> Salvando...</> : 'Criar Oficina'}
                 </button>
               </div>
             </form>

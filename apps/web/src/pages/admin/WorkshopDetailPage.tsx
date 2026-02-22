@@ -17,6 +17,7 @@ import {
   listWorkshopUsers,
   createWorkshopUser,
 } from '../../services/adminService';
+import { ArrowLeft, Pencil, XCircle, Plus, Loader2 } from '../../components/icons';
 
 /** Maps role to display label. */
 function roleLabel(role: string): string {
@@ -132,19 +133,19 @@ export function WorkshopDetailPage(): ReactNode {
           void navigate('/admin/workshops');
         }}
       >
-        ← Voltar para oficinas
+        <ArrowLeft size={14} /> Voltar para oficinas
       </button>
 
       <div className="page-header-row">
         <h1 className="page-title">{workshop.name}</h1>
         <button
-          className="btn btn-primary"
+          className={editing ? 'btn btn-secondary' : 'btn btn-outline'}
           type="button"
           onClick={() => {
             setEditing(!editing);
           }}
         >
-          {editing ? 'Cancelar' : 'Editar'}
+          {editing ? <><XCircle size={16} /> Cancelar</> : <><Pencil size={16} /> Editar</>}
         </button>
       </div>
 
@@ -211,7 +212,7 @@ export function WorkshopDetailPage(): ReactNode {
               </label>
               <div className="form-actions">
                 <button className="btn btn-primary" type="submit" disabled={editSaving}>
-                  {editSaving ? 'Salvando...' : 'Salvar'}
+                  {editSaving ? <><Loader2 size={16} className="spin" /> Salvando...</> : 'Salvar'}
                 </button>
               </div>
             </form>
@@ -251,13 +252,13 @@ export function WorkshopDetailPage(): ReactNode {
       <div className="page-header-row">
         <h2 className="section-title">Usuários ({users.length})</h2>
         <button
-          className="btn btn-primary"
+          className={showUserForm ? 'btn btn-secondary' : 'btn btn-primary'}
           type="button"
           onClick={() => {
             setShowUserForm(!showUserForm);
           }}
         >
-          {showUserForm ? 'Cancelar' : '+ Novo Usuário'}
+          {showUserForm ? <><XCircle size={16} /> Cancelar</> : <><Plus size={16} /> Novo Usuário</>}
         </button>
       </div>
 
@@ -325,7 +326,7 @@ export function WorkshopDetailPage(): ReactNode {
               </label>
               <div className="form-actions">
                 <button className="btn btn-primary" type="submit" disabled={userSaving}>
-                  {userSaving ? 'Criando...' : 'Criar Usuário'}
+                  {userSaving ? <><Loader2 size={16} className="spin" /> Criando...</> : 'Criar Usuário'}
                 </button>
               </div>
             </form>

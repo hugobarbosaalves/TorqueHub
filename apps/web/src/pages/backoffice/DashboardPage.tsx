@@ -45,7 +45,9 @@ export function DashboardPage(): ReactNode {
 
       <div className="metrics-grid">
         <div className="metric-card">
-          <span className="metric-icon"><ClipboardList size={28} /></span>
+          <span className="metric-icon">
+            <ClipboardList size={28} />
+          </span>
           <div className="metric-info">
             <span className="metric-value">{orders.length}</span>
             <span className="metric-label">Total de OS</span>

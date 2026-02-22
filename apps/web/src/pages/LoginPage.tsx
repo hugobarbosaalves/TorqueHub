@@ -53,7 +53,9 @@ export function LoginPage(): ReactNode {
     <div className="login-page">
       <div className="login-card">
         <div className="login-header">
-          <h1><Wrench size={28} /> TorqueHub</h1>
+          <h1>
+            <Wrench size={28} /> TorqueHub
+          </h1>
           <p>Acesse sua conta</p>
         </div>
 
@@ -96,7 +98,13 @@ export function LoginPage(): ReactNode {
           </label>
 
           <button className="btn btn-primary login-btn" type="submit" disabled={loading}>
-            {loading ? <><Loader2 size={18} className="spin" /> Entrando...</> : 'Entrar'}
+            {loading ? (
+              <>
+                <Loader2 size={18} className="spin" /> Entrando...
+              </>
+            ) : (
+              'Entrar'
+            )}
           </button>
         </form>
       </div>

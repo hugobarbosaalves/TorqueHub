@@ -76,9 +76,7 @@ export function SettingsPage(): ReactNode {
         <div className="card-body">
           <h2 className="section-title">Alterar Senha</h2>
 
-          {message && (
-            <div className={`alert alert-${message.type}`}>{message.text}</div>
-          )}
+          {message && <div className={`alert alert-${message.type}`}>{message.text}</div>}
 
           <form onSubmit={handleSubmit} className="form-stack">
             <div className="form-group">
@@ -123,7 +121,13 @@ export function SettingsPage(): ReactNode {
               />
             </div>
             <button type="submit" className="btn btn-secondary" disabled={loading}>
-              {loading ? <><Loader2 size={16} className="spin" /> Alterando...</> : 'Alterar Senha'}
+              {loading ? (
+                <>
+                  <Loader2 size={16} className="spin" /> Alterando...
+                </>
+              ) : (
+                'Alterar Senha'
+              )}
             </button>
           </form>
         </div>

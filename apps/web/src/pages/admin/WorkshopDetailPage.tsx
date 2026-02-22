@@ -145,7 +145,15 @@ export function WorkshopDetailPage(): ReactNode {
             setEditing(!editing);
           }}
         >
-          {editing ? <><XCircle size={16} /> Cancelar</> : <><Pencil size={16} /> Editar</>}
+          {editing ? (
+            <>
+              <XCircle size={16} /> Cancelar
+            </>
+          ) : (
+            <>
+              <Pencil size={16} /> Editar
+            </>
+          )}
         </button>
       </div>
 
@@ -212,7 +220,13 @@ export function WorkshopDetailPage(): ReactNode {
               </label>
               <div className="form-actions">
                 <button className="btn btn-primary" type="submit" disabled={editSaving}>
-                  {editSaving ? <><Loader2 size={16} className="spin" /> Salvando...</> : 'Salvar'}
+                  {editSaving ? (
+                    <>
+                      <Loader2 size={16} className="spin" /> Salvando...
+                    </>
+                  ) : (
+                    'Salvar'
+                  )}
                 </button>
               </div>
             </form>
@@ -258,7 +272,15 @@ export function WorkshopDetailPage(): ReactNode {
             setShowUserForm(!showUserForm);
           }}
         >
-          {showUserForm ? <><XCircle size={16} /> Cancelar</> : <><Plus size={16} /> Novo Usuário</>}
+          {showUserForm ? (
+            <>
+              <XCircle size={16} /> Cancelar
+            </>
+          ) : (
+            <>
+              <Plus size={16} /> Novo Usuário
+            </>
+          )}
         </button>
       </div>
 
@@ -326,7 +348,13 @@ export function WorkshopDetailPage(): ReactNode {
               </label>
               <div className="form-actions">
                 <button className="btn btn-primary" type="submit" disabled={userSaving}>
-                  {userSaving ? <><Loader2 size={16} className="spin" /> Criando...</> : 'Criar Usuário'}
+                  {userSaving ? (
+                    <>
+                      <Loader2 size={16} className="spin" /> Criando...
+                    </>
+                  ) : (
+                    'Criar Usuário'
+                  )}
                 </button>
               </div>
             </form>

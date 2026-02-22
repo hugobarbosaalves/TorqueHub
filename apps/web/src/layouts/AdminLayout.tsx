@@ -45,7 +45,9 @@ export function AdminLayout(): ReactNode {
         <button className="mobile-menu-btn" type="button" onClick={toggleMenu} aria-label="Menu">
           <Menu size={24} />
         </button>
-        <span className="mobile-topbar-title"><Wrench size={18} /> TorqueHub</span>
+        <span className="mobile-topbar-title">
+          <Wrench size={18} /> TorqueHub
+        </span>
         <span className="mobile-topbar-badge">Admin</span>
       </div>
 
@@ -58,7 +60,9 @@ export function AdminLayout(): ReactNode {
 
       <aside className={`sidebar${menuOpen ? ' sidebar-open' : ''}`}>
         <div className="sidebar-brand">
-          <h2><Wrench size={22} /> TorqueHub</h2>
+          <h2>
+            <Wrench size={22} /> TorqueHub
+          </h2>
           <span className="sidebar-badge">Admin</span>
         </div>
 
@@ -71,7 +75,9 @@ export function AdminLayout(): ReactNode {
               className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`}
               onClick={closeMenu}
             >
-              <span className="sidebar-icon"><item.icon size={18} /></span>
+              <span className="sidebar-icon">
+                <item.icon size={18} />
+              </span>
               {item.label}
             </NavLink>
           ))}

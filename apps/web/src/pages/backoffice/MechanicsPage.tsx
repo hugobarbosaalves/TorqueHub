@@ -91,7 +91,15 @@ export function MechanicsPage(): ReactNode {
             setShowForm(!showForm);
           }}
         >
-          {showForm ? <><XCircle size={16} /> Cancelar</> : <><Plus size={16} /> Novo Mecânico</>}
+          {showForm ? (
+            <>
+              <XCircle size={16} /> Cancelar
+            </>
+          ) : (
+            <>
+              <Plus size={16} /> Novo Mecânico
+            </>
+          )}
         </button>
       </div>
 
@@ -144,7 +152,13 @@ export function MechanicsPage(): ReactNode {
               </label>
               <div className="form-actions">
                 <button className="btn btn-primary" type="submit" disabled={saving}>
-                  {saving ? <><Loader2 size={16} className="spin" /> Criando...</> : 'Criar Mecânico'}
+                  {saving ? (
+                    <>
+                      <Loader2 size={16} className="spin" /> Criando...
+                    </>
+                  ) : (
+                    'Criar Mecânico'
+                  )}
                 </button>
               </div>
             </form>

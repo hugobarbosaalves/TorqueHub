@@ -79,7 +79,15 @@ export function WorkshopsPage(): ReactNode {
             setShowForm(!showForm);
           }}
         >
-          {showForm ? <><XCircle size={16} /> Cancelar</> : <><Plus size={16} /> Nova Oficina</>}
+          {showForm ? (
+            <>
+              <XCircle size={16} /> Cancelar
+            </>
+          ) : (
+            <>
+              <Plus size={16} /> Nova Oficina
+            </>
+          )}
         </button>
       </div>
 
@@ -149,7 +157,13 @@ export function WorkshopsPage(): ReactNode {
               </label>
               <div className="form-actions">
                 <button className="btn btn-primary" type="submit" disabled={saving}>
-                  {saving ? <><Loader2 size={16} className="spin" /> Salvando...</> : 'Criar Oficina'}
+                  {saving ? (
+                    <>
+                      <Loader2 size={16} className="spin" /> Salvando...
+                    </>
+                  ) : (
+                    'Criar Oficina'
+                  )}
                 </button>
               </div>
             </form>

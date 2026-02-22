@@ -46,7 +46,9 @@ export function HomePage(): ReactNode {
 
       {/* Welcome placeholder */}
       <div className="welcome-section">
-        <span className="welcome-emoji"><Car size={48} /></span>
+        <span className="welcome-emoji">
+          <Car size={48} />
+        </span>
         <p className="welcome-text">Bem-vindo ao portal do cliente TorqueHub</p>
         <p className="welcome-subtext">
           Aqui você pode acompanhar o orçamento e o andamento do serviço do seu veículo.

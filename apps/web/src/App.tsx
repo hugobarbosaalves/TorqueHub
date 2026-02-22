@@ -34,7 +34,9 @@ function Header(): ReactNode {
   return (
     <header className="header">
       <Link to="/portal" className="header-link">
-        <h1><Wrench size={28} /> TorqueHub</h1>
+        <h1>
+          <Wrench size={28} /> TorqueHub
+        </h1>
       </Link>
       <p>Portal do Cliente — Acompanhe seu serviço</p>
     </header>

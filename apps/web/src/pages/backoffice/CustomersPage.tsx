@@ -81,7 +81,15 @@ export function CustomersPage(): ReactNode {
             setShowForm(!showForm);
           }}
         >
-          {showForm ? <><XCircle size={16} /> Cancelar</> : <><Plus size={16} /> Novo Cliente</>}
+          {showForm ? (
+            <>
+              <XCircle size={16} /> Cancelar
+            </>
+          ) : (
+            <>
+              <Plus size={16} /> Novo Cliente
+            </>
+          )}
         </button>
       </div>
 
@@ -140,7 +148,13 @@ export function CustomersPage(): ReactNode {
               </label>
               <div className="form-actions">
                 <button className="btn btn-primary" type="submit" disabled={saving}>
-                  {saving ? <><Loader2 size={16} className="spin" /> Salvando...</> : 'Criar Cliente'}
+                  {saving ? (
+                    <>
+                      <Loader2 size={16} className="spin" /> Salvando...
+                    </>
+                  ) : (
+                    'Criar Cliente'
+                  )}
                 </button>
               </div>
             </form>

@@ -51,7 +51,9 @@ export function OrderPage(): ReactNode {
       <div className="container">
         <div className="card card-border-danger">
           <div className="card-body error-card-body">
-            <span className="order-hero-emoji"><Frown size={48} /></span>
+            <span className="order-hero-emoji">
+              <Frown size={48} />
+            </span>
             <p className="order-error-title">{error || 'Ordem não encontrada'}</p>
             <p className="order-error-hint">Verifique o link e tente novamente.</p>
             <Link to="/" className="btn btn-primary order-error-link">

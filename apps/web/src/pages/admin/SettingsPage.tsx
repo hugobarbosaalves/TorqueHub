@@ -122,7 +122,7 @@ export function SettingsPage(): ReactNode {
                 minLength={6}
               />
             </div>
-            <button type="submit" className="btn btn-primary" disabled={loading}>
+            <button type="submit" className="btn btn-secondary" disabled={loading}>
               {loading ? <><Loader2 size={16} className="spin" /> Alterando...</> : 'Alterar Senha'}
             </button>
           </form>

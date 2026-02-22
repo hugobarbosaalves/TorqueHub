@@ -8,7 +8,7 @@ import { type ReactNode, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { UserRole } from '@torquehub/contracts';
 import { login } from '../services/authService';
-import { Wrench } from '../components/icons';
+import { Wrench, Loader2 } from '../components/icons';
 
 /** Redirect target after login, by role. */
 const ROLE_REDIRECT: Record<UserRole, string> = {
@@ -96,7 +96,7 @@ export function LoginPage(): ReactNode {
           </label>
 
           <button className="btn btn-primary login-btn" type="submit" disabled={loading}>
-            {loading ? 'Entrando...' : 'Entrar'}
+            {loading ? <><Loader2 size={18} className="spin" /> Entrando...</> : 'Entrar'}
           </button>
         </form>
       </div>

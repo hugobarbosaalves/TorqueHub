@@ -7,6 +7,7 @@ import { type ReactNode, useEffect, useState, type FormEvent } from 'react';
 import type { UserDTO, CreateWorkshopUserRequest } from '@torquehub/contracts';
 import { getUser } from '../../services/authService';
 import { createWorkshopUser, listWorkshopUsers } from '../../services/adminService';
+import { Plus, XCircle, Loader2 } from '../../components/icons';
 
 /** Maps role to display label. */
 function roleLabel(role: string): string {
@@ -84,13 +85,13 @@ export function MechanicsPage(): ReactNode {
           <p className="page-subtitle">{team.length} membros</p>
         </div>
         <button
-          className="btn btn-primary"
+          className={showForm ? 'btn btn-secondary' : 'btn btn-primary'}
           type="button"
           onClick={() => {
             setShowForm(!showForm);
           }}
         >
-          {showForm ? 'Cancelar' : '+ Novo Mecânico'}
+          {showForm ? <><XCircle size={16} /> Cancelar</> : <><Plus size={16} /> Novo Mecânico</>}
         </button>
       </div>
 
@@ -143,7 +144,7 @@ export function MechanicsPage(): ReactNode {
               </label>
               <div className="form-actions">
                 <button className="btn btn-primary" type="submit" disabled={saving}>
-                  {saving ? 'Criando...' : 'Criar Mecânico'}
+                  {saving ? <><Loader2 size={16} className="spin" /> Criando...</> : 'Criar Mecânico'}
                 </button>
               </div>
             </form>
